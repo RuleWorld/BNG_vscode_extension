@@ -4,28 +4,14 @@
 	"patterns": [
 		{
 			"include": "#keywords"
-		},
-		{
-			"include": "#strings"
 		}
 	],
 	"repository": {
 		"keywords": {
 			"patterns": [{
 				"name": "keyword.control.bngl",
-				"match": "\\b(if|while|for|return)\\b"
+				"match": "\\b(model|parameters|molecule types|reaction rules|functions|species|seed species|observables)\\b"
 			}]
-		},
-		"strings": {
-			"name": "string.quoted.double.bngl",
-			"begin": "\"",
-			"end": "\"",
-			"patterns": [
-				{
-					"name": "constant.character.escape.bngl",
-					"match": "\\\\."
-				}
-			]
 		}
 	},
 	"scopeName": "source.bngl"
