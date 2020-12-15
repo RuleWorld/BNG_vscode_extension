@@ -6,10 +6,10 @@
 			"include": "#keywords"
 		},
 		{
-			"include": "#blocks"
+			"include": "#constants"
 		},
 		{
-			"include": "#constants"
+			"include": "#block_names"
 		},
 		{
 			"include": "#strings"
@@ -30,54 +30,64 @@
 		},
 		"functions": {
 			"patterns": [{
+				"name": "entity.name.function.bngl",
+				"match": "(generate_network|generate_hybrid_model|simulate|simulate_ode|simulate_ssa|simulate_pla|simulate_nf|parameter_scan|bifurcate|readFile|writeFile|writeModel|writeNetwork|writeXML|writeSBML|writeMfile|writeMexfile|writeMDL|visualize|setConcentration|addConcentration|saveConcentration|resetConcentrations|setParameter|saveParameters|resetParameters|quit|setModelName|substanceUnits|version|setOption)"
+			}]
+		},
+		"block_names": {
+			"patterns": [{
 				"name": "keyword.control.bngl",
-				"match:": "(generate_network|generate_hybrid_model|simulate|simulate_ode|simulate_ssa|simulate_pla|simulate_nf|parameter_scan|bifurcate|readFile|writeFile|writeModel|writeNetwork|writeXML|writeSBML|writeMfile|writeMexfile|writeMDL|visualize|setConcentration|addConcentration|saveConcentration|resetConcentrations|setParameter|saveParameters|resetParameters|quit|setModelName|substanceUnits|version|setOption)("
+				"match": "(begin|end)"
+			},
+			{
+				"name": "entity.name.section.bngl",
+				"match": "(model|parameters|compartments|molecule types|species|seed species|observables|functions|reaction rules)"
 			}]
 		},
 		"blocks": {
 			"patterns": [
 			{
-				"name": "variable.language",
+				"name": "entity.name.tag.bngl",
 				"begin": "begin model",
 				"end": "end model"
 			},
 			{
-				"name": "variable.language",
+				"name": "entity.name.tag.bngl",
 				"begin": "begin parameters",
 				"end": "end parameters"
 			},
 			{
-				"name": "variable.language",
+				"name": "entity.name.tag.bngl",
 				"begin": "begin compartments",
 				"end": "end compartments"
 			},
 			{
-				"name": "variable.language",
+				"name": "entity.name.tag.bngl",
 				"begin": "begin molecule types",
 				"end": "end molecule types"
 			},
 			{
-				"name": "variable.language",
+				"name": "entity.name.tag.bngl",
 				"begin": "begin reaction rules",
 				"end": "end reaction rules"
 			},
 			{
-				"name": "variable.language",
+				"name": "entity.name.tag.bngl",
 				"begin": "begin functions",
 				"end": "end functions"
 			},
 			{
-				"name": "variable.language",
+				"name": "entity.name.tag.bngl",
 				"begin": "begin species",
 				"end": "end species"
 			},
 			{
-				"name": "variable.language",
+				"name": "entity.name.tag.bngl",
 				"begin": "begin seed species",
 				"end": "end seed species"
 			},
 			{
-				"name": "variable.language",
+				"name": "entity.name.tag.bngl",
 				"begin": "begin observables",
 				"end": "end observables"
 			}
@@ -85,20 +95,29 @@
 		},
 		"strings": {
 			"patterns": [{
-				"name": "string.quoted.single.bngl",
+				"name": "string.quoted.double.bngl",
 				"begin": "\"",
 				"end": "\""
+			},
+			{
+				"name": "string.quoted.single.bngl",
+				"begin": "'",
+				"end": "'"
 			}]
 		},
 		"constants": {
 			"patterns": [
 			{
-				"name": "constant.numeric",
-				"match": "[0-9]"
+				"name": "constant.numeric.bngl",
+				"match": "[^a-zA-Z][0-9]+"
 			},
 			{
-				"name": "constant.character",
+				"name": "constant.character.bngl",
 				"match": "(<|>|=|!|=>|<=)"
+			},
+			{
+				"name": "keyword.operator.bngl",
+				"match": "(\\+|\\-|\\*|\\/)"
 			}
 			]
 		},
