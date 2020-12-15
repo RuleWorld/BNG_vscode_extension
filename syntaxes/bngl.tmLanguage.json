@@ -37,11 +37,11 @@
 		"block_names": {
 			"patterns": [{
 				"name": "keyword.control.bngl",
-				"match": "(begin|end)"
+				"match": "^(begin|end)\\s+"
 			},
 			{
 				"name": "entity.name.section.bngl",
-				"match": "(model|parameters|compartments|molecule types|species|seed species|observables|functions|reaction rules)"
+				"match": "\\s+(model|parameters|compartments|molecule types|species|seed species|observables|functions|reaction rules)"
 			}]
 		},
 		"blocks": {
