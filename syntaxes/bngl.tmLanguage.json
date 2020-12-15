@@ -4,13 +4,109 @@
 	"patterns": [
 		{
 			"include": "#keywords"
+		},
+		{
+			"include": "#blocks"
+		},
+		{
+			"include": "#constants"
+		},
+		{
+			"include": "#strings"
+		},
+		{
+			"include": "#comments"
+		},
+		{
+			"include": "#functions"
 		}
 	],
 	"repository": {
 		"keywords": {
 			"patterns": [{
 				"name": "keyword.control.bngl",
-				"match": "\\b(model|parameters|molecule types|reaction rules|functions|species|seed species|observables)\\b"
+				"match": "\\b(abs)\\b"
+			}]
+		},
+		"functions": {
+			"patterns": [{
+				"name": "keyword.control.bngl",
+				"match:": "(generate_network|generate_hybrid_model|simulate|simulate_ode|simulate_ssa|simulate_pla|simulate_nf|parameter_scan|bifurcate|readFile|writeFile|writeModel|writeNetwork|writeXML|writeSBML|writeMfile|writeMexfile|writeMDL|visualize|setConcentration|addConcentration|saveConcentration|resetConcentrations|setParameter|saveParameters|resetParameters|quit|setModelName|substanceUnits|version|setOption)("
+			}]
+		},
+		"blocks": {
+			"patterns": [
+			{
+				"name": "variable.language",
+				"begin": "begin model",
+				"end": "end model"
+			},
+			{
+				"name": "variable.language",
+				"begin": "begin parameters",
+				"end": "end parameters"
+			},
+			{
+				"name": "variable.language",
+				"begin": "begin compartments",
+				"end": "end compartments"
+			},
+			{
+				"name": "variable.language",
+				"begin": "begin molecule types",
+				"end": "end molecule types"
+			},
+			{
+				"name": "variable.language",
+				"begin": "begin reaction rules",
+				"end": "end reaction rules"
+			},
+			{
+				"name": "variable.language",
+				"begin": "begin functions",
+				"end": "end functions"
+			},
+			{
+				"name": "variable.language",
+				"begin": "begin species",
+				"end": "end species"
+			},
+			{
+				"name": "variable.language",
+				"begin": "begin seed species",
+				"end": "end seed species"
+			},
+			{
+				"name": "variable.language",
+				"begin": "begin observables",
+				"end": "end observables"
+			}
+			]
+		},
+		"strings": {
+			"patterns": [{
+				"name": "string.quoted.single.bngl",
+				"begin": "\"",
+				"end": "\""
+			}]
+		},
+		"constants": {
+			"patterns": [
+			{
+				"name": "constant.numeric",
+				"match": "[0-9]"
+			},
+			{
+				"name": "constant.character",
+				"match": "(<|>|=|!|=>|<=)"
+			}
+			]
+		},
+		"comments": {
+			"patterns": [{
+				"name": "comment.line.bngl",
+				"begin": "#",
+				"end": "\n"
 			}]
 		}
 	},
