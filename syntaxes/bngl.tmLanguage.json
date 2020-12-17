@@ -3,44 +3,16 @@
 	"name": "BioNetGen Language",
 	"patterns": [
 		{
-			"include": "#actions"
+			"include": "#model"
 		},
 		{
-			"include": "#model"
+			"include": "#actions"
 		},
 		{
 			"include": "#comments"
 		}
 	],
 	"repository": {
-		"functions": {
-			"patterns": [{
-				"name": "keyword.control.bngl",
-				"match": "\\b(abs)\\b"
-			}]
-		},
-		"actions": {
-			"patterns": [{
-				"name": "entity.name.function.bngl",
-				"match": "(generate_network|generate_hybrid_model|simulate|simulate_ode|simulate_ssa|simulate_pla|simulate_nf|parameter_scan|bifurcate|readFile|writeFile|writeModel|writeNetwork|writeXML|writeSBML|writeMfile|writeMexfile|writeMDL|visualize|setConcentration|addConcentration|saveConcentration|resetConcentrations|setParameter|saveParameters|resetParameters|quit|setModelName|substanceUnits|version|setOption)"
-			},
-			{
-				"include": "#comments"
-			},
-		    {
-				"include": "#constants"
-			}]
-		},
-		"block_names": {
-			"patterns": [{
-				"name": "keyword.control.bngl",
-				"match": "^(begin|end)\\s+"
-			},
-			{
-				"name": "entity.name.section.bngl",
-				"match": "\\s+(model|parameters|compartments|molecule types|species|seed species|observables|functions|reaction rules)\\s*"
-			}]
-		},
 		"model": {
 			"patterns": [{
 				"name": "entity.name.tag.model.bngl",
@@ -78,17 +50,7 @@
 				"end": "end molecule types",
 				"patterns": [
 				{
-					"name": "entity.name.type.mtype.bngl",
-					"begin": "^\\s*",
-					"end": "[A-Za-z0-9_\\.]+"
-				},
-				{
-					"name": "entity.name.type.mtype_spec.bngl",
-					"begin": "\\(",
-					"end": "\\)\\s",
-					"patterns": [{
-						"include": "#moltype_spec"
-					}]
+					"include": "#moltype_def"
 				},
 				{
 					"include": "#comments"
@@ -102,7 +64,7 @@
 					"include": "#comments"
 				},
 				{
-					"include": "#constants"
+					"include": "#expressions"
 				},
 				{
 					"include": "#species_spec"
@@ -116,89 +78,30 @@
 					"include": "#comments"
 				},
 				{
-					"name": "entity.name.tag.funcs.name.bngl",
-					"begin": "^\\s*[A-Za-z0-9_]+",
-					"end": "\\)"
-				},
-				{
-					"name": "entity.name.tag.funcs.defn.bngl",
-					"begin": "(\\s|=)",
-					"end": "(\n)",
-					"patterns": [{
-						"include": "#constants"
-					},
-					{
-						"include": "#comments"
-					}]
+					"include": "#func_def"
 				}]
 			},
 			{
 				"name": "entity.name.tag.specs.bngl",
 				"begin": "begin species",
 				"end": "end species",
-				"patterns": [
-					{
-						"name": "entity.name.type.spec.bngl",
-						"begin": "^\\s*",
-						"end": "\\s",
-						"patterns": [{
-							"name": "entity.name.type.spec_spec.bngl",
-							"begin": "\\(",
-							"end": "\\)\\s",
-							"patterns": [{
-								"include": "#species_spec"
-							}]
-						}]
-					},
-					{
-						"name": "variable.expression.bngl",
-						"begin": "\\b",
-						"end": "\n",
-						"patterns": [{
-							"include": "#constants"
-						},
-						{
-							"include": "#comments"
-						}]
-						
-					},
-					{
-						"include": "#comments"
-					}]
+				"patterns": [{
+					"include": "#comments"
+				},
+				{
+					"include": "#species_def"
+				}]
 			},
 			{
 				"name": "entity.name.tag.specs.bngl",
 				"begin": "begin seed species",
 				"end": "end seed species",
-				"patterns": [
-					{
-						"name": "entity.name.type.spec.bngl",
-						"begin": "^\\s*",
-						"end": "\\s",
-						"patterns": [{
-							"name": "entity.name.type.spec_spec.bngl",
-							"begin": "\\(",
-							"end": "\\)\\s",
-							"patterns": [{
-								"include": "#species_spec"
-							}]
-						}]
-					},
-					{
-						"name": "variable.expression.bngl",
-						"begin": "\\b",
-						"end": "\n",
-						"patterns": [{
-							"include": "#constants"
-						},
-						{
-							"include": "#comments"
-						}]
-						
-					},
-					{
-						"include": "#comments"
-					}]
+				"patterns": [{
+					"include": "#comments"
+				},
+				{
+					"include": "#species_def"
+				}]
 			},
 			{
 				"name": "entity.name.tag.obs.bngl",
@@ -208,60 +111,114 @@
 					"include": "#comments"
 				},
 				{
-					"name": "entity.name.tag.obs.type.bngl",
-					"begin": "^\\s*[A-Za-z0-9_]+",
-					"end": "\\b",
-					"patterns": [{
-						"include": "#obs_kwords"
-					}]
-				},
-				{
-					"name": "entity.name.tag.obs.name.bngl",
-					"begin": "\\s[A-Za-z0-9_]+",
-					"end": "\\s",
-					"patterns": [{
-						"include": "#names"
-					}]
-				},
-				{
-					"name": "entity.name.tag.obs.pat.bngl",
-					"begin": "\\b",
-					"end": "(\n|\\s)",
-					"patterns": [{
-						"include": "#species_spec"
-					}]
+					"include": "#obs_def"
 				}]
 			}
 			]
+		},
+		"actions": {
+			"patterns": [{
+				"name": "entity.name.function.bngl",
+				"match": "(generate_network|generate_hybrid_model|simulate|simulate_ode|simulate_ssa|simulate_pla|simulate_nf|parameter_scan|bifurcate|readFile|writeFile|writeModel|writeNetwork|writeXML|writeSBML|writeMfile|writeMexfile|writeMDL|visualize|setConcentration|addConcentration|saveConcentration|resetConcentrations|setParameter|saveParameters|resetParameters|quit|setModelName|substanceUnits|version|setOption)"
+			},
+			{
+				"include": "#comments"
+			},
+		    {
+				"include": "#constants"
+			}]
 		},
 		"param_def": {
 			"name": "variable.parameter.bngl",
 			"patterns": [
 				{
 					"begin": "^\\s*",
-					"end": "(\\s|=)",
+					"end": "(?=\\s|\\=|\\#|\n)",
 					"patterns": [{
 						"include": "#names"
-					},
-					{
-						"include": "#comments"
 					}]
 				},
 				{
 					"name": "variable.expression.bngl",
-					"begin": "(\\b|=)",
-					"end": "\n",
+					"begin": "(?=\\S)",
+					"end": "(?=\n|\\#)",
 					"patterns": [{
-						"include": "#constants"
-					},
-					{
-						"include": "#comments"
+						"include": "#expressions"
 					}]
 				}]
 		},
-		"names": {
-			"name": "variable.name.bngl",
-			"match": "[A-Za-z0-9_]+"
+		"moltype_def": {
+			"patterns": [{
+				"name": "entity.name.type.mtype.bngl",
+				"begin": "^\\s*",
+				"end": "(?=\\s|\\()",
+				"patterns": [{
+					"include": "#names"
+				}]
+			},
+			{
+				"name": "entity.name.type.mtype_spec.bngl",
+				"begin": "\\(",
+				"end": "\\)",
+				"patterns": [{
+					"include": "#moltype_spec"
+				}]
+			}]
+		},
+		"func_def": {
+			"patterns": [
+				{
+					"name": "entity.name.tag.funcs.name.bngl",
+					"begin": "^\\s*",
+					"end": "(?=\\()",
+					"patterns": [{
+						"include": "#names"
+					}]
+				},
+				{
+					"name": "entity.name.tag.funcs.args.bngl",
+					"begin": "\\(",
+					"end": "\\)"
+				},
+				{
+					"name": "entity.name.tag.funcs.defn.bngl",
+					"begin": "(?=\\S)",
+					"end": "(?=\n|\\#)",
+					"patterns": [{
+						"include": "#expressions"
+					}]
+				}]
+			
+		},
+		"species_def": {
+			"patterns": [{
+				"name": "entity.name.type.spec.name.bngl",
+				"begin": "(^\\s*)", 
+				"end": "(?=\\s|\\()",
+				"patterns": [{
+					"include": "#names"
+				}]
+			},
+			{
+				"name": "entity.name.type.spec.bngl",
+				"begin": "\\(",
+				"end": "\\)\\s",
+				"patterns": [{
+					"include": "#species_spec"
+				}]
+			},
+			{
+				"name": "variable.expression.bngl",
+				"begin": "(?=\\S)",
+				"end": "(?=\n|\\#)",
+				"patterns": [{
+					"include": "#expressions"
+				}]
+				
+			},
+			{
+				"include": "#comments"
+			}]
 		},
 		"moltype_spec": {
 			"patterns": [{
@@ -289,10 +246,49 @@
 				"include": "#constants"
 			}]
 		},
+		"obs_def": {
+			"patterns": [
+			{
+				"name": "entity.name.tag.obs.type.bngl",
+				"begin": "^\\s*",
+				"end": "(?=\\s|\\#)",
+				"patterns": [{
+					"include": "#obs_kwords"
+				}]
+			},
+			{
+				"name": "entity.name.tag.obs.name.bngl",
+				"begin": "(?=\\S)",
+				"end": "(?=\\s|\\#)",
+				"patterns": [{
+					"include": "#names"
+				}]
+			},
+			{
+				"name": "entity.name.tag.obs.pat.bngl",
+				"begin": "(?=\\S)",
+				"end": "(?=\n|\\#)",
+				"patterns": [{
+					"include": "#species_spec"
+				}]
+			}]
+		},
 		"obs_kwords": {
 			"patterns": [{
 				"name": "entity.name.type.obs.bngl",
 				"match": "(Molecules|Species)"
+			}]
+		},
+		"names": {
+			"name": "variable.name.bngl",
+			"match": "[A-Za-z][A-Za-z0-9_]*"
+		},
+		"expressions": {
+			"patterns": [{
+				"include": "#constants"
+			},
+			{
+				"include": "#functions"
 			}]
 		},
 		"strings": {
@@ -302,11 +298,17 @@
 				"end": "\""
 			}]
 		},
+		"functions": {
+			"patterns": [{
+				"name": "keyword.control.bngl",
+				"match": "\\b(abs|sin|cos|tan|exp|ln|log10|floor|ceil|sqrt|asin|acos|atan|sinh|cosh|tanh|asinh|acosh|atanh)\\b"
+			}]
+		},
 		"constants": {
 			"patterns": [
 			{
 				"name": "constant.numeric.bngl",
-				"match": "\\d+(\\.\\d+)?(e\\d+)?"
+				"match": "(?:\\b|\\+|\\-|\\*|\\/|\\%)\\d+(\\.\\d+)?(e\\d+)?"
 			},
 			{
 				"name": "constant.character.bngl",
@@ -314,7 +316,15 @@
 			},
 			{
 				"name": "keyword.operator.bngl",
-				"match": "(\\+|\\-|\\*|\\/)"
+				"match": "(\\+|\\-|\\*|\\/|\\%)"
+			},
+			{
+				"name": "keyword.control.bngl",
+				"match": "\\b(if|min|max|sum|avg)\\b"
+			},
+			{
+				"name": "keyword.control.bngl",
+				"match": "\\b(pi|eulerian|time)\\b"
 			}
 			]
 		},
