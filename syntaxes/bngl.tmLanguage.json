@@ -85,13 +85,10 @@
 				{
 					"name": "entity.name.type.mtype_spec.bngl",
 					"begin": "\\(",
-					"end": "\\)",
+					"end": "\\)\\s",
 					"patterns": [{
 						"include": "#moltype_spec"
 					}]
-				},
-				{
-					"include": "#moltype_pat"
 				},
 				{
 					"include": "#comments"
@@ -103,6 +100,12 @@
 				"end": "end reaction rules",
 				"patterns": [{
 					"include": "#comments"
+				},
+				{
+					"include": "#constants"
+				},
+				{
+					"include": "#species_spec"
 				}]
 			},
 			{
@@ -111,6 +114,22 @@
 				"end": "end functions",
 				"patterns": [{
 					"include": "#comments"
+				},
+				{
+					"name": "entity.name.tag.funcs.name.bngl",
+					"begin": "^\\s*[A-Za-z0-9_]+",
+					"end": "\\)"
+				},
+				{
+					"name": "entity.name.tag.funcs.defn.bngl",
+					"begin": "(\\s|=)",
+					"end": "(\n)",
+					"patterns": [{
+						"include": "#constants"
+					},
+					{
+						"include": "#comments"
+					}]
 				}]
 			},
 			{
@@ -124,7 +143,8 @@
 						"end": "\\s",
 						"patterns": [{
 							"name": "entity.name.type.spec_spec.bngl",
-							"match": "\\(\\S+\\)",
+							"begin": "\\(",
+							"end": "\\)\\s",
 							"patterns": [{
 								"include": "#species_spec"
 							}]
@@ -157,7 +177,8 @@
 						"end": "\\s",
 						"patterns": [{
 							"name": "entity.name.type.spec_spec.bngl",
-							"match": "\\(\\S+\\)",
+							"begin": "\\(",
+							"end": "\\)\\s",
 							"patterns": [{
 								"include": "#species_spec"
 							}]
@@ -187,7 +208,28 @@
 					"include": "#comments"
 				},
 				{
-					"include": "#obs_kwords"
+					"name": "entity.name.tag.obs.type.bngl",
+					"begin": "^\\s*[A-Za-z0-9_]+",
+					"end": "\\b",
+					"patterns": [{
+						"include": "#obs_kwords"
+					}]
+				},
+				{
+					"name": "entity.name.tag.obs.name.bngl",
+					"begin": "\\s[A-Za-z0-9_]+",
+					"end": "\\s",
+					"patterns": [{
+						"include": "#names"
+					}]
+				},
+				{
+					"name": "entity.name.tag.obs.pat.bngl",
+					"begin": "\\b",
+					"end": "(\n|\\s)",
+					"patterns": [{
+						"include": "#species_spec"
+					}]
 				}]
 			}
 			]
@@ -228,7 +270,7 @@
 			},
 			{
 				"name": "keyword.operator.mtype.bngl",
-				"match": ","
+				"match": "(,)"
 			},
 			{
 				"include": "#constants"
@@ -241,7 +283,7 @@
 			},
 			{
 				"name": "keyword.operator.mtype.bngl",
-				"match": ","
+				"match": "(,|\\.|\\(|\\))"
 			},
 			{
 				"include": "#constants"
