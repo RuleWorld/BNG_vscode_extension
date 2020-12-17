@@ -76,8 +76,22 @@
 				"name": "entity.name.tag.mtypes.bngl",
 				"begin": "begin molecule types",
 				"end": "end molecule types",
-				"patterns": [{
-					"include": "#moltype_patterns"
+				"patterns": [
+				{
+					"name": "entity.name.type.mtype.bngl",
+					"begin": "^\\s*",
+					"end": "[A-Za-z0-9_\\.]+"
+				},
+				{
+					"name": "entity.name.type.mtype_spec.bngl",
+					"begin": "\\(",
+					"end": "\\)",
+					"patterns": [{
+						"include": "#moltype_spec"
+					}]
+				},
+				{
+					"include": "#moltype_pat"
 				},
 				{
 					"include": "#comments"
@@ -103,17 +117,67 @@
 				"name": "entity.name.tag.specs.bngl",
 				"begin": "begin species",
 				"end": "end species",
-				"patterns": [{
-					"include": "#species"
-				}]
+				"patterns": [
+					{
+						"name": "entity.name.type.spec.bngl",
+						"begin": "^\\s*",
+						"end": "\\s",
+						"patterns": [{
+							"name": "entity.name.type.spec_spec.bngl",
+							"match": "\\(\\S+\\)",
+							"patterns": [{
+								"include": "#species_spec"
+							}]
+						}]
+					},
+					{
+						"name": "variable.expression.bngl",
+						"begin": "\\b",
+						"end": "\n",
+						"patterns": [{
+							"include": "#constants"
+						},
+						{
+							"include": "#comments"
+						}]
+						
+					},
+					{
+						"include": "#comments"
+					}]
 			},
 			{
 				"name": "entity.name.tag.specs.bngl",
 				"begin": "begin seed species",
 				"end": "end seed species",
-				"patterns":	[{
-					"include": "#species"
-				}]
+				"patterns": [
+					{
+						"name": "entity.name.type.spec.bngl",
+						"begin": "^\\s*",
+						"end": "\\s",
+						"patterns": [{
+							"name": "entity.name.type.spec_spec.bngl",
+							"match": "\\(\\S+\\)",
+							"patterns": [{
+								"include": "#species_spec"
+							}]
+						}]
+					},
+					{
+						"name": "variable.expression.bngl",
+						"begin": "\\b",
+						"end": "\n",
+						"patterns": [{
+							"include": "#constants"
+						},
+						{
+							"include": "#comments"
+						}]
+						
+					},
+					{
+						"include": "#comments"
+					}]
 			},
 			{
 				"name": "entity.name.tag.obs.bngl",
@@ -157,44 +221,30 @@
 			"name": "variable.name.bngl",
 			"match": "[A-Za-z0-9_]+"
 		},
-		"expressions": {
-			"name": "variable.expression.bngl",
-			"patterns": [{
-				"include": "#constants"
-			}]
-		},
-		"moltype_patterns": {
-			"paterns": [
-			{
-				"name": "entity.name.type.mtype.bngl",
-				"match": "^\\s*[A-Za-z0-9_]+"
-			},
-			{
-				"name": "entity.name.type.mtype_spec.bngl",
-				"begin": "\\(",
-				"end": "[\\)]",
-				"patterns": [{
-					"include": "#moltype_spec"
-				}]
-			}]
-		},
 		"moltype_spec": {
 			"patterns": [{
 				"name": "keyword.control.state.bngl",
-				"match": "~"
+				"match": "(~|!)"
+			},
+			{
+				"name": "keyword.operator.mtype.bngl",
+				"match": ","
+			},
+			{
+				"include": "#constants"
 			}]
 		},
-		"species": {
+		"species_spec": {
 			"patterns": [{
-				"name": "variable.language.bngl",
-				"match": "^\\s*[A-z]*\\s+"
+				"name": "keyword.control.state.bngl",
+				"match": "(~|!)"
 			},
 			{
-				"name": "entity.name.type",
-				"match": "\\s+[A-z0-9]*\\s*"
+				"name": "keyword.operator.mtype.bngl",
+				"match": ","
 			},
 			{
-				"include": "#comments"
+				"include": "#constants"
 			}]
 		},
 		"obs_kwords": {
