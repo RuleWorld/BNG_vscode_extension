@@ -1,0 +1,102 @@
+#Reduced model 
+begin model
+begin molecule types
+TNFR(st~a~i) # active/inactive TNFR1 receptors 
+TNF()
+ikk(s~N~A) #IKK is active/neutral
+ikba(loc~c~n,nfkb) # ikba is found in the cytoplasm/nucleus, and has a binding site for nfkb
+nfkb(loc~c~n,ikba) # nfkb is found in the cytoplasm/nucleus, and has a binding site for IkB
+A20()
+end molecule types
+
+begin parameters
+Tot_NFKB log10(1e4) #Total protein concentration of NFkB, molecules
+IKK_N log10(2e4) #Total protein concentration of IKK, molecules
+R      log10(7000) #Total protein concentration or receptor, molecules
+######################################
+# Reactions from Pekalski et al. (Lipniacki)
+#c_deg         log10(2e-4)  
+k_b         log10(1.2e-5) #L  #0.0352 # TNF-TNFR activation rate, per molecule per second
+k_f         log10(1.2e-3) #L #TNFR inactivation rate, per second
+k_a           -4.5164 #TNFR mediated IKK activation rate, per molecule per second
+k_4          log10(1e-3)#L  #IKK inactivation rate, per second
+# Simplified reactions from Lee at al (Fold Change paper)
+ka1a = log10(5e-7)#L  #IkB-NFkB binding rate, per molecule per second
+kd1a = -8 # IkB-NFkB unbinding rate, per second
+ki1 = -2.057 # NFkB entry into the nucleus, per second
+ke1 = -5.9334 # NFkB exit from the nucleus, per second
+ki2 = -4.1089 #IkB entry into the nucleus, per second
+ke2 = -10.6289 #IkB exit from the nucleus, per second
+ke2a = -3.5859 #IkB-NFkB complex exit from nuclues, per second
+c4a = -4.6363 #Basal degradation of free cytoplasmic IkB, per second
+c5a = -4.6 #Basal degradation of bound cytoplasmic IkB, per second
+kt1a = -7.3178 ##IKK mediated degradation of free cytoplasmic IkB, per molecule second
+kt2a = -8 #IKK mediated degradation of bound cytoplasmic IkB, per molecule per second
+c1a = -3.2082 #NFkB mediated production of free cytoplasmic IkB
+end parameters
+
+begin observables
+Molecules nNFKB nfkb(loc~n,ikba) #nuclear free nfkb
+Molecules cNFKB nfkb(loc~c,ikba) #cytoplasmic free nfkb
+Molecules cikba ikba(loc~c,nfkb) #cytoplasmic free ikba
+Species Ccomplex nfkb(loc~c,ikba!1).ikba(loc~c,nfkb!1) #cytoplasmic ikba-nfkb complex
+Molecules nikba ikba(loc~n,nfkb) #nuclear free ikba
+Species ncomplex nfkb(loc~n,ikba!1).ikba(loc~n,nfkb!1) #nuclear ikba-nfkb complex
+Molecules ikkN ikk(s~N) #neutral ikk
+Molecules ikka ikk(s~A) #activated ikk
+Molecules TNFR_a TNFR(st~a) #active TNFR
+Molecules TNFR_i TNFR(st~i) #inactive TNFR
+Molecules TNF TNF() #TNF
+end observables
+
+begin seed species
+nfkb(loc~n,ikba) 0 #nuclear free nfkb
+nfkb(loc~c,ikba) 0 #cytoplasmic free nfkb
+ikba(loc~c,nfkb) 0#cytoplasmic free ikba
+nfkb(loc~c,ikba!1).ikba(loc~c,nfkb!1)   10^Tot_NFKB   #cytoplasmic ikba-nfkb complex
+ikba(loc~n,nfkb) 0 #nuclear free ikba
+nfkb(loc~n,ikba!1).ikba(loc~n,nfkb!1) 0 #nuclear ikba-nfkb complex
+ikk(s~N) 10^IKK_N #neutral ikk
+ikk(s~A) 0 #activated ikk
+TNFR(st~a)           0 #active TNFR
+TNFR(st~i)           10^R #inactive TNFR
+TNF() 			0 #TNF
+end seed species
+
+begin reaction rules
+R1_TNF_degradation: TNF()               ->  0                 0
+R2_TNFR_activation: TNFR(st~i) + TNF()  ->  TNFR(st~a)  + TNF() (10^k_b)
+R3_TNFR_inactivation: TNFR(st~a)               ->  TNFR(st~i)               (10^k_f) 
+R4_ikk_activation: ikk(s~N)  +TNFR(st~a)              ->  ikk(s~A)+TNFR(st~a)     (10^k_a)
+R5_ikk_inactivation: ikk(s~A)                ->  ikk(s~N)              10^k_4    
+    
+R6_reversible_cytoplasmic_complex_formation: ikba(loc~c,nfkb) + nfkb(loc~c,ikba) <-> ikba(loc~c,nfkb!1).nfkb(loc~c,ikba!1) 10^(ka1a),10^kd1a
+R7_reversible_nuclear_complex_formation: nfkb(loc~n,ikba) + ikba(loc~n,nfkb) <-> nfkb(loc~n,ikba!1).ikba(loc~n,nfkb!1) 3.3*(10^ka1a),10^kd1a
+
+R8_ikk_mediated_cytoplasmic_free_ikb_degradation: ikk(s~A)+ikba(loc~c,nfkb) -> ikk(s~A) 10^kt1a
+R9_ikk_mediated_cytoplasmic_bound_ikb_degradation: ikk(s~A)+nfkb(loc~c,ikba!1).ikba(loc~c,nfkb!1) ->ikk(s~A)+ nfkb(loc~c,ikba) 10^kt2a
+
+R10_basal_cytoplasmic_free_ikb_degradation: ikba(loc~c,nfkb) -> 0 10^c4a
+R11_basal_cytoplasmic_bound_ikb_degradation: nfkb(loc~c,ikba!1).ikba(loc~c,nfkb!1) -> nfkb(loc~c,ikba) 10^c5a 
+
+R12_nfkb_shuttling: nfkb(loc~c,ikba) <-> nfkb(loc~n,ikba) (10^ki1),(10^ke1) 
+R13_ikb_shuttling: ikba(loc~c,nfkb) <-> ikba(loc~n,nfkb) (10^ki2),(10^ke2) 
+
+R14_ikb_linear_transcription: nfkb(loc~n,ikba) -> nfkb(loc~n,ikba) + ikba(loc~c,nfkb) 10^c1a
+R15_export_nuclearcomplex: ikba(loc~n,nfkb!1).nfkb(loc~n,ikba!1) -> ikba(loc~c,nfkb!1).nfkb(loc~c,ikba!1) 10^ke2a
+
+
+end reaction rules
+
+end model
+
+generate_network({overwrite=>1})
+#writeMfile({})
+writeMexfile({})
+#Equilibration
+simulate_ode({t_start=>0,t_end=>1e8,n_steps=>1000,atol=>1.0E-6,rtol=>1.0E-8})
+#Simulate 
+setConcentration("TNF()",5)
+simulate_ode({t_start=>0,t_end=>300,n_steps=>300})
+setConcentration("TNF()",0)
+simulate_ode({t_end=>14100,continue=>1, n_steps=>1000})
