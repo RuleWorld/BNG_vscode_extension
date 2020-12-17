@@ -132,33 +132,46 @@
 			"name": "variable.parameter.bngl",
 			"patterns": [
 				{
-					"include": "#names"
+					"begin": "^\\s*",
+					"end": "(\\s|=)",
+					"patterns": [{
+						"include": "#names"
+					},
+					{
+						"include": "#comments"
+					}]
 				},
 				{
-					"include": "#constants"
+					"name": "variable.expression.bngl",
+					"begin": "(\\b|=)",
+					"end": "\n",
+					"patterns": [{
+						"include": "#constants"
+					},
+					{
+						"include": "#comments"
+					}]
 				}]
 		},
 		"names": {
 			"name": "variable.name.bngl",
-			"match": "^\\s*[A-Za-z0-9_]+"
+			"match": "[A-Za-z0-9_]+"
 		},
 		"expressions": {
 			"name": "variable.expression.bngl",
-			"match": "\\G(\\s|=)\\S+(\n|#)",
 			"patterns": [{
 				"include": "#constants"
 			}]
 		},
 		"moltype_patterns": {
-			"name": "variable.language.bngl",
 			"paterns": [
 			{
 				"name": "entity.name.type.mtype.bngl",
-				"match": "test"
+				"match": "^\\s*[A-Za-z0-9_]+"
 			},
 			{
 				"name": "entity.name.type.mtype_spec.bngl",
-				"begin": "[\\(]",
+				"begin": "\\(",
 				"end": "[\\)]",
 				"patterns": [{
 					"include": "#moltype_spec"
@@ -166,7 +179,6 @@
 			}]
 		},
 		"moltype_spec": {
-			"name": "variable.language.moltype.bngl",
 			"patterns": [{
 				"name": "keyword.control.state.bngl",
 				"match": "~"
