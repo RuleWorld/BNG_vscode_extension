@@ -3,35 +3,32 @@
 	"name": "BioNetGen Language",
 	"patterns": [
 		{
-			"include": "#keywords"
+			"include": "#actions"
 		},
 		{
-			"include": "#constants"
-		},
-		{
-			"include": "#block_names"
-		},
-		{
-			"include": "#strings"
+			"include": "#model"
 		},
 		{
 			"include": "#comments"
-		},
-		{
-			"include": "#functions"
 		}
 	],
 	"repository": {
-		"keywords": {
+		"functions": {
 			"patterns": [{
 				"name": "keyword.control.bngl",
 				"match": "\\b(abs)\\b"
 			}]
 		},
-		"functions": {
+		"actions": {
 			"patterns": [{
 				"name": "entity.name.function.bngl",
 				"match": "(generate_network|generate_hybrid_model|simulate|simulate_ode|simulate_ssa|simulate_pla|simulate_nf|parameter_scan|bifurcate|readFile|writeFile|writeModel|writeNetwork|writeXML|writeSBML|writeMfile|writeMexfile|writeMDL|visualize|setConcentration|addConcentration|saveConcentration|resetConcentrations|setParameter|saveParameters|resetParameters|quit|setModelName|substanceUnits|version|setOption)"
+			},
+			{
+				"include": "#comments"
+			},
+		    {
+				"include": "#constants"
 			}]
 		},
 		"block_names": {
@@ -41,75 +38,171 @@
 			},
 			{
 				"name": "entity.name.section.bngl",
-				"match": "\\s+(model|parameters|compartments|molecule types|species|seed species|observables|functions|reaction rules)"
+				"match": "\\s+(model|parameters|compartments|molecule types|species|seed species|observables|functions|reaction rules)\\s*"
+			}]
+		},
+		"model": {
+			"patterns": [{
+				"name": "entity.name.tag.model.bngl",
+				"begin": "begin model",
+				"end": "end model",
+				"patterns": [{
+					"include": "#blocks"
+				}]
 			}]
 		},
 		"blocks": {
-			"patterns": [
-			{
-				"name": "entity.name.tag.bngl",
-				"begin": "begin model",
-				"end": "end model"
-			},
-			{
-				"name": "entity.name.tag.bngl",
+			"patterns": [{
+				"name": "entity.name.tag.params.bngl",
 				"begin": "begin parameters",
-				"end": "end parameters"
+				"end": "end parameters",
+				"patterns": [
+					{
+						"include": "#comments"
+					},
+					{
+						"include": "#param_def"
+					}]
 			},
 			{
-				"name": "entity.name.tag.bngl",
+				"name": "entity.name.tag.comps.bngl",
 				"begin": "begin compartments",
-				"end": "end compartments"
+				"end": "end compartments",
+				"patterns": [{
+					"include": "#comments"
+				}]
 			},
 			{
-				"name": "entity.name.tag.bngl",
+				"name": "entity.name.tag.mtypes.bngl",
 				"begin": "begin molecule types",
-				"end": "end molecule types"
+				"end": "end molecule types",
+				"patterns": [{
+					"include": "#moltype_patterns"
+				},
+				{
+					"include": "#comments"
+				}]
 			},
 			{
-				"name": "entity.name.tag.bngl",
+				"name": "entity.name.tag.rules.bngl",
 				"begin": "begin reaction rules",
-				"end": "end reaction rules"
+				"end": "end reaction rules",
+				"patterns": [{
+					"include": "#comments"
+				}]
 			},
 			{
-				"name": "entity.name.tag.bngl",
+				"name": "entity.name.tag.funcs.bngl",
 				"begin": "begin functions",
-				"end": "end functions"
+				"end": "end functions",
+				"patterns": [{
+					"include": "#comments"
+				}]
 			},
 			{
-				"name": "entity.name.tag.bngl",
+				"name": "entity.name.tag.specs.bngl",
 				"begin": "begin species",
-				"end": "end species"
+				"end": "end species",
+				"patterns": [{
+					"include": "#species"
+				}]
 			},
 			{
-				"name": "entity.name.tag.bngl",
+				"name": "entity.name.tag.specs.bngl",
 				"begin": "begin seed species",
-				"end": "end seed species"
+				"end": "end seed species",
+				"patterns":	[{
+					"include": "#species"
+				}]
 			},
 			{
-				"name": "entity.name.tag.bngl",
+				"name": "entity.name.tag.obs.bngl",
 				"begin": "begin observables",
-				"end": "end observables"
+				"end": "end observables",
+				"patterns": [{
+					"include": "#comments"
+				},
+				{
+					"include": "#obs_kwords"
+				}]
 			}
 			]
+		},
+		"param_def": {
+			"name": "variable.parameter.bngl",
+			"patterns": [
+				{
+					"include": "#names"
+				},
+				{
+					"include": "#constants"
+				}]
+		},
+		"names": {
+			"name": "variable.name.bngl",
+			"match": "^\\s*[A-Za-z0-9_]+"
+		},
+		"expressions": {
+			"name": "variable.expression.bngl",
+			"match": "\\G(\\s|=)\\S+(\n|#)",
+			"patterns": [{
+				"include": "#constants"
+			}]
+		},
+		"moltype_patterns": {
+			"name": "variable.language.bngl",
+			"paterns": [
+			{
+				"name": "entity.name.type.mtype.bngl",
+				"match": "test"
+			},
+			{
+				"name": "entity.name.type.mtype_spec.bngl",
+				"begin": "[\\(]",
+				"end": "[\\)]",
+				"patterns": [{
+					"include": "#moltype_spec"
+				}]
+			}]
+		},
+		"moltype_spec": {
+			"name": "variable.language.moltype.bngl",
+			"patterns": [{
+				"name": "keyword.control.state.bngl",
+				"match": "~"
+			}]
+		},
+		"species": {
+			"patterns": [{
+				"name": "variable.language.bngl",
+				"match": "^\\s*[A-z]*\\s+"
+			},
+			{
+				"name": "entity.name.type",
+				"match": "\\s+[A-z0-9]*\\s*"
+			},
+			{
+				"include": "#comments"
+			}]
+		},
+		"obs_kwords": {
+			"patterns": [{
+				"name": "entity.name.type.obs.bngl",
+				"match": "(Molecules|Species)"
+			}]
 		},
 		"strings": {
 			"patterns": [{
 				"name": "string.quoted.double.bngl",
 				"begin": "\"",
 				"end": "\""
-			},
-			{
-				"name": "string.quoted.single.bngl",
-				"begin": "'",
-				"end": "'"
 			}]
 		},
 		"constants": {
 			"patterns": [
 			{
 				"name": "constant.numeric.bngl",
-				"match": "[^a-zA-Z][0-9]+"
+				"match": "\\d+(\\.\\d+)?(e\\d+)?"
 			},
 			{
 				"name": "constant.character.bngl",
@@ -124,8 +217,7 @@
 		"comments": {
 			"patterns": [{
 				"name": "comment.line.bngl",
-				"begin": "#",
-				"end": "\n"
+				"match": "#.*"
 			}]
 		}
 	},
