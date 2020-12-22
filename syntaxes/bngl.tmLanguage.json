@@ -178,7 +178,10 @@
 				{
 					"name": "entity.name.tag.funcs.args.bngl",
 					"begin": "\\(",
-					"end": "\\)"
+					"end": "\\)",
+					"patterns": [{
+						"include": "#constants"
+					}]
 				},
 				{
 					"name": "entity.name.tag.funcs.defn.bngl",
@@ -192,6 +195,28 @@
 		},
 		"species_def": {
 			"patterns": [{
+				"name": "entity.name.type.spec_pat.bngl",
+				"begin": "^\\s*",
+				"end": "(?=\\s)",
+				"patterns": [{
+					"include": "#species_pat"
+				}]
+			},
+			{
+				"name": "variable.expression.bngl",
+				"begin": "(?=\\S)",
+				"end": "(?=\n|\\#)",
+				"patterns": [{
+					"include": "#expressions"
+				}]	
+			},
+			{
+				"include": "#comments"
+			}]
+		},
+		"species_pat": {
+			"patterns": [
+			{
 				"name": "entity.name.type.spec.name.bngl",
 				"begin": "(^\\s*)", 
 				"end": "(?=\\s|\\()",
@@ -204,43 +229,55 @@
 				"begin": "\\(",
 				"end": "\\)\\s",
 				"patterns": [{
-					"include": "#species_spec"
+						"include": "#species_spec"
 				}]
-			},
-			{
-				"name": "variable.expression.bngl",
-				"begin": "(?=\\S)",
-				"end": "(?=\n|\\#)",
-				"patterns": [{
-					"include": "#expressions"
-				}]
-				
-			},
-			{
-				"include": "#comments"
 			}]
 		},
 		"moltype_spec": {
 			"patterns": [{
-				"name": "keyword.control.state.bngl",
-				"match": "(~|!)"
+				"name": "meta.type.comp_type.bngl",
+				"begin": "(?<=\\,|\\()",
+				"end": "(?=\\,|\\))",
+				"patterns": [{	
+					"include": "#comp_type"
+				}]
 			},
 			{
 				"name": "keyword.operator.mtype.bngl",
-				"match": "(,)"
+				"match": "\\,"
+			}]
+		},
+		"comp_type": {
+			"patterns": [
+			{
+				"name": "keyword.control.state_name.bngl",
+				"match": "(?<!\\~)[A-Za-z][A-Za-z0-9_]*(?=\\~)"
+			},	
+			{
+				"name": "keyword.control.state.bngl",
+				"match": "(?<=\\~)[A-Za-z0-9][A-Za-z0-9_]*"
 			},
 			{
-				"include": "#constants"
+				"name": "keyword.operator.state_sym.bngl",
+				"match": "~"
 			}]
 		},
 		"species_spec": {
 			"patterns": [{
 				"name": "keyword.control.state.bngl",
-				"match": "(~|!)"
+				"match": "(~[A-Za-z0-9][A-Za-z0-9_]+|~\\?)"
+			},
+			{
+				"name": "keyword.control.bond.bngl",
+				"match": "(\\!\\d+|\\!\\?|\\!\\+)"
+			},
+			{
+				"name": "keyword.control.tag.bngl",
+				"match": "\\%[A-Za-z0-9][A-Za-z0-9_]+"
 			},
 			{
 				"name": "keyword.operator.mtype.bngl",
-				"match": "(,|\\.|\\(|\\))"
+				"match": "(,)"
 			},
 			{
 				"include": "#constants"
@@ -307,7 +344,7 @@
 		"constants": {
 			"patterns": [
 			{
-				"name": "constant.numeric.bngl",
+				"name": "constant.numeric.floating.bngl",
 				"match": "(?:\\b|\\+|\\-|\\*|\\/|\\%)\\d+(\\.\\d+)?(e\\d+)?"
 			},
 			{
