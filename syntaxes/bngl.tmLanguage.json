@@ -45,6 +45,9 @@
 				"end": "end(\\s+)compartments(\\s*)\n",
 				"patterns": [{
 					"include": "#comments"
+				},
+				{
+					"include": "#compartment_line"
 				}]
 			},
 			{
@@ -53,7 +56,7 @@
 				"end": "end(\\s+)molecule(\\s+)types(\\s*)\n",
 				"patterns": [
 				{
-					"include": "#moltype_def"
+					"include": "#moltype_line"
 				},
 				{
 					"include": "#comments"
@@ -70,7 +73,7 @@
 					"include": "#expressions"
 				},
 				{
-					"include": "#species_spec"
+					"include": "#species_line"
 				}]
 			},
 			{
@@ -92,7 +95,7 @@
 					"include": "#comments"
 				},
 				{
-					"include": "#species_def"
+					"include": "#species_line"
 				}]
 			},
 			{
@@ -103,7 +106,7 @@
 					"include": "#comments"
 				},
 				{
-					"include": "#species_def"
+					"include": "#species_line"
 				}]
 			},
 			{
@@ -132,45 +135,56 @@
 			}]
 		},
 		"param_line": {
-			"name": "variable.parameter.line.bngl",
-			"patterns": [
-				{
-					"name": "variable.parameter.line_label.bngl",
-					"begin": "^\\s*([0-9]+\\s+|[A-Za-z][A-Za-z0-9_]+\\:)?",
-					"end": "(?<=\\s*|\\:)"
+			"name": "entity.name.section.parameters.line.bngl",
+			"patterns": [{
+				"begin": "^\\s*([0-9]+\\s+|[A-Za-z][A-Za-z0-9_]*\\:)?\\s*([A-Za-z][A-Za-z0-9_]*)\\s*(\\=)?\\s*",
+				"beginCaptures": {
+					"1": { "name": "line.label", "patterns": [{ "include": "#line_labels" }] },
+					"2": { "name": "name", "patterns": [{ "include": "#names" }] }
 				},
-				{
-					"name": "variable.parameter.param_name.bngl",
-					"begin": "((?<=(\\:\\s*|\\s+))|^\\s*)(?=[A-Za-z])",
-					"end": "(?=\\s|\\=|\\#|\n)",
-					"patterns": [{
-						"include": "#names"
-					}]
-				},
-				{
-					"name": "variable.expression.bngl",
-					"begin": "(?=\\S)",
-					"end": "(?=\n|\\#)",
+				"end": "\\s*(?=\\#|\n)",
+				"patterns": [{
+					"name": "expression",
 					"patterns": [{
 						"include": "#expressions"
 					}]
 				}]
+			}]
 		},
-		"moltype_def": {
+		"moltype_line": {
 			"patterns": [{
-				"name": "entity.name.type.mtype.bngl",
-				"begin": "^\\s*",
-				"end": "(?=\\s|\\()",
+				"name": "entity.name.section.moltype.line.bngl",
+				"begin": "^\\s*([0-9]+\\s+|[A-Za-z][A-Za-z0-9_]*\\:)?\\s*",
+				"beginCaptures": {
+					"1": { "name": "line.label", "patterns": [{ "include": "#line_labels" }] }
+				},
+				"end": "\\s*(?=\\#|\n)",
 				"patterns": [{
-					"include": "#names"
+					"name": "moltype",
+					"patterns": [{
+						"include": "#moltype"
+					}]
 				}]
-			},
-			{
-				"name": "entity.name.type.mtype_spec.bngl",
-				"begin": "\\(",
-				"end": "\\)",
+			}]
+		},
+		"compartment_line": {
+			"patterns": [{
+				"begin": "^\\s*([0-9]+\\s+|[A-Za-z][A-Za-z0-9_]*\\:)?\\s*([A-Za-z][A-Za-z0-9_]*)\\s+([2|3])\\s+",
+				"beginCaptures": {
+					"1": { "name": "line.label", "patterns": [{ "include": "#line_labels" }] },
+					"2": { "name": "name", "patterns": [{ "include": "#names "}] },
+					"3": { "name": "dimensionality" }
+				},
+				"end": "\\s*(?=\\#|\n)",
 				"patterns": [{
-					"include": "#moltype_spec"
+					"begin": "([^\\#|\n]+)",
+					"beginCaptures": {
+						"1": { "name": "expression" }
+					},
+					"end": "(\\s[A-Za-z][A-Za-z0-9_]*)?\\s*(?=\\#|\n)",
+					"endCaptures": {
+						"1": { "name": "parent", "patterns": [{ "include": "#names" }] }
+					}
 				}]
 			}]
 		},
@@ -202,7 +216,7 @@
 				}]
 			
 		},
-		"species_def": {
+		"species_line": {
 			"patterns": [{
 				"name": "entity.name.type.spec_pat.bngl",
 				"begin": "^\\s*",
@@ -221,6 +235,24 @@
 			},
 			{
 				"include": "#comments"
+			}]
+		},
+		"obs_def": {
+			"patterns": [{
+				"begin": "^\\s*([0-9]+\\s+|[A-Za-z][A-Za-z0-9_]*\\:)?\\s*([A-Za-z][A-Za-z0-9_]*)\\s+([A-Za-z][A-Za-z0-9_]*)\\s+",
+				"beginCaptures": {
+					"1": { "name": "line.label", "patterns": [{ "include": "#line_labels" }] },
+					"2": { "name": "obs_type", "patterns": [{ "include": "#obs_kwords"}] },
+					"3": { "name": "obs_name", "patterns": [{ "include": "#names"}] }
+				},
+				"end": "\\s*(?=\\#|\n)",
+				"patterns": [{
+					"begin": "([^\\#|\n]+)",
+					"beginCaptures": {
+						"1": { "name": "moltype", "patterns": [{ "include": "#moltype" }] }
+					},
+					"end": "(?=\\#|\n)"
+				}]
 			}]
 		},
 		"species_pat": {
@@ -242,21 +274,19 @@
 				}]
 			}]
 		},
-		"moltype_spec": {
+		"moltype": {
 			"patterns": [{
-				"name": "meta.type.comp_type.bngl",
-				"begin": "(?<=\\,|\\()",
-				"end": "(?=\\,|\\))",
-				"patterns": [{	
-					"include": "#comp_type"
-				}]
-			},
-			{
-				"name": "keyword.operator.mtype.bngl",
-				"match": "\\,"
+				"begin": "([A-Za-z][A-Za-z0-9_]*)\\(",
+				"beginCaptures": {
+					"1": { "name": "name", "patterns": [{ "include": "#names" }] }
+				},
+				"end": "(.*)\\)",
+				"endCaptures": {
+					"1": { "name": "moltype_spec", "patterns": [{ "include": "#components" }] }
+				}
 			}]
 		},
-		"comp_type": {
+		"components": {
 			"patterns": [
 			{
 				"name": "keyword.control.state_name.bngl",
@@ -269,6 +299,10 @@
 			{
 				"name": "keyword.operator.state_sym.bngl",
 				"match": "~"
+			},
+			{
+				"name": "keyword.operator.mtype.bngl",
+				"match": "\\,"
 			}]
 		},
 		"species_spec": {
@@ -292,42 +326,26 @@
 				"include": "#constants"
 			}]
 		},
-		"obs_def": {
-			"patterns": [
-			{
-				"name": "entity.name.tag.obs.type.bngl",
-				"begin": "^\\s*",
-				"end": "(?=\\s|\\#)",
-				"patterns": [{
-					"include": "#obs_kwords"
-				}]
-			},
-			{
-				"name": "entity.name.tag.obs.name.bngl",
-				"begin": "(?=\\S)",
-				"end": "(?=\\s|\\#)",
-				"patterns": [{
-					"include": "#names"
-				}]
-			},
-			{
-				"name": "entity.name.tag.obs.pat.bngl",
-				"begin": "(?=\\S)",
-				"end": "(?=\n|\\#)",
-				"patterns": [{
-					"include": "#species_spec"
-				}]
-			}]
-		},
 		"obs_kwords": {
 			"patterns": [{
 				"name": "entity.name.type.obs.bngl",
 				"match": "(Molecules|Species)"
 			}]
 		},
+		"line_number": {
+			"patterns": [{
+				"name": "constant.language.line_label.bngl",
+				"begin": "^\\s*([0-9]+\\s+|[A-Za-z][A-Za-z0-9_]+\\:)?",
+				"end": "(?<=\\s*|\\:)"
+			}]
+		},
 		"names": {
 			"name": "variable.name.bngl",
 			"match": "[A-Za-z][A-Za-z0-9_]*"
+		},
+		"line_labels": {
+			"name": "constant.language.line_label.bngl",
+			"match": "([A-Za-z][A-Za-z0-9_]*\\s*\\:|[0-9]+\\s+)"
 		},
 		"expressions": {
 			"patterns": [
