@@ -16,38 +16,41 @@
 		"model": {
 			"patterns": [{
 				"name": "entity.name.tag.model.bngl",
-				"begin": "begin model",
-				"end": "end model",
+				"begin": "begin(\\s+)model(\\s*)\n",
+				"end": "end(\\s+)model(\\s*)\n",
 				"patterns": [{
 					"include": "#blocks"
+				},
+				{
+					"include": "#comments"
 				}]
 			}]
 		},
 		"blocks": {
 			"patterns": [{
 				"name": "entity.name.tag.params.bngl",
-				"begin": "begin parameters",
-				"end": "end parameters",
+				"begin": "begin(\\s+)parameters(\\s*)\n",
+				"end": "end(\\s+)parameters(\\s*)\n",
 				"patterns": [
 					{
 						"include": "#comments"
 					},
 					{
-						"include": "#param_def"
+						"include": "#param_line"
 					}]
 			},
 			{
 				"name": "entity.name.tag.comps.bngl",
-				"begin": "begin compartments",
-				"end": "end compartments",
+				"begin": "begin(\\s+)compartments(\\s*)\n",
+				"end": "end(\\s+)compartments(\\s*)\n",
 				"patterns": [{
 					"include": "#comments"
 				}]
 			},
 			{
 				"name": "entity.name.tag.mtypes.bngl",
-				"begin": "begin molecule types",
-				"end": "end molecule types",
+				"begin": "begin(\\s+)molecule(\\s+)types(\\s*)\n",
+				"end": "end(\\s+)molecule(\\s+)types(\\s*)\n",
 				"patterns": [
 				{
 					"include": "#moltype_def"
@@ -58,8 +61,8 @@
 			},
 			{
 				"name": "entity.name.tag.rules.bngl",
-				"begin": "begin reaction rules",
-				"end": "end reaction rules",
+				"begin": "begin(\\s+)reaction(\\s+)rules(\\s*)\n",
+				"end": "end(\\s+)reaction(\\s+)rules(\\s*)\n",
 				"patterns": [{
 					"include": "#comments"
 				},
@@ -72,8 +75,8 @@
 			},
 			{
 				"name": "entity.name.tag.funcs.bngl",
-				"begin": "begin functions",
-				"end": "end functions",
+				"begin": "begin(\\s+)functions(\\s*)\n",
+				"end": "end(\\s+)functions(\\s*)\n",
 				"patterns": [{
 					"include": "#comments"
 				},
@@ -83,8 +86,8 @@
 			},
 			{
 				"name": "entity.name.tag.specs.bngl",
-				"begin": "begin species",
-				"end": "end species",
+				"begin": "begin(\\s+)species(\\s*)\n",
+				"end": "end(\\s+)species(\\s*)\n",
 				"patterns": [{
 					"include": "#comments"
 				},
@@ -94,8 +97,8 @@
 			},
 			{
 				"name": "entity.name.tag.specs.bngl",
-				"begin": "begin seed species",
-				"end": "end seed species",
+				"begin": "begin(\\s+)seed(\\s+)species(\\s*)\n",
+				"end": "end(\\s+)seed(\\s+)species(\\s*)\n",
 				"patterns": [{
 					"include": "#comments"
 				},
@@ -105,8 +108,8 @@
 			},
 			{
 				"name": "entity.name.tag.obs.bngl",
-				"begin": "begin observables",
-				"end": "end observables",
+				"begin": "begin(\\s+)observables(\\s*)\n",
+				"end": "end(\\s+)observables(\\s*)\n",
 				"patterns": [{
 					"include": "#comments"
 				},
@@ -128,11 +131,17 @@
 				"include": "#constants"
 			}]
 		},
-		"param_def": {
-			"name": "variable.parameter.bngl",
+		"param_line": {
+			"name": "variable.parameter.line.bngl",
 			"patterns": [
 				{
-					"begin": "^\\s*",
+					"name": "variable.parameter.line_label.bngl",
+					"begin": "^\\s*([0-9]+\\s+|[A-Za-z][A-Za-z0-9_]+\\:)?",
+					"end": "(?<=\\s*|\\:)"
+				},
+				{
+					"name": "variable.parameter.param_name.bngl",
+					"begin": "((?<=(\\:\\s*|\\s+))|^\\s*)(?=[A-Za-z])",
 					"end": "(?=\\s|\\=|\\#|\n)",
 					"patterns": [{
 						"include": "#names"
@@ -218,7 +227,7 @@
 			"patterns": [
 			{
 				"name": "entity.name.type.spec.name.bngl",
-				"begin": "(^\\s*)", 
+				"begin": "(^(\\s*|:|::|))", 
 				"end": "(?=\\s|\\()",
 				"patterns": [{
 					"include": "#names"
@@ -321,7 +330,15 @@
 			"match": "[A-Za-z][A-Za-z0-9_]*"
 		},
 		"expressions": {
-			"patterns": [{
+			"patterns": [
+			{
+				"name": "variable.paran.bngl",
+				"match": "(?<=\\()\\S+(?=\\))",	
+				"patterns": [{
+					"include": "#expression"
+				}]
+			},
+			{
 				"include": "#constants"
 			},
 			{
