@@ -175,16 +175,12 @@
 					"2": { "name": "name", "patterns": [{ "include": "#names "}] },
 					"3": { "name": "dimensionality" }
 				},
-				"end": "\\s*(?=\\#|\n)",
+				"end": "(\\s[A-Za-z][A-Za-z0-9_]*)?\\s*(?=\\#|\n)",
+				"endCaptures": {
+					"1": { "name": "parent", "patterns": [{ "include": "#names" }]}
+				},
 				"patterns": [{
-					"begin": "([^\\#|\n]+)",
-					"beginCaptures": {
-						"1": { "name": "expression" }
-					},
-					"end": "(\\s[A-Za-z][A-Za-z0-9_]*)?\\s*(?=\\#|\n)",
-					"endCaptures": {
-						"1": { "name": "parent", "patterns": [{ "include": "#names" }] }
-					}
+					"include": "#expressions"
 				}]
 			}]
 		},
@@ -217,21 +213,18 @@
 			
 		},
 		"species_line": {
-			"patterns": [{
-				"name": "entity.name.type.spec_pat.bngl",
-				"begin": "^\\s*",
-				"end": "(?=\\s)",
-				"patterns": [{
-					"include": "#species_pat"
-				}]
-			},
+			"name": "species",
+			"patterns": [
 			{
-				"name": "variable.expression.bngl",
-				"begin": "(?=\\S)",
+				"begin": "\\s*([0-9]+\\s+|[A-Za-z][A-Za-z0-9_]*\\:)?\\s*([^\n|\\#|\\s]+)\\s+",
+				"beginCaptures": {
+					"1": { "name": "line.label", "patterns": [{ "include": "#line_labels" }] },
+					"2": { "name": "species.pattern", "patterns": [{ "include": "#species_pat" }] }
+				},
 				"end": "(?=\n|\\#)",
 				"patterns": [{
 					"include": "#expressions"
-				}]	
+				}]
 			},
 			{
 				"include": "#comments"
@@ -239,7 +232,7 @@
 		},
 		"obs_def": {
 			"patterns": [{
-				"begin": "^\\s*([0-9]+\\s+|[A-Za-z][A-Za-z0-9_]*\\:)?\\s*([A-Za-z][A-Za-z0-9_]*)\\s+([A-Za-z][A-Za-z0-9_]*)\\s+",
+				"begin": "^\\s*([0-9]+\\s+|[A-Za-z][A-Za-z0-9_]*\\:)?\\s*(Molecules|Species)\\s+([A-Za-z][A-Za-z0-9_]*)\\s+",
 				"beginCaptures": {
 					"1": { "name": "line.label", "patterns": [{ "include": "#line_labels" }] },
 					"2": { "name": "obs_type", "patterns": [{ "include": "#obs_kwords"}] },
@@ -247,9 +240,9 @@
 				},
 				"end": "\\s*(?=\\#|\n)",
 				"patterns": [{
-					"begin": "([^\\#|\n]+)",
+					"begin": "([^\\#|\n|\\s]+)",
 					"beginCaptures": {
-						"1": { "name": "moltype", "patterns": [{ "include": "#moltype" }] }
+						"1": { "name": "species.pattern", "patterns": [{ "include": "#species_pat" }] }
 					},
 					"end": "(?=\\#|\n)"
 				}]
@@ -348,6 +341,7 @@
 			"match": "([A-Za-z][A-Za-z0-9_]*\\s*\\:|[0-9]+\\s+)"
 		},
 		"expressions": {
+			"name": "expression",
 			"patterns": [
 			{
 				"name": "variable.paran.bngl",
