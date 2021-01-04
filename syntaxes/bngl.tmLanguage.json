@@ -240,7 +240,7 @@
 				},
 				"end": "\\s*(?=\\#|\n)",
 				"patterns": [{
-					"begin": "([^\\#|\n|\\s]+)",
+					"begin": "([^\\#|\n]+)",
 					"beginCaptures": {
 						"1": { "name": "species.pattern", "patterns": [{ "include": "#species_pat" }] }
 					},
@@ -249,23 +249,46 @@
 			}]
 		},
 		"species_pat": {
-			"patterns": [
-			{
-				"name": "entity.name.type.spec.name.bngl",
-				"begin": "(^(\\s*|:|::|))", 
-				"end": "(?=\\s|\\()",
-				"patterns": [{
-					"include": "#names"
-				}]
+			"patterns": [{
+				"match": "([^\n|\\#|\\s|\\.|\\:|\\$]+)",
+				"captures": {
+					"1": { "name": "molecule", "patterns": [{ "include": "#molecule_pat" }]}
+				}
 			},
 			{
-				"name": "entity.name.type.spec.bngl",
-				"begin": "\\(",
-				"end": "\\)\\s",
-				"patterns": [{
-						"include": "#species_spec"
-				}]
+				"match": "(\\:|\\::)",
+				"name": "species.overall"
+			},
+			{
+				"match": "\\.",
+				"name": "species.separator"
+			},
+			{
+				"match": "\\$",
+				"name": "species.constant"
 			}]
+		},
+		"molecule_pat": {
+			"name": "molecule",
+			"patterns": [{
+				"match": "([A-Za-z][A-Za-z0-9_]*)?([^\n|\\#|\\.|\\%|\\@]+)?(\\%[A-Za-z0-9][A-Za-z0-9_]*)?(\\@[A-Za-z][A-Za-z0-9_]*)?",
+				"captures": {
+					"1": { "name": "molecule.name" },
+					"2": { "name": "molecule.components" },
+					"3": { "name": "molecule.tag" },
+					"4": { "name": "molecule.compartment" }
+				}
+			},
+			{
+				"match": "([A-Za-z][A-Za-z0-9_]*)?(\\%[A-Za-z0-9][A-Za-z0-9_]*)?(\\@[A-Za-z][A-Za-z0-9_]*)?([^\n|\\#|\\.|\\%|\\@]+)?",
+				"captures": {
+					"1": { "name": "molecule.name" },
+					"2": { "name": "molecule.tag" },
+					"3": { "name": "molecule.compartment" },
+					"4": { "name": "molecule.components" }
+				}
+			}
+			]
 		},
 		"moltype": {
 			"patterns": [{
@@ -341,20 +364,15 @@
 			"match": "([A-Za-z][A-Za-z0-9_]*\\s*\\:|[0-9]+\\s+)"
 		},
 		"expressions": {
-			"name": "expression",
 			"patterns": [
-			{
-				"name": "variable.paran.bngl",
-				"match": "(?<=\\()\\S+(?=\\))",	
-				"patterns": [{
-					"include": "#expression"
-				}]
-			},
 			{
 				"include": "#constants"
 			},
 			{
 				"include": "#functions"
+			},
+			{
+				"include": "#names"
 			}]
 		},
 		"strings": {
