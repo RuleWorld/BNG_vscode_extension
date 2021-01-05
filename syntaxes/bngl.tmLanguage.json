@@ -84,7 +84,7 @@
 					"include": "#comments"
 				},
 				{
-					"include": "#func_def"
+					"include": "#func_line"
 				}]
 			},
 			{
@@ -185,33 +185,33 @@
 				}]
 			}]
 		},
-		"func_def": {
-			"patterns": [
-				{
-					"name": "meta.function.name.bngl",
-					"begin": "^\\s*",
-					"end": "(?=\\()",
-					"patterns": [{
-						"include": "#names"
-					}]
+		"func_line": {
+			"name": "meta.function.line.bngl",
+			"patterns": [{
+				"begin": "^\\s*([0-9]+\\s+|[A-Za-z][A-Za-z0-9_]*\\:)?\\s*([A-Za-z][A-Za-z0-9_]*)(\\([^\\n|\\#\\)]*\\))?\\s*(\\s+|\\=)\\s*",
+				"beginCaptures": {
+					"1": { "name": "meta.function.linelabel.bngl", "patterns": [{ "include": "#line_labels" }] },
+					"2": { "name": "meta.function.name.bngl", "patterns": [{ "include": "#names"}] },
+					"3": { "name": "meta.function.arguments.bngl", "patterns": [{ "include": "#func_args"}]},
+					"4": { "name": "meta.function.define_sym.bngl", "patterns": [{ "include": "#constants"}] }
 				},
-				{
-					"name": "meta.function.arguments.bngl",
-					"begin": "\\(",
-					"end": "\\)",
-					"patterns": [{
-						"include": "#constants"
-					}]
-				},
-				{
-					"name": "meta.function.definition.bngl",
-					"begin": "(?=\\S)",
-					"end": "(?=\n|\\#)",
-					"patterns": [{
-						"include": "#expressions"
-					}]
+				"end": "(?=\\#|\n)",
+				"patterns": [{
+					"include": "#expressions"
 				}]
-			
+			}]
+		},
+		"func_args": {
+			"patterns": [{
+				"match": "([^\\n|\\#|\\,|\\(|\\)|\\s]+)",
+				"captures": {
+					"1": { "name": "variable.language.function.argument.bngl", "patterns": [{ "include": "#names"}] }
+				}
+			},
+			{
+				"match": "\\,",
+				"name": "keyword.operator.function.bngl"
+			}]
 		},
 		"species_line": {
 			"name": "meta.species.line.bngl",
