@@ -15,7 +15,7 @@
 	"repository": {
 		"model": {
 			"patterns": [{
-				"name": "entity.name.tag.model.bngl",
+				"name": "entity.name.section.model.bngl",
 				"begin": "begin(\\s+)model(\\s*)\n",
 				"end": "end(\\s+)model(\\s*)\n",
 				"patterns": [{
@@ -28,7 +28,7 @@
 		},
 		"blocks": {
 			"patterns": [{
-				"name": "entity.name.tag.params.bngl",
+				"name": "entity.name.section.parameters.bngl",
 				"begin": "begin(\\s+)parameters(\\s*)\n",
 				"end": "end(\\s+)parameters(\\s*)\n",
 				"patterns": [
@@ -40,7 +40,7 @@
 					}]
 			},
 			{
-				"name": "entity.name.tag.comps.bngl",
+				"name": "entity.name.section.compartments.bngl",
 				"begin": "begin(\\s+)compartments(\\s*)\n",
 				"end": "end(\\s+)compartments(\\s*)\n",
 				"patterns": [{
@@ -51,7 +51,7 @@
 				}]
 			},
 			{
-				"name": "entity.name.tag.mtypes.bngl",
+				"name": "entity.name.section.moleculetypes.bngl",
 				"begin": "begin(\\s+)molecule(\\s+)types(\\s*)\n",
 				"end": "end(\\s+)molecule(\\s+)types(\\s*)\n",
 				"patterns": [
@@ -63,7 +63,7 @@
 				}]
 			},
 			{
-				"name": "entity.name.tag.rules.bngl",
+				"name": "entity.name.section.rules.bngl",
 				"begin": "begin(\\s+)reaction(\\s+)rules(\\s*)\n",
 				"end": "end(\\s+)reaction(\\s+)rules(\\s*)\n",
 				"patterns": [{
@@ -77,7 +77,7 @@
 				}]
 			},
 			{
-				"name": "entity.name.tag.funcs.bngl",
+				"name": "entity.name.section.functions.bngl",
 				"begin": "begin(\\s+)functions(\\s*)\n",
 				"end": "end(\\s+)functions(\\s*)\n",
 				"patterns": [{
@@ -88,7 +88,7 @@
 				}]
 			},
 			{
-				"name": "entity.name.tag.specs.bngl",
+				"name": "entity.name.section.species.bngl",
 				"begin": "begin(\\s+)species(\\s*)\n",
 				"end": "end(\\s+)species(\\s*)\n",
 				"patterns": [{
@@ -99,7 +99,7 @@
 				}]
 			},
 			{
-				"name": "entity.name.tag.specs.bngl",
+				"name": "entity.name.section.species.bngl",
 				"begin": "begin(\\s+)seed(\\s+)species(\\s*)\n",
 				"end": "end(\\s+)seed(\\s+)species(\\s*)\n",
 				"patterns": [{
@@ -110,7 +110,7 @@
 				}]
 			},
 			{
-				"name": "entity.name.tag.obs.bngl",
+				"name": "entity.name.section.observables.bngl",
 				"begin": "begin(\\s+)observables(\\s*)\n",
 				"end": "end(\\s+)observables(\\s*)\n",
 				"patterns": [{
@@ -124,7 +124,7 @@
 		},
 		"actions": {
 			"patterns": [{
-				"name": "entity.name.function.bngl",
+				"name": "entity.name.function.action.bngl",
 				"match": "(generate_network|generate_hybrid_model|simulate|simulate_ode|simulate_ssa|simulate_pla|simulate_nf|parameter_scan|bifurcate|readFile|writeFile|writeModel|writeNetwork|writeXML|writeSBML|writeMfile|writeMexfile|writeMDL|visualize|setConcentration|addConcentration|saveConcentration|resetConcentrations|setParameter|saveParameters|resetParameters|quit|setModelName|substanceUnits|version|setOption)"
 			},
 			{
@@ -135,16 +135,16 @@
 			}]
 		},
 		"param_line": {
-			"name": "entity.name.section.parameters.line.bngl",
+			"name": "meta.parameter.line.bngl",
 			"patterns": [{
 				"begin": "^\\s*([0-9]+\\s+|[A-Za-z][A-Za-z0-9_]*\\:)?\\s*([A-Za-z][A-Za-z0-9_]*)\\s*(\\=)?\\s*",
 				"beginCaptures": {
-					"1": { "name": "line.label", "patterns": [{ "include": "#line_labels" }] },
+					"1": { "name": "meta.parameter.linelabel.bngl", "patterns": [{ "include": "#line_labels" }] },
 					"2": { "name": "name", "patterns": [{ "include": "#names" }] }
 				},
 				"end": "\\s*(?=\\#|\n)",
 				"patterns": [{
-					"name": "expression",
+					"name": "meta.parameter.expression.bngl",
 					"patterns": [{
 						"include": "#expressions"
 					}]
@@ -153,14 +153,14 @@
 		},
 		"moltype_line": {
 			"patterns": [{
-				"name": "entity.name.section.moltype.line.bngl",
+				"name": "meta.moleculetype.line.bngl",
 				"begin": "^\\s*([0-9]+\\s+|[A-Za-z][A-Za-z0-9_]*\\:)?\\s*",
 				"beginCaptures": {
-					"1": { "name": "line.label", "patterns": [{ "include": "#line_labels" }] }
+					"1": { "name": "meta.moleculetype.linelabel.bngl", "patterns": [{ "include": "#line_labels" }] }
 				},
 				"end": "\\s*(?=\\#|\n)",
 				"patterns": [{
-					"name": "moltype",
+					"name": "meta.moleculetype.definition.bngl",
 					"patterns": [{
 						"include": "#moltype"
 					}]
@@ -168,16 +168,17 @@
 			}]
 		},
 		"compartment_line": {
+			"name": "meta.compartment.line.bngl",
 			"patterns": [{
 				"begin": "^\\s*([0-9]+\\s+|[A-Za-z][A-Za-z0-9_]*\\:)?\\s*([A-Za-z][A-Za-z0-9_]*)\\s+([2|3])\\s+",
 				"beginCaptures": {
-					"1": { "name": "line.label", "patterns": [{ "include": "#line_labels" }] },
-					"2": { "name": "name", "patterns": [{ "include": "#names "}] },
-					"3": { "name": "dimensionality" }
+					"1": { "name": "meta.compartment.linelabel.bngl", "patterns": [{ "include": "#line_labels" }] },
+					"2": { "name": "meta.compartment.name.bngl", "patterns": [{ "include": "#names"}] },
+					"3": { "name": "meta.compartment.dimensionality.bngl", "patterns": [{ "include": "#constants"}] }
 				},
 				"end": "(\\s[A-Za-z][A-Za-z0-9_]*)?\\s*(?=\\#|\n)",
 				"endCaptures": {
-					"1": { "name": "parent", "patterns": [{ "include": "#names" }]}
+					"1": { "name": "meta.compartment.parent.bngl", "patterns": [{ "include": "#names" }]}
 				},
 				"patterns": [{
 					"include": "#expressions"
@@ -187,7 +188,7 @@
 		"func_def": {
 			"patterns": [
 				{
-					"name": "entity.name.tag.funcs.name.bngl",
+					"name": "meta.function.name.bngl",
 					"begin": "^\\s*",
 					"end": "(?=\\()",
 					"patterns": [{
@@ -195,7 +196,7 @@
 					}]
 				},
 				{
-					"name": "entity.name.tag.funcs.args.bngl",
+					"name": "meta.function.arguments.bngl",
 					"begin": "\\(",
 					"end": "\\)",
 					"patterns": [{
@@ -203,7 +204,7 @@
 					}]
 				},
 				{
-					"name": "entity.name.tag.funcs.defn.bngl",
+					"name": "meta.function.definition.bngl",
 					"begin": "(?=\\S)",
 					"end": "(?=\n|\\#)",
 					"patterns": [{
@@ -213,13 +214,13 @@
 			
 		},
 		"species_line": {
-			"name": "species",
+			"name": "meta.species.line.bngl",
 			"patterns": [
 			{
 				"begin": "\\s*([0-9]+\\s+|[A-Za-z][A-Za-z0-9_]*\\:)?\\s*([^\n|\\#|\\s]+)\\s+",
 				"beginCaptures": {
-					"1": { "name": "line.label", "patterns": [{ "include": "#line_labels" }] },
-					"2": { "name": "species.pattern", "patterns": [{ "include": "#species_pat" }] }
+					"1": { "name": "meta.species.linelabel.bngl", "patterns": [{ "include": "#line_labels" }] },
+					"2": { "name": "meta.species.pattern.bngl", "patterns": [{ "include": "#species_pat" }] }
 				},
 				"end": "(?=\n|\\#)",
 				"patterns": [{
@@ -234,15 +235,15 @@
 			"patterns": [{
 				"begin": "^\\s*([0-9]+\\s+|[A-Za-z][A-Za-z0-9_]*\\:)?\\s*(Molecules|Species)\\s+([A-Za-z][A-Za-z0-9_]*)\\s+",
 				"beginCaptures": {
-					"1": { "name": "line.label", "patterns": [{ "include": "#line_labels" }] },
-					"2": { "name": "obs_type", "patterns": [{ "include": "#obs_kwords"}] },
-					"3": { "name": "obs_name", "patterns": [{ "include": "#names"}] }
+					"1": { "name": "meta.observable.linelabel.bngl", "patterns": [{ "include": "#line_labels" }] },
+					"2": { "name": "meta.observable.type.bngl", "patterns": [{ "include": "#obs_kwords"}] },
+					"3": { "name": "meta.observable.name.bngl", "patterns": [{ "include": "#names"}] }
 				},
 				"end": "\\s*(?=\\#|\n)",
 				"patterns": [{
 					"begin": "([^\\#|\n]+)",
 					"beginCaptures": {
-						"1": { "name": "species.pattern", "patterns": [{ "include": "#species_pat" }] }
+						"1": { "name": "meta.observable.pattern", "patterns": [{ "include": "#species_pat" }] }
 					},
 					"end": "(?=\\#|\n)"
 				}]
@@ -252,20 +253,20 @@
 			"patterns": [{
 				"match": "([^\n|\\#|\\s|\\.|\\:|\\$]+)",
 				"captures": {
-					"1": { "name": "molecule", "patterns": [{ "include": "#molecule_pat" }]}
+					"1": { "name": "meta.molecule", "patterns": [{ "include": "#molecule_pat" }]}
 				}
 			},
 			{
 				"match": "(\\:|\\::)",
-				"name": "species.overall"
+				"name": "keyword.control.species.total.bngl"
 			},
 			{
 				"match": "\\.",
-				"name": "species.separator"
+				"name": "keyword.control.species.separator.bngl"
 			},
 			{
 				"match": "\\$",
-				"name": "species.constant"
+				"name": "keyword.other.species.constant.bngl"
 			}]
 		},
 		"molecule_pat": {
@@ -273,36 +274,60 @@
 			"patterns": [{
 				"match": "([A-Za-z][A-Za-z0-9_]*)?([^\n|\\#|\\.|\\%|\\@]+)?(\\%[A-Za-z0-9][A-Za-z0-9_]*)?(\\@[A-Za-z][A-Za-z0-9_]*)?",
 				"captures": {
-					"1": { "name": "molecule.name" },
-					"2": { "name": "molecule.components" },
-					"3": { "name": "molecule.tag" },
-					"4": { "name": "molecule.compartment" }
+					"1": { "name": "meta.molecule.name.bngl", "patterns": [{ "include": "#names" }] },
+					"2": { "name": "meta.molecule.components.bngl", "patterns": [{ "include": "#components" }] },
+					"3": { "name": "meta.molecule.tag.bngl", "patterns": [{ "include": "#tag" }] },
+					"4": { "name": "meta.molecule.compartment.bngl", "patterns": [{ "include": "#compartment" }] }
 				}
 			},
 			{
 				"match": "([A-Za-z][A-Za-z0-9_]*)?(\\%[A-Za-z0-9][A-Za-z0-9_]*)?(\\@[A-Za-z][A-Za-z0-9_]*)?([^\n|\\#|\\.|\\%|\\@]+)?",
 				"captures": {
-					"1": { "name": "molecule.name" },
-					"2": { "name": "molecule.tag" },
-					"3": { "name": "molecule.compartment" },
-					"4": { "name": "molecule.components" }
+					"1": { "name": "meta.molecule.name.bngl", "patterns": [{ "include": "#names"}] },
+					"2": { "name": "meta.molecule.tag.bngl", "patterns": [{ "include": "#tag"}] },
+					"3": { "name": "meta.molecule.compartment.bngl", "patterns": [{ "include": "compartment"}] },
+					"4": { "name": "meta.molecule.components.bngl", "patterns": [{ "include": "#components" }] }
 				}
 			}
 			]
+		},
+		"components": {
+			"patterns": [{
+				"match": "([^\n|\\#|\\,|\\(|\\)]+)",
+				"captures": {
+					"1": { "name": "meta.component.bngl", "patterns": [{ "include": "#component" }] }
+				}
+			},
+			{
+				"match": "\\,",
+				"name": "keyword.control.component.separator.bngl"
+			}
+			]
+		},
+		"component": {
+			"patterns": [{
+				"match": "([A-Za-z][A-Za-z0-9_]*)?(\\~\\?|\\~[A-Za-z0-9][A-Za-z0-9_]*)?(\\![0-9]+|\\!\\?|\\!\\+)?(\\%[A-Za-z0-9][A-Za-z0-9_]*)?",
+				"captures": {
+					"1": { "name": "meta.component.name.bngl", "patterns": [{ "include": "#names" }] },
+					"2": { "name": "meta.component.state.bngl", "patterns": [{ "include": "#state" }] },
+					"3": { "name": "meta.component.bond.bngl", "patterns": [{ "include": "#bond" }] },
+					"4": { "name": "meta.component.tag.bngl", "patterns": [{ "include": "#tag" }] }
+				}
+			}]
 		},
 		"moltype": {
 			"patterns": [{
 				"begin": "([A-Za-z][A-Za-z0-9_]*)\\(",
 				"beginCaptures": {
-					"1": { "name": "name", "patterns": [{ "include": "#names" }] }
+					"1": { "name": "meta.moleculetype.name.bngl", "patterns": [{ "include": "#names" }] }
 				},
 				"end": "(.*)\\)",
 				"endCaptures": {
-					"1": { "name": "moltype_spec", "patterns": [{ "include": "#components" }] }
+					"1": { "name": "meta.moleculetype.specification.bngl", "patterns": [{ "include": "#component_type" }] }
 				}
 			}]
 		},
-		"components": {
+		"component_type": {
 			"patterns": [
 			{
 				"name": "keyword.control.state_name.bngl",
@@ -321,43 +346,55 @@
 				"match": "\\,"
 			}]
 		},
-		"species_spec": {
-			"patterns": [{
-				"name": "keyword.control.state.bngl",
-				"match": "(~[A-Za-z0-9][A-Za-z0-9_]+|~\\?)"
-			},
-			{
-				"name": "keyword.control.bond.bngl",
-				"match": "(\\!\\d+|\\!\\?|\\!\\+)"
-			},
-			{
-				"name": "keyword.control.tag.bngl",
-				"match": "\\%[A-Za-z0-9][A-Za-z0-9_]+"
-			},
-			{
-				"name": "keyword.operator.mtype.bngl",
-				"match": "(,)"
-			},
-			{
-				"include": "#constants"
-			}]
-		},
 		"obs_kwords": {
 			"patterns": [{
-				"name": "entity.name.type.obs.bngl",
+				"name": "variable.language.observable.type.bngl",
 				"match": "(Molecules|Species)"
-			}]
-		},
-		"line_number": {
-			"patterns": [{
-				"name": "constant.language.line_label.bngl",
-				"begin": "^\\s*([0-9]+\\s+|[A-Za-z][A-Za-z0-9_]+\\:)?",
-				"end": "(?<=\\s*|\\:)"
 			}]
 		},
 		"names": {
 			"name": "variable.name.bngl",
 			"match": "[A-Za-z][A-Za-z0-9_]*"
+		},
+		"state": {
+			"patterns": [{
+				"match": "\\~",
+				"name": "constant.language.state.symbol.bngl"
+			},
+		    {
+				"match": "[^\\~]+",
+				"name": "variable.parameter.state.name.bngl"
+			}]
+		},
+		"bond": {
+			"patterns": [{
+				"match": "\\!",
+				"name": "constant.language.bond.symbol.bngl"
+			},
+		    {
+				"match": "[^\\!]+",
+				"name": "variable.parameter.bond.name.bngl"
+			}]
+		},
+		"tag": {
+			"patterns": [{
+				"match": "\\%",
+				"name": "constant.language.tag.symbol.bngl"
+			},
+		    {
+				"match": "[^\\%]+",
+				"name": "variable.parameter.tag.name.bngl"
+			}]
+		},
+		"compartment": {
+			"patterns": [{
+				"match": "\\@",
+				"name": "constant.language.compartment.symbol.bngl"
+			},
+		    {
+				"match": "[^\\@]+",
+				"name": "variable.parameter.compartment.name.bngl"
+			}]
 		},
 		"line_labels": {
 			"name": "constant.language.line_label.bngl",
