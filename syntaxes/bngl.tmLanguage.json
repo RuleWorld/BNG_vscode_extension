@@ -70,10 +70,7 @@
 					"include": "#comments"
 				},
 				{
-					"include": "#expressions"
-				},
-				{
-					"include": "#species_line"
+					"include": "#rule_line"
 				}]
 			},
 			{
@@ -188,7 +185,7 @@
 		"func_line": {
 			"name": "meta.function.line.bngl",
 			"patterns": [{
-				"begin": "^\\s*([0-9]+\\s+|[A-Za-z][A-Za-z0-9_]*\\:)?\\s*([A-Za-z][A-Za-z0-9_]*)(\\([^\\n|\\#\\)]*\\))?\\s*(\\s+|\\=)\\s*",
+				"begin": "^\\s*([0-9]+\\s+|[A-Za-z][A-Za-z0-9_]*\\:)?\\s*([A-Za-z][A-Za-z0-9_]*)(\\([^\\n|\\#|\\)]*\\))?\\s*(\\s+|\\=)\\s*",
 				"beginCaptures": {
 					"1": { "name": "meta.function.linelabel.bngl", "patterns": [{ "include": "#line_labels" }] },
 					"2": { "name": "meta.function.name.bngl", "patterns": [{ "include": "#names"}] },
@@ -344,6 +341,74 @@
 			{
 				"name": "keyword.operator.mtype.bngl",
 				"match": "\\,"
+			}]
+		},
+		"rule_line": {
+			"name": "meta.rule.line.bngl",
+			"patterns": [{
+				"begin": "^\\s*([0-9]+\\s+|[A-Za-z][A-Za-z0-9_]*\\:)?\\s*([^\\n|\\#|\\<|\\-|\\>]*)\\s*(?=\\<\\-\\>|\\-\\>)\\s*",
+				"beginCaptures": {
+					"1": { "name": "meta.rule.linelabel.bngl", "patterns": [{ "include": "#line_labels" }] },
+					"2": { "name": "meta.rule.reactants.bngl", "patterns": [{ "include": "#reactants"}] }
+				},
+				"end": "(?=\\#|\n)",
+				"patterns": [{
+					"include": "#reaction_rhs"
+				}]
+			}]
+		},
+		"reactants": {
+			"patterns": [{
+				"match": "([^\\n|\\#|\\+]+)",
+				"captures": {
+					"1": { "name": "meta.rule.reactant.bngl", "patterns": [{ "include": "#species_pat"}] }
+				}
+			},
+			{
+				"match": "\\+",
+				"name": "keyword.control.rule.plus.bngl"
+			}]
+		},
+		"reaction_rhs": {
+			"patterns": [{
+				"match": "(\\<\\-\\>)([^\\n|\\#]+)\\s+([^\\n|\\#]+\\,[^\\n|\\#]+)",
+				"captures": {
+					"1": { "name": "keyword.control.rule.bidir.bngl" },
+					"2": { "name": "meta.rule.bidir_prod.bngl", "patterns": [{ "include": "#products"}] },
+					"3": { "name": "meta.rule.bidir_rate.bngl", "patterns": [{ "include": "#bidir_rate"}] }
+				}
+			},
+			{
+				"match": "(\\-\\>)([^\\n|\\#]+)\\s+([^\\n|\\#]+)",
+				"captures": {
+					"1": { "name": "keyword.control.rule.unidir.bngl" },
+					"2": { "name": "meta.rule.unidir_prod.bngl", "patterns": [{ "include": "#products"}] },
+					"3": { "name": "meta.rule.unidir_rate.bngl", "patterns": [{ "include": "#expressions"}] }
+				}
+			}]
+		},
+		"products": {
+			"patterns": [{
+				"match": "([^\\n|\\#|\\+]+)",
+				"captures": {
+					"1": { "name": "meta.rule.product.bngl", "patterns": [{ "include": "#species_pat"}] }
+				}
+			},
+			{
+				"match": "\\+",
+				"name": "keyword.control.rule.plus.bngl"
+			}]
+		},
+		"bidir_rate": {
+			"patterns": [{
+				"match": "([^\\n|\\#|\\,]+)",
+				"captures": {
+					"1": { "name": "meta.rule.rate.bngl", "patterns": [{ "include": "#expressions"}] }
+				}
+			},
+			{
+				"match": "\\,",
+				"name": "keyword.control.rule.rate_sep.bngl" 
 			}]
 		},
 		"obs_kwords": {
