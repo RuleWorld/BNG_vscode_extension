@@ -260,22 +260,27 @@
 		},
 		"species_pat": {
 			"patterns": [{
-				"match": "([^\n|\\#|\\.|\\:|\\$]+)",
+				"match": "(\\@[A-Za-z][A-Za-z0-9_]*)?(\\%[A-Za-z0-9][A-Za-z0-9_]*)?(\\:|\\:\\:)?(\\$|\\{matchOnce\\})?([^\n|\\#|\\.|\\:|\\$|\\<|\\>|\\=]+)((\\<|\\<\\=|\\=\\=|\\=\\>|\\>)[0-9]+)?",
 				"captures": {
-					"1": { "name": "meta.molecule", "patterns": [{ "include": "#molecule_pat" }]}
+					"1": { "name": "keyword.control.species.compartment.bngl" },
+					"2": { "name": "keyword.other.species.tag.bngl" },
+					"3": { "name": "keyword.operator.species.total.bngl"},
+					"4": { "name": "keyword.operator.species.mod.bngl" },
+					"5": { "name": "meta.species", "patterns": [{ "include": "#species" }]},
+					"6": { "name": "keyword.operator.species.quantifier.bngl" }
 				}
-			},
-			{
-				"match": "(\\:|\\::)",
-				"name": "keyword.control.species.total.bngl"
+			}]
+		},
+		"species": {
+			"patterns": [{
+				"match": "([^\n|\\#|\\.]+)",
+				"captures": {
+					"1": { "name": "meta.molecule", "patterns": [{ "include": "#molecule_pat"}] }
+				}
 			},
 			{
 				"match": "\\.",
 				"name": "keyword.control.species.separator.bngl"
-			},
-			{
-				"match": "\\$",
-				"name": "keyword.other.species.constant.bngl"
 			}]
 		},
 		"molecule_pat": {
