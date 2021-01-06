@@ -122,13 +122,28 @@
 		"actions": {
 			"patterns": [{
 				"name": "entity.name.function.action.bngl",
-				"match": "(generate_network|generate_hybrid_model|simulate|simulate_ode|simulate_ssa|simulate_pla|simulate_nf|parameter_scan|bifurcate|readFile|writeFile|writeModel|writeNetwork|writeXML|writeSBML|writeMfile|writeMexfile|writeMDL|visualize|setConcentration|addConcentration|saveConcentration|resetConcentrations|setParameter|saveParameters|resetParameters|quit|setModelName|substanceUnits|version|setOption)"
+				"match": "^\\s*(generate_network|generate_hybrid_model|simulate|simulate_ode|simulate_ssa|simulate_pla|simulate_nf|parameter_scan|bifurcate|readFile|writeFile|writeModel|writeNetwork|writeXML|writeSBML|writeMfile|writeMexfile|writeMDL|visualize|setConcentration|addConcentration|saveConcentrations|resetConcentrations|setParameter|saveParameters|resetParameters|quit|setModelName|substanceUnits|version|setOption)\\((\\{)?([^\n|\\#]+)?(\\})?\\)",
+			    "captures": {
+					"1": { "name": "meta.action.name.bngl", "patterns": [{ "include": "#names"}] },
+					"3": { "name": "meta.action.arguments.bngl", "patterns": [{ "include": "#action_arguments"}] }
+				}
 			},
 			{
 				"include": "#comments"
+			}]
+		},
+		"action_arguments": {
+			"patterns": [{
+				"match": "([^\n|\\#|\\=|\\>|\\,]+)(\\=\\>)([^\n|\\#|\\=|\\>|\\,]+)",
+				"captures": {
+					"1": { "name": "storage.type.action_argument.argument_name.bngl" },
+					"2": { "name": "keyword.operator.action_argument.define.bngl" },
+					"3": { "name": "variable.parameter.action_argument.argument_value.bngl" }
+				}
 			},
-		    {
-				"include": "#constants"
+			{
+				"match": "\\,",
+				"name": "keyword.control.action_argument.sep.bngl"
 			}]
 		},
 		"param_line": {
