@@ -260,7 +260,7 @@
 		},
 		"species_pat": {
 			"patterns": [{
-				"match": "(\\@[A-Za-z][A-Za-z0-9_]*)?(\\%[A-Za-z0-9][A-Za-z0-9_]*)?(\\:|\\:\\:)?(\\$|\\{matchOnce\\})?([^\n|\\#|\\.|\\:|\\$|\\<|\\>|\\=]+)((\\<|\\<\\=|\\=\\=|\\=\\>|\\>)[0-9]+)?",
+				"match": "(\\@[A-Za-z][A-Za-z0-9_]*)?(\\%[A-Za-z0-9][A-Za-z0-9_]*)?(\\:|\\:\\:)?(\\$|\\{matchOnce\\})?([^\n|\\#|\\:|\\$|\\<|\\>|\\=]+)((\\<|\\<\\=|\\=\\=|\\=\\>|\\>)[0-9]+)?",
 				"captures": {
 					"1": { "name": "keyword.control.species.compartment.bngl" },
 					"2": { "name": "keyword.other.species.tag.bngl" },
