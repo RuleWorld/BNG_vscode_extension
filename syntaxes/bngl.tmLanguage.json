@@ -265,9 +265,9 @@
 					"1": { "name": "keyword.control.species.compartment.bngl" },
 					"2": { "name": "keyword.other.species.tag.bngl" },
 					"3": { "name": "keyword.operator.species.total.bngl"},
-					"4": { "name": "keyword.operator.species.mod.bngl" },
+					"4": { "name": "constant.numeric.species.mod.bngl" },
 					"5": { "name": "meta.species", "patterns": [{ "include": "#species" }]},
-					"6": { "name": "keyword.operator.species.quantifier.bngl" }
+					"6": { "name": "constant.numeric.species.quantifier.bngl" }
 				}
 			}]
 		},
