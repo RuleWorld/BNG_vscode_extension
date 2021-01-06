@@ -137,7 +137,7 @@
 				"match": "([^\n|\\#|\\=|\\>|\\,]+)(\\=\\>)([^\n|\\#|\\=|\\>|\\,]+)",
 				"captures": {
 					"1": { "name": "storage.type.action_argument.argument_name.bngl" },
-					"2": { "name": "keyword.operator.action_argument.define.bngl" },
+					"2": { "name": "keyword.control.action_argument.assign.bngl" },
 					"3": { "name": "variable.parameter.action_argument.argument_value.bngl" }
 				}
 			},
