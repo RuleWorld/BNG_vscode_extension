@@ -260,14 +260,15 @@
 		},
 		"species_pat": {
 			"patterns": [{
-				"match": "(\\@[A-Za-z][A-Za-z0-9_]*)?(\\%[A-Za-z0-9][A-Za-z0-9_]*)?(\\:|\\:\\:)?(\\$|\\{matchOnce\\})?([^\n|\\#|\\:|\\$|\\<|\\>|\\=]+)((\\<|\\<\\=|\\=\\=|\\=\\>|\\>)[0-9]+)?",
+				"match": "(\\@[A-Za-z][A-Za-z0-9_]*)?(\\%[A-Za-z0-9][A-Za-z0-9_]*)?(\\@[A-Za-z][A-Za-z0-9_]*)?(\\:|\\:\\:)?(\\$|\\{matchOnce\\})?([^\n|\\#|\\:|\\$|\\<|\\>|\\=]+)((\\<|\\<\\=|\\=\\=|\\=\\>|\\>)[0-9]+)?",
 				"captures": {
 					"1": { "name": "keyword.control.species.compartment.bngl" },
 					"2": { "name": "keyword.other.species.tag.bngl" },
-					"3": { "name": "keyword.operator.species.total.bngl"},
-					"4": { "name": "constant.numeric.species.mod.bngl" },
-					"5": { "name": "meta.species", "patterns": [{ "include": "#species" }]},
-					"6": { "name": "constant.numeric.species.quantifier.bngl" }
+					"3": { "name": "keyword.control.species.compartment.bngl" },
+					"4": { "name": "keyword.operator.species.total.bngl"},
+					"5": { "name": "constant.numeric.species.mod.bngl" },
+					"6": { "name": "meta.species", "patterns": [{ "include": "#species" }]},
+					"7": { "name": "constant.numeric.species.quantifier.bngl" }
 				}
 			}]
 		},
