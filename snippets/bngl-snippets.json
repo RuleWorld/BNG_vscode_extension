@@ -43,5 +43,10 @@
         "scope": "bngl",
         "prefix": "begin reaction rules",
         "body": "begin reaction rules\nend reaction rules\n"
+    },
+    "generate_network": {
+        "scope": "bngl",
+        "prefix": "generate_network",
+        "body": ["generate_network({overwrite=>${1|0,1|}})" ]
     }
 }
