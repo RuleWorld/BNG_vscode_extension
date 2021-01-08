@@ -474,7 +474,7 @@
 		},
 		"products": {
 			"patterns": [{
-				"match": "\\s*(([^\n|\\#|\\+|\\s]|(?<=\\!)\\+)+)\\s*",
+				"match": "\\s*(([^\n|\\#|\\+|\\s]|(?<=\\!)\\+|\\s(?=([^\\+]|(?<=\\!)\\+)*\\)))+)\\s*",
 				"captures": {
 					"1": { "name": "meta.rule.product.bngl", "patterns": [{ "include": "#species_pat"}] }
 				}
