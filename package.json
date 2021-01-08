@@ -20,6 +20,11 @@
             "language": "bngl",
             "scopeName": "source.bngl",
             "path": "./syntaxes/bngl.tmLanguage.json"
+        }],
+        "themes": [{
+            "label": "dark-bngl",
+            "uiTheme": "vs-dark",
+            "path": "./themes/dark-bngl.json"
         }]
     }
 }
