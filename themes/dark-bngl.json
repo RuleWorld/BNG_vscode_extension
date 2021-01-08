@@ -647,6 +647,24 @@
 			"settings": {
 				"foreground": "#99ca8d",
 			}
+		},
+		{
+			"scope": "entity.name.section",
+			"settings": {
+				"foreground": "#b9a381",
+			}
+		},
+		{
+			"scope": "meta.block_tag.name.bngl",
+			"settings": {
+				"foreground": "#b36666",
+			}
+		},
+		{
+			"scope": "meta.block_tag.mod.bngl",
+			"settings": {
+				"foreground": "#7266b3",
+			}
 		}
 	]
 }

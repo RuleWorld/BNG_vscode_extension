@@ -16,8 +16,16 @@
 		"model": {
 			"patterns": [{
 				"name": "entity.name.section.model.bngl",
-				"begin": "begin(\\s+)model(\\s*)\n",
+				"begin": "(begin)(\\s+)(model)(\\s*)\n",
+				"beginCaptures": {
+					"1": { "name": "entity.name.section.model.begin.bngl", "patterns": [{"include": "#block_tag_mod"}] },
+					"3": { "name": "entity.name.section.model.name.bngl", "patterns": [{"include": "#block_tag_name"}]}
+				},
 				"end": "end(\\s+)model(\\s*)\n",
+				"endCaptures": {
+					"1": { "name": "entity.name.section.model.end.bngl", "patterns": [{"include": "#block_tag_mod"}] },
+					"3": { "name": "entity.name.section.model.name.bngl", "patterns": [{"include": "#block_tag_name"}]}
+				},
 				"patterns": [{
 					"include": "#blocks"
 				},
@@ -29,8 +37,16 @@
 		"blocks": {
 			"patterns": [{
 				"name": "entity.name.section.parameters.bngl",
-				"begin": "begin(\\s+)parameters(\\s*)\n",
-				"end": "end(\\s+)parameters(\\s*)\n",
+				"begin": "(begin)(\\s+)(parameters)(\\s*)\n",
+				"beginCaptures": {
+					"1": { "name": "entity.name.section.model.begin.bngl", "patterns": [{"include": "#block_tag_mod"}] },
+					"3": { "name": "entity.name.section.model.name.bngl", "patterns": [{"include": "#block_tag_name"}]}
+				},
+				"end": "(end)(\\s+)(parameters)(\\s*)\n",
+				"endCaptures": {
+					"1": { "name": "entity.name.section.model.end.bngl", "patterns": [{"include": "#block_tag_mod"}] },
+					"3": { "name": "entity.name.section.model.name.bngl", "patterns": [{"include": "#block_tag_name"}]}
+				},
 				"patterns": [
 					{
 						"include": "#comments"
@@ -41,8 +57,16 @@
 			},
 			{
 				"name": "entity.name.section.compartments.bngl",
-				"begin": "begin(\\s+)compartments(\\s*)\n",
-				"end": "end(\\s+)compartments(\\s*)\n",
+				"begin": "(begin)(\\s+)(compartments)(\\s*)\n",
+				"beginCaptures": {
+					"1": { "name": "entity.name.section.model.begin.bngl", "patterns": [{"include": "#block_tag_mod"}] },
+					"3": { "name": "entity.name.section.model.name.bngl", "patterns": [{"include": "#block_tag_name"}]}
+				},
+				"end": "(end)(\\s+)(compartments)(\\s*)\n",
+				"endCaptures": {
+					"1": { "name": "entity.name.section.model.end.bngl", "patterns": [{"include": "#block_tag_mod"}] },
+					"3": { "name": "entity.name.section.model.name.bngl", "patterns": [{"include": "#block_tag_name"}]}
+				},
 				"patterns": [{
 					"include": "#comments"
 				},
@@ -52,8 +76,16 @@
 			},
 			{
 				"name": "entity.name.section.moleculetypes.bngl",
-				"begin": "begin(\\s+)molecule(\\s+)types(\\s*)\n",
-				"end": "end(\\s+)molecule(\\s+)types(\\s*)\n",
+				"begin": "(begin)(\\s+)(molecule\\s+types)(\\s*)\n",
+				"beginCaptures": {
+					"1": { "name": "entity.name.section.model.begin.bngl", "patterns": [{"include": "#block_tag_mod"}] },
+					"3": { "name": "entity.name.section.model.name.bngl", "patterns": [{"include": "#block_tag_name"}]}
+				},
+				"end": "(end)(\\s+)(molecule\\s+types)(\\s*)\n",
+				"endCaptures": {
+					"1": { "name": "entity.name.section.model.end.bngl", "patterns": [{"include": "#block_tag_mod"}] },
+					"3": { "name": "entity.name.section.model.name.bngl", "patterns": [{"include": "#block_tag_name"}]}
+				},
 				"patterns": [
 				{
 					"include": "#moltype_line"
@@ -64,8 +96,16 @@
 			},
 			{
 				"name": "entity.name.section.rules.bngl",
-				"begin": "begin(\\s+)reaction(\\s+)rules(\\s*)\n",
-				"end": "end(\\s+)reaction(\\s+)rules(\\s*)\n",
+				"begin": "(begin)(\\s+)(reaction\\s+rules)(\\s*)\n",
+				"beginCaptures": {
+					"1": { "name": "entity.name.section.model.begin.bngl", "patterns": [{"include": "#block_tag_mod"}] },
+					"3": { "name": "entity.name.section.model.name.bngl", "patterns": [{"include": "#block_tag_name"}]}
+				},
+				"end": "(end)(\\s+)(reaction\\s+rules)(\\s*)\n",
+				"endCaptures": {
+					"1": { "name": "entity.name.section.model.end.bngl", "patterns": [{"include": "#block_tag_mod"}] },
+					"3": { "name": "entity.name.section.model.name.bngl", "patterns": [{"include": "#block_tag_name"}]}
+				},
 				"patterns": [{
 					"include": "#comments"
 				},
@@ -75,8 +115,16 @@
 			},
 			{
 				"name": "entity.name.section.functions.bngl",
-				"begin": "begin(\\s+)functions(\\s*)\n",
-				"end": "end(\\s+)functions(\\s*)\n",
+				"begin": "(begin)(\\s+)(functions)(\\s*)\n",
+				"beginCaptures": {
+					"1": { "name": "entity.name.section.model.begin.bngl", "patterns": [{"include": "#block_tag_mod"}] },
+					"3": { "name": "entity.name.section.model.name.bngl", "patterns": [{"include": "#block_tag_name"}]}
+				},
+				"end": "(end)(\\s+)(functions)(\\s*)\n",
+				"endCaptures": {
+					"1": { "name": "entity.name.section.model.end.bngl", "patterns": [{"include": "#block_tag_mod"}] },
+					"3": { "name": "entity.name.section.model.name.bngl", "patterns": [{"include": "#block_tag_name"}]}
+				},
 				"patterns": [{
 					"include": "#comments"
 				},
@@ -86,8 +134,16 @@
 			},
 			{
 				"name": "entity.name.section.species.bngl",
-				"begin": "begin(\\s+)species(\\s*)\n",
-				"end": "end(\\s+)species(\\s*)\n",
+				"begin": "(begin)(\\s+)(species)(\\s*)\n",
+				"beginCaptures": {
+					"1": { "name": "entity.name.section.model.begin.bngl", "patterns": [{"include": "#block_tag_mod"}] },
+					"3": { "name": "entity.name.section.model.name.bngl", "patterns": [{"include": "#block_tag_name"}]}
+				},
+				"end": "(end)(\\s+)(species)(\\s*)\n",
+				"endCaptures": {
+					"1": { "name": "entity.name.section.model.end.bngl", "patterns": [{"include": "#block_tag_mod"}] },
+					"3": { "name": "entity.name.section.model.name.bngl", "patterns": [{"include": "#block_tag_name"}]}
+				},
 				"patterns": [{
 					"include": "#comments"
 				},
@@ -97,8 +153,16 @@
 			},
 			{
 				"name": "entity.name.section.species.bngl",
-				"begin": "begin(\\s+)seed(\\s+)species(\\s*)\n",
-				"end": "end(\\s+)seed(\\s+)species(\\s*)\n",
+				"begin": "(begin)(\\s+)(seed\\s+species)(\\s*)\n",
+				"beginCaptures": {
+					"1": { "name": "entity.name.section.model.begin.bngl", "patterns": [{"include": "#block_tag_mod"}] },
+					"3": { "name": "entity.name.section.model.name.bngl", "patterns": [{"include": "#block_tag_name"}]}
+				},
+				"end": "(end)(\\s+)(seed\\s+species)(\\s*)\n",
+				"endCaptures": {
+					"1": { "name": "entity.name.section.model.end.bngl", "patterns": [{"include": "#block_tag_mod"}] },
+					"3": { "name": "entity.name.section.model.name.bngl", "patterns": [{"include": "#block_tag_name"}]}
+				},
 				"patterns": [{
 					"include": "#comments"
 				},
@@ -108,8 +172,16 @@
 			},
 			{
 				"name": "entity.name.section.observables.bngl",
-				"begin": "begin(\\s+)observables(\\s*)\n",
-				"end": "end(\\s+)observables(\\s*)\n",
+				"begin": "(begin)(\\s+)(observables)(\\s*)\n",
+				"beginCaptures": {
+					"1": { "name": "entity.name.section.model.begin.bngl", "patterns": [{"include": "#block_tag_mod"}] },
+					"3": { "name": "entity.name.section.model.name.bngl", "patterns": [{"include": "#block_tag_name"}]}
+				},
+				"end": "(end)(\\s+)(observables)(\\s*)\n",
+				"endCaptures": {
+					"1": { "name": "entity.name.section.model.end.bngl", "patterns": [{"include": "#block_tag_mod"}] },
+					"3": { "name": "entity.name.section.model.name.bngl", "patterns": [{"include": "#block_tag_name"}]}
+				},
 				"patterns": [{
 					"include": "#comments"
 				},
@@ -525,6 +597,18 @@
 				"match": "\\b(pi|eulerian|time)\\b"
 			}
 			]
+		},
+		"block_tag_mod": {
+			"patterns": [{
+				"name": "meta.block_tag.mod.bngl",
+				"match": "(begin|end)"
+			}]
+		},
+		"block_tag_name": {
+			"patterns": [{
+				"name": "meta.block_tag.name.bngl",
+				"match": "(model|parameters|molecule\\s+types|compartments|seed\\s+species|species|observables|groups|energy|patterns|functions|reactions|reaction\\s+rules|population\\s+maps|actions)"
+			}]
 		},
 		"comments": {
 			"patterns": [{
