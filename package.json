@@ -1,6 +1,6 @@
 {
-    "name": "bngl-grammar-vscode",
-    "displayName": "BNGL-grammar-vscode",
+    "name": "bngl",
+    "displayName": "BNGL-grammar",
     "description": "BNG language grammar for vscode",
     "version": "0.1.0",
     "engines": {

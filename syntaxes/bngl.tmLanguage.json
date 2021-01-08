@@ -14,6 +14,9 @@
 		},
 		{
 			"include": "#comments"
+		},
+		{
+			"include": "#strings"
 		}
 	],
 	"repository": {
@@ -342,13 +345,13 @@
 			"patterns": [{
 				"match": "\\s*(0)\\s*",
 				"captures": {
-					"1": { "name": "meta.species.null_pat" }
+					"1": { "name": "meta.species.null_pat.bngl" }
 				}
 			},
 			{
 				"match": "(.*)",
 				"captures": {
-					"1": { "name": "meta.species.non_null_pat", "patterns": [{ "include": "#species_pat"}] }
+					"1": { "name": "meta.species.non_null_pat.bngl", "patterns": [{ "include": "#species_pat"}] }
 				}
 			}]
 		},
@@ -361,7 +364,7 @@
 					"3": { "name": "keyword.control.species.compartment.bngl", "patterns": [{"include": "#compartment"}] },
 					"4": { "name": "keyword.operator.species.total.bngl"},
 					"5": { "name": "constant.numeric.species.mod.bngl" },
-					"6": { "name": "meta.species", "patterns": [{ "include": "#species" }]},
+					"6": { "name": "meta.species.bngl", "patterns": [{ "include": "#species" }]},
 					"7": { "name": "constant.numeric.species.quantifier.bngl" }
 				}
 			}]
@@ -370,7 +373,7 @@
 			"patterns": [{
 				"match": "([^\n|\\#|\\.]+)",
 				"captures": {
-					"1": { "name": "meta.molecule", "patterns": [{ "include": "#molecule_pat"}] }
+					"1": { "name": "meta.molecule.bngl", "patterns": [{ "include": "#molecule_pat"}] }
 				}
 			},
 			{
@@ -587,8 +590,14 @@
 		"strings": {
 			"patterns": [{
 				"name": "string.quoted.double.bngl",
-				"begin": "\"",
-				"end": "\""
+				"begin": "(\")",
+				"beginCaptures": {
+					"1": { "name": "markup.punctuation.quote.beginning" }
+				},
+				"end": "(\")",
+				"endCaptures": {
+					"1": { "name": "markup.punctuation.quote.beginning.bngl" }
+				}
 			}]
 		},
 		"functions": {
