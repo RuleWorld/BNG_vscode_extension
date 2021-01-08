@@ -1,0 +1,47 @@
+{
+    "model": {
+        "scope": "bngl",
+        "prefix": "begin model",
+        "body": "begin model\n\nbegin parameters\nend parameters\n\nbegin molecule types\nend molecule types\n\nbegin compartments\nend compartments\n\nbegin species\nend species\n\nbegin observables\nend observables\n\nbegin functions\nend functions\n\nbegin reaction rules\nend reaction rules\n\nend model\n"
+    },
+    "parameters": {
+        "scope": "bngl",
+        "prefix": "begin parameters",
+        "body": "begin parameters\nend parameters\n"
+    },
+    "molecule_types": {
+        "scope": "bngl",
+        "prefix": "begin molecule types",
+        "body": "begin molecule types\nend molecule types\n"
+    },
+    "compartments": {
+        "scope": "bngl",
+        "prefix": "begin compartments",
+        "body": "begin compartments\nend compartments\n"
+    },
+    "seed_species": {
+        "scope": "bngl",
+        "prefix": "begin seed species",
+        "body": "begin seed species\nend seed species\n"
+    },
+    "species": {
+        "scope": "bngl",
+        "prefix": "begin species",
+        "body": "begin species\nend species\n"
+    },
+    "observables": {
+        "scope": "bngl",
+        "prefix": "begin observables",
+        "body": "begin observables\nend observables\n"
+    },
+    "functions": {
+        "scope": "bngl",
+        "prefix": "begin functions",
+        "body": "begin functions\nend functions\n"
+    },
+    "reaction_rules": {
+        "scope": "bngl",
+        "prefix": "begin reaction rules",
+        "body": "begin reaction rules\nend reaction rules\n"
+    }
+}

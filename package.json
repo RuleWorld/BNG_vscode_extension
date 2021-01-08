@@ -7,7 +7,9 @@
         "vscode": "^1.52.0"
     },
     "categories": [
-        "Programming Languages"
+        "Programming Languages",
+        "Snippets",
+        "Themes"
     ],
     "contributes": {
         "languages": [{
@@ -21,6 +23,12 @@
             "scopeName": "source.bngl",
             "path": "./syntaxes/bngl.tmLanguage.json"
         }],
+        "snippets": [
+            {
+                "language": "bngl",
+                "path": "./snippets/bngl-snippets.json"
+            }
+        ],
         "themes": [{
             "label": "dark-bngl",
             "uiTheme": "vs-dark",
