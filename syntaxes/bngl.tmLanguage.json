@@ -221,7 +221,7 @@
 		"param_line": {
 			"name": "meta.parameter.line.bngl",
 			"patterns": [{
-				"begin": "^\\s*([0-9]+\\s+|[A-Za-z][A-Za-z0-9_]*\\:)?\\s*([A-Za-z][A-Za-z0-9_]*)\\s*(\\=)?\\s*",
+				"begin": "^\\s*([0-9]+\\s+|[A-Za-z][A-Za-z0-9_]*\\s*\\:)?\\s*([A-Za-z][A-Za-z0-9_]*)\\s*(\\=)?\\s*",
 				"beginCaptures": {
 					"1": { "name": "meta.parameter.linelabel.bngl", "patterns": [{ "include": "#line_labels" }] },
 					"2": { "name": "name", "patterns": [{ "include": "#names" }] }
@@ -238,7 +238,7 @@
 		"moltype_line": {
 			"patterns": [{
 				"name": "meta.moleculetype.line.bngl",
-				"begin": "^\\s*([0-9]+\\s+|[A-Za-z][A-Za-z0-9_]*\\:)?\\s*",
+				"begin": "^\\s*([0-9]+\\s+|[A-Za-z][A-Za-z0-9_]*\\s*\\:)?\\s*",
 				"beginCaptures": {
 					"1": { "name": "meta.moleculetype.linelabel.bngl", "patterns": [{ "include": "#line_labels" }] }
 				},
@@ -254,7 +254,7 @@
 		"compartment_line": {
 			"name": "meta.compartment.line.bngl",
 			"patterns": [{
-				"begin": "^\\s*([0-9]+\\s+|[A-Za-z][A-Za-z0-9_]*\\:)?\\s*([A-Za-z][A-Za-z0-9_]*)\\s+([2|3])\\s+",
+				"begin": "^\\s*([0-9]+\\s+|[A-Za-z][A-Za-z0-9_]*\\s*\\:)?\\s*([A-Za-z][A-Za-z0-9_]*)\\s+([2|3])\\s+",
 				"beginCaptures": {
 					"1": { "name": "meta.compartment.linelabel.bngl", "patterns": [{ "include": "#line_labels" }] },
 					"2": { "name": "meta.compartment.name.bngl", "patterns": [{ "include": "#names"}] },
@@ -272,7 +272,7 @@
 		"func_line": {
 			"name": "meta.function.line.bngl",
 			"patterns": [{
-				"begin": "^\\s*([0-9]+\\s+|[A-Za-z][A-Za-z0-9_]*\\:)?\\s*([A-Za-z][A-Za-z0-9_]*)(\\([^\n|\\#|\\)]*\\))?\\s*(\\s+|\\=)\\s*",
+				"begin": "^\\s*([0-9]+\\s+|[A-Za-z][A-Za-z0-9_]*\\s*\\:)?\\s*([A-Za-z][A-Za-z0-9_]*)(\\([^\n|\\#|\\)]*\\))?\\s*(\\s+|\\=)\\s*",
 				"beginCaptures": {
 					"1": { "name": "meta.function.linelabel.bngl", "patterns": [{ "include": "#line_labels" }] },
 					"2": { "name": "meta.function.name.bngl", "patterns": [{ "include": "#names"}] },
@@ -301,7 +301,7 @@
 			"name": "meta.species.line.bngl",
 			"patterns": [
 			{
-				"match": "\\s*([0-9]+\\s+|[A-Za-z][A-Za-z0-9_]*\\:)?\\s*([^\n|\\#]+)\\s+([^\n|\\#]+)",
+				"match": "\\s*([0-9]+\\s+|[A-Za-z][A-Za-z0-9_]*\\s*\\:)?\\s*([^\n|\\#]+)\\s+([^\n|\\#]+)",
 				"captures": {
 					"1": { "name": "meta.species.linelabel.bngl", "patterns": [{ "include": "#line_labels" }] },
 					"2": { "name": "meta.species.pattern.bngl", "patterns": [{ "include": "#species_pat" }] },
@@ -314,7 +314,7 @@
 		},
 		"obs_def": {
 			"patterns": [{
-				"begin": "^\\s*([0-9]+\\s+|[A-Za-z][A-Za-z0-9_]*\\:)?\\s*(Molecules|Species)\\s+([A-Za-z][A-Za-z0-9_]*)\\s+",
+				"begin": "^\\s*([0-9]+\\s+|[A-Za-z][A-Za-z0-9_]*\\s*\\:)?\\s*(Molecules|Species)\\s+([A-Za-z][A-Za-z0-9_]*)\\s+",
 				"beginCaptures": {
 					"1": { "name": "meta.observable.linelabel.bngl", "patterns": [{ "include": "#line_labels" }] },
 					"2": { "name": "meta.observable.type.bngl", "patterns": [{ "include": "#obs_kwords"}] },
@@ -430,7 +430,7 @@
 		"rule_line": {
 			"name": "meta.rule.line.bngl",
 			"patterns": [{
-				"begin": "^\\s*([0-9]+\\s+|[A-Za-z][A-Za-z0-9_]*\\:)?\\s*([^\n|\\#|\\<|\\-|\\>]*)\\s*(?=\\<\\-\\>|\\-\\>)\\s*",
+				"begin": "^\\s*([0-9]+\\s+|[A-Za-z][A-Za-z0-9_]*\\s*\\:)?\\s*([^\n|\\#|\\<|\\-]+)\\s*(?=\\<|\\-)",
 				"beginCaptures": {
 					"1": { "name": "meta.rule.linelabel.bngl", "patterns": [{ "include": "#line_labels" }] },
 					"2": { "name": "meta.rule.reactants.bngl", "patterns": [{ "include": "#reactants"}] }
@@ -443,7 +443,7 @@
 		},
 		"reactants": {
 			"patterns": [{
-				"match": "(([^\n|\\#|\\+]|(?<=\\!)\\+)+)",
+				"match": "\\s*(([^\n|\\#|\\+|\\s]|(?<=\\!)\\+|\\s(?=([^\\+]|(?<=\\!)\\+)*\\)))+)\\s*",
 				"captures": {
 					"1": { "name": "meta.rule.reactant.bngl", "patterns": [{ "include": "#species_pat"}] }
 				}
@@ -454,8 +454,9 @@
 			}]
 		},
 		"reaction_rhs": {
+			"name": "meta.rule.reaction_rhs.bngl",
 			"patterns": [{
-				"match": "(\\<\\-\\>)([^\n|\\#]+)\\s+([^\n|\\#]+\\,[^\n|\\#]+)",
+				"match": "\\s*(\\<\\-\\>)\\s*([^\n|\\#]+)\\s+([^\n|\\#]+\\,[^\n|\\#]+)",
 				"captures": {
 					"1": { "name": "keyword.control.rule.bidir.bngl" },
 					"2": { "name": "meta.rule.bidir_prod.bngl", "patterns": [{ "include": "#products"}] },
@@ -463,7 +464,7 @@
 				}
 			},
 			{
-				"match": "(\\-\\>)([^\n|\\#]+)\\s+([^\n|\\#]+)",
+				"match": "\\s*((?<!\\<)\\-\\>)\\s*([^\n|\\#]+)\\s+([^\n|\\#]+)",
 				"captures": {
 					"1": { "name": "keyword.control.rule.unidir.bngl" },
 					"2": { "name": "meta.rule.unidir_prod.bngl", "patterns": [{ "include": "#products"}] },
@@ -473,7 +474,7 @@
 		},
 		"products": {
 			"patterns": [{
-				"match": "([^\n|\\#|\\+]+)",
+				"match": "\\s*(([^\n|\\#|\\+|\\s]|(?<=\\!)\\+)+)\\s*",
 				"captures": {
 					"1": { "name": "meta.rule.product.bngl", "patterns": [{ "include": "#species_pat"}] }
 				}
@@ -607,7 +608,7 @@
 		"block_tag_name": {
 			"patterns": [{
 				"name": "meta.block_tag.name.bngl",
-				"match": "(model|parameters|molecule\\s+types|compartments|seed\\s+species|species|observables|groups|energy|patterns|functions|reactions|reaction\\s+rules|population\\s+maps|actions)"
+				"match": "(model|parameters|molecule\\s+types|compartments|seed\\s+species|species|observables|groups|energy\\s+patterns|functions|reactions|reaction\\s+rules|population\\s+maps|actions)"
 			}]
 		},
 		"comments": {
