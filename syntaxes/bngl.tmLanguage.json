@@ -21,7 +21,7 @@
 					"1": { "name": "entity.name.section.model.begin.bngl", "patterns": [{"include": "#block_tag_mod"}] },
 					"3": { "name": "entity.name.section.model.name.bngl", "patterns": [{"include": "#block_tag_name"}]}
 				},
-				"end": "end(\\s+)model(\\s*)\n",
+				"end": "(end)(\\s+)(model)(\\s*)\n",
 				"endCaptures": {
 					"1": { "name": "entity.name.section.model.end.bngl", "patterns": [{"include": "#block_tag_mod"}] },
 					"3": { "name": "entity.name.section.model.name.bngl", "patterns": [{"include": "#block_tag_name"}]}
@@ -330,6 +330,20 @@
 				}]
 			}]
 		},
+		"species_all": {
+			"patterns": [{
+				"match": "\\s*(0)\\s*",
+				"captures": {
+					"1": { "name": "meta.species.null_pat" }
+				}
+			},
+			{
+				"match": "(.*)",
+				"captures": {
+					"1": { "name": "meta.species.non_null_pat", "patterns": [{ "include": "#species_pat"}] }
+				}
+			}]
+		},
 		"species_pat": {
 			"patterns": [{
 				"match": "(\\@[A-Za-z][A-Za-z0-9_]*)?(\\%[A-Za-z0-9][A-Za-z0-9_]*)?(\\@[A-Za-z][A-Za-z0-9_]*)?(\\:|\\:\\:)?(\\$|\\{matchOnce\\})?([^\n|\\#|\\:|\\$|\\<|\\>|\\=]+)((\\<|\\<\\=|\\=\\=|\\=\\>|\\>)[0-9]+)?",
@@ -445,7 +459,7 @@
 			"patterns": [{
 				"match": "\\s*(([^\n|\\#|\\+|\\s]|(?<=\\!)\\+|\\s(?=([^\\+]|(?<=\\!)\\+)*\\)))+)\\s*",
 				"captures": {
-					"1": { "name": "meta.rule.reactant.bngl", "patterns": [{ "include": "#species_pat"}] }
+					"1": { "name": "meta.rule.reactant.bngl", "patterns": [{ "include": "#species_all"}] }
 				}
 			},
 			{
@@ -476,7 +490,7 @@
 			"patterns": [{
 				"match": "\\s*(([^\n|\\#|\\+|\\s]|(?<=\\!)\\+|\\s(?=([^\\+]|(?<=\\!)\\+)*\\)))+)\\s*",
 				"captures": {
-					"1": { "name": "meta.rule.product.bngl", "patterns": [{ "include": "#species_pat"}] }
+					"1": { "name": "meta.rule.product.bngl", "patterns": [{ "include": "#species_all"}] }
 				}
 			},
 			{

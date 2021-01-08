@@ -665,6 +665,18 @@
 			"settings": {
 				"foreground": "#7266b3",
 			}
+		},
+		{
+			"scope": "variable.parameter.action_argument.argument_value",
+			"settings": {
+				"foreground": "#a2b659",
+			}
+		},
+		{
+			"scope": "meta.species.null_pat",
+			"settings": {
+				"foreground": "#b84744",
+			}
 		}
 	]
 }
