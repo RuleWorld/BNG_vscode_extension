@@ -1,6 +1,7 @@
 {
 	"$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
 	"name": "BioNetGen Language",
+	"scopeName": "source.bngl",
 	"patterns": [
 		{
 			"include": "#model"
@@ -600,7 +601,7 @@
 			"patterns": [
 			{
 				"name": "constant.numeric.floating.bngl",
-				"match": "(?:\\b|\\+|\\-|\\*|\\/|\\%)\\d+(\\.\\d+)?(e\\d+)?"
+				"match": "(?:\\b|\\+|\\-|\\*|\\/|\\%)\\d+(\\.\\d+)?(e(\\-|\\+|\\s*)\\d+)?(E(\\-|\\+|\\s*)\\d+)?"
 			},
 			{
 				"name": "constant.character.bngl",
@@ -638,6 +639,5 @@
 				"match": "#.*"
 			}]
 		}
-	},
-	"scopeName": "source.bngl"
+	}
 }
