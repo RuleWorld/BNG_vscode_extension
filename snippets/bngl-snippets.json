@@ -1,4 +1,19 @@
 {
+    "Molecule": {
+        "scope": "bngl",
+        "prefix": "Molecule",
+        "body": ["${1:Molecule}(${2:component}~${3:state}$0)"]
+    },
+    "MoleculeType": {
+        "scope": "bngl",
+        "prefix": "MoleculeType",
+        "body": ["${1:Molecule}(${2:component}~${3:state1}~${4:state2}$0)"]
+    },
+    "Species": {
+        "scope": "bngl",
+        "prefix": "Species",
+        "body": ["${1:Species1}(${2:component}~${3:state},${4:component}!${5:bond_number}$0).${6:Species2}(${7:component}!${5:bond_number})"]
+    },
     "model": {
         "scope": "bngl",
         "prefix": "begin model",
