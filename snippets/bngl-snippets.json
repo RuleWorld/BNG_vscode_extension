@@ -17,7 +17,7 @@
     "model": {
         "scope": "bngl",
         "prefix": "begin model",
-        "body": "begin model\n\nbegin parameters\nend parameters\n\nbegin molecule types\nend molecule types\n\nbegin compartments\nend compartments\n\nbegin species\nend species\n\nbegin observables\nend observables\n\nbegin functions\nend functions\n\nbegin reaction rules\nend reaction rules\n\nend model\n"
+        "body": "begin model\n\nbegin parameters\n  $0\nend parameters\n\nbegin molecule types\nend molecule types\n\nbegin compartments\nend compartments\n\nbegin species\nend species\n\nbegin observables\nend observables\n\nbegin functions\nend functions\n\nbegin reaction rules\nend reaction rules\n\nend model\n"
     },
     "parameters": {
         "scope": "bngl",
