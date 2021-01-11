@@ -14,6 +14,36 @@
         "prefix": "Species",
         "body": ["${1:Species1}(${2:component}~${3:state},${4:component}!${5:bond_number}$0).${6:Species2}(${7:component}!${5:bond_number})"]
     },
+    "CompartmentLine": {
+        "scope": "bngl",
+        "prefix": "Compartment",
+        "body": ["${1:CompartmentName} ${2|2,3|} ${3:volume} ${4:ParentCompartment}$0"]
+    },
+    "ParameterLine": {
+        "scope": "bngl",
+        "prefix": "Parameter",
+        "body": ["${1:ParameterName} ${2:ParameterValue}$0"]
+    },
+    "SpeciesLine": {
+        "scope": "bngl",
+        "prefix": "SpeciesLine",
+        "body": ["${1:SpeciesPattern} ${2:SpeciesAmount}"]
+    },
+    "ObservableLine": {
+        "scope": "bngl",
+        "prefix": "ObservableLine",
+        "body": ["${1|Molecules,Species|} ${2:ObservableName} ${3:ObservablePattern}"]
+    },
+    "FunctinoLine": {
+        "scope": "bngl",
+        "prefix": "FunctionLine",
+        "body": ["${1:FunctionName}($2) ${3:FunctionExpression}$0"]
+    },
+    "RuleLine": {
+        "scope": "bngl",
+        "prefix": "RuleLine",
+        "body": ["${1:Reactant1} + ${2:Reactant2} ${3|->,<->|} ${4:Product1} + ${5:Product2} ${6:RateConstant}$0"]
+    },
     "model": {
         "scope": "bngl",
         "prefix": "begin model",
