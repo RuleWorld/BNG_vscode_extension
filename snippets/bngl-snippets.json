@@ -16,12 +16,12 @@
     },
     "CompartmentLine": {
         "scope": "bngl",
-        "prefix": "Compartment",
+        "prefix": "CompartmentLine",
         "body": ["${1:CompartmentName} ${2|2,3|} ${3:volume} ${4:ParentCompartment}$0"]
     },
     "ParameterLine": {
         "scope": "bngl",
-        "prefix": "Parameter",
+        "prefix": "ParameterLine",
         "body": ["${1:ParameterName} ${2:ParameterValue}$0"]
     },
     "SpeciesLine": {
@@ -34,7 +34,7 @@
         "prefix": "ObservableLine",
         "body": ["${1|Molecules,Species|} ${2:ObservableName} ${3:ObservablePattern}"]
     },
-    "FunctinoLine": {
+    "FunctionLine": {
         "scope": "bngl",
         "prefix": "FunctionLine",
         "body": ["${1:FunctionName}($2) ${3:FunctionExpression}$0"]
