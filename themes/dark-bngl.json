@@ -677,6 +677,12 @@
 			"settings": {
 				"foreground": "#b84744",
 			}
+		},
+		{
+			"scope": "variable.language.function.argument.bngl",
+			"settings": {
+				"foreground": "#00ff6a",
+			}
 		}
 	]
 }

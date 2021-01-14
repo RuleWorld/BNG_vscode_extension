@@ -127,7 +127,7 @@
     "parameter_scan": {
         "scope": "bngl",
         "prefix": "parameter_scan",
-        "body": ["parameter_scan({t_start=>$1,t_end=>$2,n_steps=>$3,parameter=>\"$4\",par_min=>$5,par_max=>$6,n_scan_pts=>$7,log_scale=>${8:0}$0})"]
+        "body": ["parameter_scan({t_start=>$1,t_end=>$2,n_steps=>$3,parameter=>\"$4\",par_min=>$5,par_max=>$6,n_scan_pts=>$7,log_scale=>${8|0,1|}$0})"]
     },
     "bifurcate": {
         "scope": "bngl",
