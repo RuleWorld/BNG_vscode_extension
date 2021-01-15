@@ -338,7 +338,7 @@
 			"name": "meta.species.line.bngl",
 			"patterns": [
 			{
-				"match": "(?=[A-Za-z])([^\\n|\\#]+)\\s+([^((?<!\\\\)\\n)|\\#]+)",
+				"match": "(?=[A-Za-z]|\\%|\\@)([^\\n|\\#]+)\\s+([^((?<!\\\\)\\n)|\\#]+)",
 				"captures": {
 					"1": { "name": "meta.species.pattern.bngl", "patterns": [{ "include": "#species_pat" }] },
 					"2": { "name": "meta.species.amount.bngl", "patterns": [{ "include": "#expressions"}] }
