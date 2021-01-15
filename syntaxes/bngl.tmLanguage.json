@@ -257,11 +257,10 @@
 		},
 		"moltype_line": {
 			"patterns": [{
-				"name": "meta.moleculetype.line.bngl",
+				"contentName": "meta.moleculetype.line.bngl",
 				"begin": "(?=[A-Za-z])",
-				"end": "\\s*(?=\\#|\\n)",
+				"end": "\\s*(?=\\#|((?<!\\\\)\\n))",
 				"patterns": [{
-					"name": "meta.moleculetype.definition.bngl",
 					"patterns": [{
 						"include": "#moltype"
 					}]
@@ -269,6 +268,9 @@
 			},
 			{
 				"include": "#line-label"
+			},
+			{
+				"include": "#line-continuation"
 			}]
 		},
 		"compartment_line": {
@@ -304,9 +306,6 @@
 				"contentName": "function.def",
 				"patterns": [{
 					"include": "#expressions"
-				},
-				{
-					"include": "#line-continuation"
 				}]
 			},
 			{
@@ -315,11 +314,12 @@
 		},
 		"line-continuation": {
 			"patterns": [{
-				"begin": "(zz)",
+				"begin": "(\\\\)\\n",
 				"beginCaptures": {
 					"1": { "name": "punctuation.separator.continuation.line.bngl" }
 				},
-				"end":"(?<!\\\\)\\n"
+				"end":"(?<!\\\\)\\n",
+				"contentName": "punctuation.line.continue.bngl"
 			}]
 		},
 		"func_args": {
@@ -349,6 +349,9 @@
 			},
 			{
 				"include": "#line-label"
+			},
+			{
+				"include": "#line-continuation"
 			}]
 		},
 		"obs_line": {
@@ -485,7 +488,7 @@
 		"rule_line": {
 			"name": "meta.rule.line.bngl",
 			"patterns": [{
-				"begin": "(?=[A-Za-z]|\\@|\\%)([^\\n|\\#|\\<|\\-]+)\\s*(?=\\<|\\-)",
+				"begin": "(?=[A-Za-z0]|\\@|\\%)([^\\n|\\#|\\<|\\-]+)\\s*(?=\\<|\\-)",
 				"beginCaptures": {
 					"1": { "name": "meta.rule.reactants.bngl", "patterns": [{ "include": "#reactants"}] }
 				},

@@ -51,7 +51,7 @@
 		{
 			"scope": "comment",
 			"settings": {
-				"foreground": "#6A9955"
+				"foreground": "#707c6b"
 			}
 		},
 		{
@@ -603,7 +603,7 @@
 		{
 			"scope": "meta.molecule.name.bngl",
 			"settings": {
-				"foreground": "#db67c8",
+				"foreground": "#ffffff",
 			}
 		},
 		{
@@ -688,6 +688,12 @@
 			"scope": "punctuation.separator.continuation.line.bngl",
 			"settings": {
 				"foreground": "#FF0000",
+			}
+		},
+		{
+			"scope": "punctuation.line.continue.bngl",
+			"settings": {
+				"foreground": "#44a34c",
 			}
 		}
 	]
