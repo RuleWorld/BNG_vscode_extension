@@ -683,6 +683,12 @@
 			"settings": {
 				"foreground": "#00ff6a",
 			}
+		},
+		{
+			"scope": "punctuation.separator.continuation.line.bngl",
+			"settings": {
+				"foreground": "#FF0000",
+			}
 		}
 	]
 }
