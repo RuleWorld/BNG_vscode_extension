@@ -40,17 +40,17 @@
         }],
         "commands": [{
             "command": "bng.helloWorld",
-            "title": "Run BNGL",
+            "title": "Run BNG",
             "icon": {
-                "dark": "./assests/icon.svg",
-                "light": "./assets/icon.svg"
+                "dark": "./assets/icon.png",
+                "light": "./assets/icon.png"
             }
         }],
         "menus": {
             "editor/title": [{
                 "when": "resourceLangId == bngl",
                 "group": "navigation",
-                "title": "Run BNGL file",
+                "title": "Run BNG",
                 "command": "bng.helloWorld"
             }]
         },
