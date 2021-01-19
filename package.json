@@ -11,6 +11,10 @@
         "Snippets",
         "Themes"
     ],
+    "main": "./src/extension.js",
+    "activationEvents": [
+        "onLanguage:bngl"
+    ],
     "contributes": {
         "languages": [{
             "id": "bngl",
@@ -34,10 +38,9 @@
             "uiTheme": "vs-dark",
             "path": "./themes/dark-bngl.json"
         }],
-        "main": "./src/bng.ts",
         "commands": [{
-            "command": "bng.run_file",
-            "title": "Run BNGL file",
+            "command": "bng.helloWorld",
+            "title": "Run BNGL",
             "icon": {
                 "dark": "./assests/icon.svg",
                 "light": "./assets/icon.svg"
@@ -48,8 +51,30 @@
                 "when": "resourceLangId == bngl",
                 "group": "navigation",
                 "title": "Run BNGL file",
-                "command": "bng.run_file"
+                "command": "bng.helloWorld"
             }]
-        }
+        },
+        "keybindings": [{
+            "command": "bng.helloWorld",
+            "key": "ctrl+shift+f1",
+            "mac": "cmd+shift+f1",
+            "when": "resourceLangId == bngl"
+        }],
+        "scripts": {
+            "lint": "eslint .",
+            "pretest": "npm run lint",
+            "test": "node ./test/runTest.js"
+          },
+          "devDependencies": {
+            "@types/glob": "^7.1.3",
+            "@types/mocha": "^8.0.4",
+            "@types/node": "^12.11.7",
+            "@types/vscode": "^1.52.0",
+            "eslint": "^7.15.0",
+            "glob": "^7.1.6",
+            "mocha": "^8.1.3",
+            "typescript": "^4.1.2",
+            "vscode-test": "^1.4.1"
+          }
     }
 }
