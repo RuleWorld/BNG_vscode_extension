@@ -2,7 +2,7 @@
     "name": "bngl",
     "displayName": "BNGL-grammar",
     "description": "BNG language grammar for vscode",
-    "version": "0.1.0",
+    "version": "0.1.5",
     "engines": {
         "vscode": "^1.52.0"
     },
@@ -33,6 +33,23 @@
             "label": "dark-bngl",
             "uiTheme": "vs-dark",
             "path": "./themes/dark-bngl.json"
-        }]
+        }],
+        "main": "./src/bng.ts",
+        "commands": [{
+            "command": "bng.run_file",
+            "title": "Run BNGL file",
+            "icon": {
+                "dark": "./assests/icon.svg",
+                "light": "./assets/icon.svg"
+            }
+        }],
+        "menus": {
+            "editor/title": [{
+                "when": "resourceLangId == bngl",
+                "group": "navigation",
+                "title": "Run BNGL file",
+                "command": "bng.run_file"
+            }]
+        }
     }
 }
