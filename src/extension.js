@@ -30,12 +30,6 @@ function activate(context) {
 		const fold_name = `${year}_${month}_${day}_${date.getHours()}_${date.getMinutes()}`
 		// Get workspace URI 
 		let curr_workspace_uri = vscode.workspace.getWorkspaceFolder(vscode.window.activeTextEditor.document.uri).uri;
-		// Get folder URI to make the new folder
-		let new_fold_uri = vscode.Uri.joinPath(curr_workspace_uri, fold_name);
-		// Create new directory 
-		vscode.workspace.fs.createDirectory(new_fold_uri);
-		// get current file path
-		let curr_doc_uri = vscode.window.activeTextEditor.document.uri;
 		// find basename of the file we are working with
 		let fname = vscode.window.activeTextEditor.document.fileName;
 		// TODO: this is a hack to find basename, find where
@@ -44,6 +38,14 @@ function activate(context) {
 		let li_w = fname.lastIndexOf('\\')+1;
 		let li_f = Math.max(li_u,li_w);
 		fname = fname.substring(li_f);
+		let fname_noext = fname.replace(".bngl", "");
+		// Get folder URI to make the new folder
+		let new_fold_uri = vscode.Uri.joinPath(curr_workspace_uri, fname_noext, fold_name);
+		// let new_fold_uri = vscode.Uri.joinPath(curr_workspace_uri, fold_name);
+		// Create new directory 
+		vscode.workspace.fs.createDirectory(new_fold_uri);
+		// get current file path
+		let curr_doc_uri = vscode.window.activeTextEditor.document.uri;
 		// set the path to be copied to
 		let copy_path = vscode.Uri.joinPath(new_fold_uri, fname);
 		// copy the file into our new folder
