@@ -47,7 +47,6 @@ function activate(context) {
 		// set the path to be copied to
 		let copy_path = vscode.Uri.joinPath(new_fold_uri, fname);
 		// copy the file into our new folder
-		vscode.window.showInformationMessage(`copying from: ${curr_doc_uri.toString()} to ${copy_path.toString()}`)
 		vscode.workspace.fs.copy(curr_doc_uri, copy_path);
 		// set the terminal command we want to run
 		let term_cmd = `cd ${new_fold_uri.fsPath}|bionetgen -i ${copy_path.fsPath}`;
@@ -55,7 +54,7 @@ function activate(context) {
 		term.show();
 		term.sendText(term_cmd);
 		// Done running, let the user know
-		vscode.window.showInformationMessage('Done running');
+		vscode.window.showInformationMessage(`Done running ${fname} in folder ${fold_name}`);
 	}
 	// The command has been defined in the package.json file
 	// Now provide the implementation of the command with  registerCommand
