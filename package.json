@@ -39,7 +39,7 @@
             "path": "./themes/dark-bngl.json"
         }],
         "commands": [{
-            "command": "bng.helloWorld",
+            "command": "bng.run_bngl",
             "title": "Run BNG",
             "icon": {
                 "dark": "./assets/icon.png",
@@ -51,11 +51,11 @@
                 "when": "resourceLangId == bngl",
                 "group": "navigation",
                 "title": "Run BNG",
-                "command": "bng.helloWorld"
+                "command": "bng.run_bngl"
             }]
         },
         "keybindings": [{
-            "command": "bng.helloWorld",
+            "command": "bng.run_bngl",
             "key": "ctrl+shift+f1",
             "mac": "cmd+shift+f1",
             "when": "resourceLangId == bngl"

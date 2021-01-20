@@ -1,65 +1,57 @@
 # bngl-grammar-vscode README
 
-This is the README for your extension "bngl-grammar-vscode". After writing up a brief description, we recommend including the following sections.
+This is a [VSCode](https://code.visualstudio.com/) language extension for BioNetGen modelling language. 
 
 ## Features
 
-Describe specific features of your extension including screenshots of your extension in action. Image paths are relative to this README file.
-
-For example if there is an image subfolder under your extension project workspace:
-
-\!\[feature X\]\(images/feature-x.png\)
-
-> Tip: Many popular extensions utilize animations. This is an excellent way to show off your extension! We recommend short, focused animations that are easy to follow.
+* Syntax highlighting for BioNetGen modelling language
+* Various snippets to make writing BNGL simpler
+* A run button that automatically generates a timestamped folder and runs the current model
 
 ## Requirements
 
-If you have any requirements or dependencies, add a section describing those and how to install and configure them.
-
-## Extension Settings
-
-Include if your extension adds any VS Code settings through the `contributes.configuration` extension point.
-
-For example:
-
-This extension contributes the following settings:
-
-* `myExtension.enable`: enable/disable this extension
-* `myExtension.thing`: set to `blah` to do something
+To use the run button the default terminal you are using needs to have [Perl](https://www.perl.org/) installed as well as [BioNetGen commmand line interface](https://github.com/ASinanSaglam/BNG_cli) installed (you can do so with 'pip install -i https://test.pypi.org/simple/ bionetgen'). 
 
 ## Known Issues
 
-Calling out known issues can help limit users opening duplicate issues against your extension.
+Various highlighting issues
+* Line breaks mostly do not work and where it works, any character after the line break breaks the highlighting of that line
+* Need to update theme colors, using too many colors currently
+* In the species/seed species block, the expression that determines the starting species counts does not allow spaces. 
+* Any rule that has a line label of "0" and also has "0" as it's reactants will break the highlighting (e.g. following rule "0 0 -> A k" won't highlight correctly).
+
+## Installation
+
+The extension is not on the VSCode marketplace yet. You can either clone the repo and place it under your VSCode extensions folder or you can use it in debug mode.
+
+To use it in debug mode:
+
+1.	Download VSCode from https://code.visualstudio.com 
+2.	Open VSCode and open a new terminal
+	* Terminal -> New Terminal, or
+    * control + ~
+3.	In the terminal, run this line:
+git clone https://github.com/ASinanSaglam/bngl-grammar-vscode.git
+	to clone the repo in the desired directory
+4.	File -> Open to open the repo folder (bngl-grammar-vscode)
+5.	To run the extension,
+    * Run -> Start Debugging, or
+    * F5
+which will open up a new window running the extension
+6.	Open an existing .bngl file or create a new .bngl file
+
+
+Notes:
+* Make sure the theme is dark-bngl
+* To change the theme:
+  Control + shift + P  Preferences: Color Theme  dark-bngl
+* If suggestions disappear for tab autocomplete when typing in the .bngl file, control + space to show suggestions again
+* To inspect elements: 
+  Control + shift + P  Developer: Inspect Editor Tokens and Scopes
+
 
 ## Release Notes
 
-Users appreciate release notes as you update your extension.
-
-### 1.0.0
-
-Initial release of ...
-
-### 1.0.1
-
-Fixed issue #.
-
-### 1.1.0
-
-Added features X, Y, and Z.
+No releases yet, current working version is 0.2.1. The extension currently supports mostly functional highlighting, various snippets and a run button that requires BioNetGen command line interface ([you can get it here](https://github.com/ASinanSaglam/BNG_cli))
 
 -----------------------------------------------------------------------------------------------------------
-
-## Working with Markdown
-
-**Note:** You can author your README using Visual Studio Code.  Here are some useful editor keyboard shortcuts:
-
-* Split the editor (`Cmd+\` on macOS or `Ctrl+\` on Windows and Linux)
-* Toggle preview (`Shift+CMD+V` on macOS or `Shift+Ctrl+V` on Windows and Linux)
-* Press `Ctrl+Space` (Windows, Linux) or `Cmd+Space` (macOS) to see a list of Markdown snippets
-
-### For more information
-
-* [Visual Studio Code's Markdown Support](http://code.visualstudio.com/docs/languages/markdown)
-* [Markdown Syntax Reference](https://help.github.com/articles/markdown-basics/)
-
-**Enjoy!**

@@ -14,7 +14,7 @@ function activate(context) {
 	// This line of code will only be executed once when your extension is activated
 	// console.log('Congratulations, your extension "bng" is now active!');
 
-	const commandName = 'bng.helloWorld';
+	const commandName = 'bng.run_bngl';
 
 	function commandHandler() {
 		// first we try to grab our terminal and create one if it doesn't exist
