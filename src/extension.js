@@ -9,10 +9,8 @@ const vscode = require('vscode');
  * @param {vscode.ExtensionContext} context
  */
 function activate(context) {
-
-	// Use the console to output diagnostic information (console.log) and errors (console.error)
+	// TODO: Re-write this as TypeScript and use the compiler instead
 	// This line of code will only be executed once when your extension is activated
-	// console.log('Congratulations, your extension "bng" is now active!');
 
 	const commandName = 'bng.run_bngl';
 
@@ -41,7 +39,6 @@ function activate(context) {
 		let fname_noext = fname.replace(".bngl", "");
 		// Get folder URI to make the new folder
 		let new_fold_uri = vscode.Uri.joinPath(curr_workspace_uri, fname_noext, fold_name);
-		// let new_fold_uri = vscode.Uri.joinPath(curr_workspace_uri, fold_name);
 		// Create new directory 
 		vscode.workspace.fs.createDirectory(new_fold_uri);
 		// get current file path

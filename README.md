@@ -22,7 +22,9 @@ Various highlighting issues
 
 ## Installation
 
-The extension is not on the VSCode marketplace yet. You can either clone the repo and place it under your VSCode extensions folder or you can use it in debug mode.
+The extension can be found in the marketplace as BNGL-grammar. This is subject to change. 
+
+You can also clone the repo and place it under your VSCode extensions folder or you can use it in debug mode.
 
 To use it in debug mode:
 
@@ -52,6 +54,6 @@ Notes:
 
 ## Release Notes
 
-No releases yet, current working version is 0.2.1. The extension currently supports mostly functional highlighting, various snippets and a run button that requires BioNetGen command line interface ([you can get it here](https://github.com/ASinanSaglam/BNG_cli))
+No releases yet, current working version is 0.2.2. The extension currently supports mostly functional highlighting, various snippets and a run button that requires BioNetGen command line interface ([you can get it here](https://github.com/ASinanSaglam/BNG_cli))
 
 -----------------------------------------------------------------------------------------------------------
