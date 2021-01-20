@@ -28,7 +28,7 @@ function activate(context) {
 		const month = `${date.getMonth() + 1}`.padStart(2, '0');
 		const day =`${date.getDate()}`.padStart(2, '0');
 		const fold_name = `${year}_${month}_${day}_${date.getHours()}_${date.getMinutes()}`
-		// Get workspace URI 
+		// Get workspace URI
 		let curr_workspace_uri = vscode.workspace.getWorkspaceFolder(vscode.window.activeTextEditor.document.uri).uri;
 		// find basename of the file we are working with
 		let fname = vscode.window.activeTextEditor.document.fileName;
@@ -56,7 +56,7 @@ function activate(context) {
 		term.show();
 		term.sendText(term_cmd);
 		// Done running, let the user know
-		vscode.window.showInformationMessage(`Done running ${fname} in folder ${fold_name}`);
+		vscode.window.showInformationMessage(`Done running ${fname} in folder ${fname_noext}/${fold_name}`);
 	}
 	// The command has been defined in the package.json file
 	// Now provide the implementation of the command with  registerCommand
