@@ -22,16 +22,12 @@ function activate(context) {
 		if (term == undefined) {
 			term = vscode.window.createTerminal("bngl_term");
 		}
-		// TODO: Make sure we have perl in our environment or raise an 
-		// error 
-
-		// TODO: make sure we have BNGPATH in our terminal environment
-		// or raise an error
-
 		// next we make a folder friendly time stamp
-		// TODO: Update this, at the moment it just gives the current date in
-		// miliseconds
-		const fold_name = Date.now().toString();
+		const date = new Date();
+		const year = date.getFullYear();
+		const month = `${date.getMonth() + 1}`.padStart(2, '0');
+		const day =`${date.getDate()}`.padStart(2, '0');
+		const fold_name = `${year}_${month}_${day}_${date.getHours()}_${date.getMinutes()}`
 		// Get workspace URI 
 		let curr_workspace_uri = vscode.workspace.getWorkspaceFolder(vscode.window.activeTextEditor.document.uri).uri;
 		// Get folder URI to make the new folder
@@ -40,12 +36,24 @@ function activate(context) {
 		vscode.workspace.fs.createDirectory(new_fold_uri);
 		// get current file path
 		let curr_doc_uri = vscode.window.activeTextEditor.document.uri;
-		let copy_path = vscode.Uri.joinPath(new_fold_uri, "test.bngl");
-		// vscode.window.showInformationMessage(`copying from: ${curr_doc_uri.toString()} to ${copy_path.toString()}`)
+		// find basename of the file we are working with
+		let fname = vscode.window.activeTextEditor.document.fileName;
+		// TODO: this is a hack to find basename, find where
+		// the real basename function is that works with URIs
+		let li_u = fname.lastIndexOf('/')+1;
+		let li_w = fname.lastIndexOf('\\')+1;
+		let li_f = Math.max(li_u,li_w);
+		fname = fname.substring(li_f);
+		// set the path to be copied to
+		let copy_path = vscode.Uri.joinPath(new_fold_uri, fname);
+		// copy the file into our new folder
+		vscode.window.showInformationMessage(`copying from: ${curr_doc_uri.toString()} to ${copy_path.toString()}`)
 		vscode.workspace.fs.copy(curr_doc_uri, copy_path);
-		// TODO: and now we need the terminal to go into that folder
-		// and now run perl ${BNGPATH}/BNG2.pl ${CUR_BNGL_FILE}
-		term.sendText("perl -v");
+		// set the terminal command we want to run
+		let term_cmd = `cd ${new_fold_uri.fsPath}|bionetgen -i ${copy_path.fsPath}`;
+		// focus on the terminal and run the command
+		term.show();
+		term.sendText(term_cmd);
 		// Done running, let the user know
 		vscode.window.showInformationMessage('Done running');
 	}
