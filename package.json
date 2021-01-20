@@ -1,4 +1,9 @@
 {
+    "publisher": "als251",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/ASinanSaglam/bngl-grammar-vscode"
+    },
     "name": "bngl",
     "displayName": "BNGL-grammar",
     "description": "BNG language grammar for vscode",
