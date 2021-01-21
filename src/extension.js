@@ -12,9 +12,11 @@ function activate(context) {
 	// TODO: Re-write this as TypeScript and use the compiler instead
 	// This line of code will only be executed once when your extension is activated
 
-	const commandName = 'bng.run_bngl';
+	const runCommandName = 'bng.run_bngl';
+	const plotgdatCommandName = 'bng.plot_gdat';
+	const plotcdatCommandName = 'bng.plot_cdat';
 
-	function commandHandler() {
+	function runCommandHandler() {
 		// first we try to grab our terminal and create one if it doesn't exist
 		let term = vscode.window.terminals.find(i => i.name == "bngl_term");
 		if (term == undefined) {
@@ -55,12 +57,67 @@ function activate(context) {
 		// Done running, let the user know
 		vscode.window.showInformationMessage(`Done running ${fname} in folder ${fname_noext}/${fold_name}`);
 	}
+	function plotgdatCommandHandler() {
+		let term = vscode.window.terminals.find(i => i.name == "bngl_term");
+		if (term == undefined) {
+			term = vscode.window.createTerminal("bngl_term");
+		}
+		// find basename of the file we are working with
+		let fpath = vscode.window.activeTextEditor.document.fileName;
+		// TODO: this is a hack to find basename, find where
+		// the real basename function is that works with URIs
+		let li_u = fpath.lastIndexOf('/')+1;
+		let li_w = fpath.lastIndexOf('\\')+1;
+		let li_f = Math.max(li_u,li_w);
+		let fname = fpath.substring(li_f);
+		let fname_noext = fname.replace(".gdat", "");
+		// set the path to be copied to
+		let outpath = fpath.replace(fname, `${fname_noext}_gdat.png`);
+		// set the terminal command we want to run
+		let term_cmd = `bionetgen -i ${fpath} -o ${outpath} plot`;
+		// focus on the terminal and run the command
+		term.show();
+		term.sendText(term_cmd);
+		// Done running, let the user know
+		vscode.window.showInformationMessage(`Done plotting ${fpath} to ${outpath}`);
+		let outUri = vscode.Uri.file(outpath);
+		vscode.env.openExternal(outUri);
+	}
+	function plotcdatCommandHandler() {
+		let term = vscode.window.terminals.find(i => i.name == "bngl_term");
+		if (term == undefined) {
+			term = vscode.window.createTerminal("bngl_term");
+		}
+		// find basename of the file we are working with
+		let fpath = vscode.window.activeTextEditor.document.fileName;
+		// TODO: this is a hack to find basename, find where
+		// the real basename function is that works with URIs
+		let li_u = fpath.lastIndexOf('/')+1;
+		let li_w = fpath.lastIndexOf('\\')+1;
+		let li_f = Math.max(li_u,li_w);
+		let fname = fpath.substring(li_f);
+		let fname_noext = fname.replace(".cdat", "");
+		// set the path to be copied to
+		let outpath = fpath.replace(fname, `${fname_noext}_cdat.png`);
+		// set the terminal command we want to run
+		let term_cmd = `bionetgen -i ${fpath} -o ${outpath} plot`;
+		// focus on the terminal and run the command
+		term.show();
+		term.sendText(term_cmd);
+		// Done running, let the user know
+		vscode.window.showInformationMessage(`Done plotting ${fpath} to ${outpath}`);
+		let outUri = vscode.Uri.file(outpath);
+		vscode.env.openExternal(outUri);
+	}
 	// The command has been defined in the package.json file
 	// Now provide the implementation of the command with  registerCommand
 	// The commandId parameter must match the command field in package.json
-	let disposable = vscode.commands.registerCommand(commandName, commandHandler);
-
-	context.subscriptions.push(disposable);
+	let disposable1 = vscode.commands.registerCommand(runCommandName, runCommandHandler);
+	context.subscriptions.push(disposable1);
+	let disposable2 = vscode.commands.registerCommand(plotgdatCommandName, plotgdatCommandHandler);
+	context.subscriptions.push(disposable2);
+	let disposable3 = vscode.commands.registerCommand(plotcdatCommandName, plotcdatCommandHandler);
+	context.subscriptions.push(disposable3);
 }
 exports.activate = activate;
 

@@ -29,7 +29,7 @@
         "languages": [{
             "id": "bngl",
             "aliases": ["BioNetGen Language", "bng"],
-            "extensions": [".bngl"],
+            "extensions": [".bngl", ".gdat", ".cdat"],
             "configuration": "./bngl-language-configuration.json"
         }],
         "grammars": [{
@@ -54,14 +54,42 @@
             "icon": {
                 "dark": "./assets/icon.png",
                 "light": "./assets/icon.png"
+            }},
+            {
+                "command": "bng.plot_gdat",
+                "title": "Plot gdat",
+                "icon": {
+                    "dark": "./assets/plot_icon_dark.svg",
+                    "light": "./assets/plot_icon_light.svg"
+                }
+            },
+            {
+                "command": "bng.plot_cdat",
+                "title": "Plot cdat",
+                "icon": {
+                    "dark": "./assets/plot_icon_dark.svg",
+                    "light": "./assets/plot_icon_light.svg"
+                }
             }
-        }],
+        ],
         "menus": {
             "editor/title": [{
-                "when": "resourceLangId == bngl",
+                "when": "resourceLangId == bngl && resourceExtname == .bngl",
                 "group": "navigation",
                 "title": "Run BNG",
                 "command": "bng.run_bngl"
+            },
+            {
+                "when": "resourceLangId == bngl && resourceExtname == .gdat",
+                "group": "navigation",
+                "title": "Plot gdat",
+                "command": "bng.plot_gdat"
+            },
+            {
+                "when": "resourceLangId == bngl && resourceExtname == .cdat",
+                "group": "navigation",
+                "title": "Plot cdat",
+                "command": "bng.plot_cdat"
             }]
         },
         "keybindings": [{
