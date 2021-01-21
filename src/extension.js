@@ -81,10 +81,15 @@ function activate(context) {
 		term.show();
 		term.sendText(term_cmd);
 		let outUri = vscode.Uri.file(outpath);
-		checkImage(outpath, 10000).then(() => {
+		let timeout_mili = 10000;
+
+		checkImage(outpath, timeout_mili).then(() => {
 			vscode.window.showInformationMessage(`Done plotting ${fpath} to ${outpath} with exit code`); 		
 			vscode.commands.executeCommand('vscode.open', outUri);
-		});
+		}).catch(() => {
+				vscode.window.showInformationMessage(`Plotting didn't finish within ${timeout_mili} miliseconds`); 			
+			}
+		);
 	}
 	function plotcdatCommandHandler() {
 		let term = vscode.window.terminals.find(i => i.name == "bngl_term");
@@ -110,10 +115,14 @@ function activate(context) {
 		// We need to async check if the image exists and if it does
 		// we let the user know and open the image
 		let outUri = vscode.Uri.file(outpath);
-		checkImage(outpath, 10000).then(() => {
+		let timeout_mili = 10000;
+		checkImage(outpath, timeout_mili).then(() => {
 			vscode.window.showInformationMessage(`Done plotting ${fpath} to ${outpath} with exit code`); 		
 			vscode.commands.executeCommand('vscode.open', outUri);
-		});
+		}).catch(() => {
+				vscode.window.showInformationMessage(`Plotting didn't finish within ${timeout_mili} miliseconds`); 			
+			}
+		);
 	}
 	// The command has been defined in the package.json file
 	// Now provide the implementation of the command with  registerCommand
@@ -134,7 +143,7 @@ function checkImage(outpath, timeout) {
 	return new Promise(function (resolve, reject) {
 		var timer = setTimeout(function () {
 			watcher.close();
-			reject(new Error(`Image wasn't plotted within ${timeout} miliseconds`))
+			reject();
 		}, timeout);
 
 		fs.access(outpath, fs.constants.F_OK, function (err) {
