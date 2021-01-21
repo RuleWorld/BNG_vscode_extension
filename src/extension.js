@@ -81,7 +81,7 @@ function activate(context) {
 		// Done running, let the user know
 		vscode.window.showInformationMessage(`Done plotting ${fpath} to ${outpath}`);
 		let outUri = vscode.Uri.file(outpath);
-		vscode.env.openExternal(outUri);
+		vscode.commands.executeCommand('vscode.open', outUri);
 	}
 	function plotcdatCommandHandler() {
 		let term = vscode.window.terminals.find(i => i.name == "bngl_term");
@@ -107,7 +107,7 @@ function activate(context) {
 		// Done running, let the user know
 		vscode.window.showInformationMessage(`Done plotting ${fpath} to ${outpath}`);
 		let outUri = vscode.Uri.file(outpath);
-		vscode.env.openExternal(outUri);
+		vscode.commands.executeCommand('vscode.open', outUri);
 	}
 	// The command has been defined in the package.json file
 	// Now provide the implementation of the command with  registerCommand
