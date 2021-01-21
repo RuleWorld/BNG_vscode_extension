@@ -1,6 +1,8 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 const vscode = require('vscode');
+const fs = require('fs');
+const path = require('path');
 
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
@@ -78,10 +80,11 @@ function activate(context) {
 		// focus on the terminal and run the command
 		term.show();
 		term.sendText(term_cmd);
-		// Done running, let the user know
-		vscode.window.showInformationMessage(`Done plotting ${fpath} to ${outpath}`);
 		let outUri = vscode.Uri.file(outpath);
-		vscode.commands.executeCommand('vscode.open', outUri);
+		checkImage(outpath, 10000).then(() => {
+			vscode.window.showInformationMessage(`Done plotting ${fpath} to ${outpath} with exit code`); 		
+			vscode.commands.executeCommand('vscode.open', outUri);
+		});
 	}
 	function plotcdatCommandHandler() {
 		let term = vscode.window.terminals.find(i => i.name == "bngl_term");
@@ -104,10 +107,13 @@ function activate(context) {
 		// focus on the terminal and run the command
 		term.show();
 		term.sendText(term_cmd);
-		// Done running, let the user know
-		vscode.window.showInformationMessage(`Done plotting ${fpath} to ${outpath}`);
+		// We need to async check if the image exists and if it does
+		// we let the user know and open the image
 		let outUri = vscode.Uri.file(outpath);
-		vscode.commands.executeCommand('vscode.open', outUri);
+		checkImage(outpath, 10000).then(() => {
+			vscode.window.showInformationMessage(`Done plotting ${fpath} to ${outpath} with exit code`); 		
+			vscode.commands.executeCommand('vscode.open', outUri);
+		});
 	}
 	// The command has been defined in the package.json file
 	// Now provide the implementation of the command with  registerCommand
@@ -119,6 +125,38 @@ function activate(context) {
 	let disposable3 = vscode.commands.registerCommand(plotcdatCommandName, plotcdatCommandHandler);
 	context.subscriptions.push(disposable3);
 }
+
+/**
+ * @param {string} outpath
+ * @param {number} [timeout]
+ */
+function checkImage(outpath, timeout) {
+	return new Promise(function (resolve, reject) {
+		var timer = setTimeout(function () {
+			watcher.close();
+			reject(new Error(`Image wasn't plotted within ${timeout} miliseconds`))
+		}, timeout);
+
+		fs.access(outpath, fs.constants.F_OK, function (err) {
+			if (!err) {
+				clearTimeout(timer);
+				watcher.close();
+				resolve();
+			}
+		});
+		var dir = path.dirname(outpath);
+		var basename = path.basename(outpath);
+		var watcher = fs.watch(dir, function (eventType, filename) {
+			if (eventType == "rename" && filename == basename) {
+				clearTimeout(timer);
+				watcher.close();
+				resolve();
+			}
+		});
+	}
+	)
+}
+
 exports.activate = activate;
 
 // this method is called when your extension is deactivated
