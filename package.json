@@ -10,8 +10,8 @@
         "theme": "dark"
     },
     "name": "bngl",
-    "displayName": "BNGL-grammar",
-    "description": "BNG language grammar for vscode",
+    "displayName": "BioNetGen Language",
+    "description": "BNG language extension for vscode",
     "version": "0.2.5",
     "engines": {
         "vscode": "^1.52.0"

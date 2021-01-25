@@ -7,10 +7,11 @@ This is a [VSCode](https://code.visualstudio.com/) language extension for BioNet
 * Syntax highlighting for BioNetGen modelling language
 * Various snippets to make writing BNGL simpler
 * A run button that automatically generates a timestamped folder and runs the current model
+* A plot button that generates a plot of the current .gdat/.cdat file
 
 ## Requirements
 
-To use the run button the default terminal you are using needs to have [Perl](https://www.perl.org/) installed as well as [BioNetGen commmand line interface](https://github.com/ASinanSaglam/BNG_cli) installed (you can do so with 'pip install -i https://test.pypi.org/simple/ bionetgen'). 
+To use the run and plot buttons the default terminal you are using needs to have [Perl](https://www.perl.org/) installed as well as [BioNetGen commmand line interface](https://github.com/ASinanSaglam/BNG_cli) installed (you can do so with 'pip install -i https://test.pypi.org/simple/ bionetgen'). 
 
 ## Known Issues
 

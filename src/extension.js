@@ -1,8 +1,9 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 const vscode = require('vscode');
-const fs = require('fs');
-const path = require('path');
+const fs     = require('fs');
+const path   = require('path');
+const os     = require('os');
 
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
@@ -14,15 +15,28 @@ function activate(context) {
 	// TODO: Re-write this as TypeScript and use the compiler instead
 	// This line of code will only be executed once when your extension is activated
 
-	const runCommandName = 'bng.run_bngl';
+	const runCommandName      = 'bng.run_bngl';
 	const plotgdatCommandName = 'bng.plot_gdat';
 	const plotcdatCommandName = 'bng.plot_cdat';
 
 	function runCommandHandler() {
 		// first we try to grab our terminal and create one if it doesn't exist
+		// TOOD: Instantiate terminal appropriately depending on the OS 
+		// you can get the OS via os.platform(). Options are:
+		// linux/win32/darwin
 		let term = vscode.window.terminals.find(i => i.name == "bngl_term");
 		if (term == undefined) {
-			term = vscode.window.createTerminal("bngl_term");
+			let plt = os.platform();
+			if (plt.toString() == "win32") {
+				term = vscode.window.createTerminal("bngl_term");
+			} else if (plt.toString() == "linux") {
+				term = vscode.window.createTerminal("bngl_term");
+			} else if (plt.toString() == "darwin") {
+				term = vscode.window.createTerminal("bngl_term");
+			} else {
+				vscode.window.showInformationMessage(`OS ${plt} is not supported, using default terminal options`);
+				term = vscode.window.createTerminal("bngl_term");
+			}
 		}
 		// next we make a folder friendly time stamp
 		const date = new Date();
@@ -52,7 +66,7 @@ function activate(context) {
 		// copy the file into our new folder
 		vscode.workspace.fs.copy(curr_doc_uri, copy_path);
 		// set the terminal command we want to run
-		let term_cmd = `cd ${new_fold_uri.fsPath}|bionetgen -i ${copy_path.fsPath}`;
+		let term_cmd = `bionetgen run -i ${copy_path.fsPath} -o ${new_fold_uri.fsPath}`;
 		// focus on the terminal and run the command
 		term.show();
 		term.sendText(term_cmd);
@@ -76,7 +90,7 @@ function activate(context) {
 		// set the path to be copied to
 		let outpath = fpath.replace(fname, `${fname_noext}_gdat.png`);
 		// set the terminal command we want to run
-		let term_cmd = `bionetgen -i ${fpath} -o ${outpath} plot`;
+		let term_cmd = `bionetgen plot -i ${fpath} -o ${outpath} --legend`;
 		// focus on the terminal and run the command
 		term.show();
 		term.sendText(term_cmd);
@@ -108,7 +122,7 @@ function activate(context) {
 		// set the path to be copied to
 		let outpath = fpath.replace(fname, `${fname_noext}_cdat.png`);
 		// set the terminal command we want to run
-		let term_cmd = `bionetgen -i ${fpath} -o ${outpath} plot`;
+		let term_cmd = `bionetgen plot -i ${fpath} -o ${outpath}`;
 		// focus on the terminal and run the command
 		term.show();
 		term.sendText(term_cmd);
