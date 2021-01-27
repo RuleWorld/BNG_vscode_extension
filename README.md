@@ -7,7 +7,7 @@ This is a [VSCode](https://code.visualstudio.com/) language extension for BioNet
 * Syntax highlighting for BioNetGen modelling language
 * Various snippets to make writing BNGL simpler
 * A run button that automatically generates a timestamped folder and runs the current model
-* A plot button that generates a plot of the current .gdat/.cdat file
+* A plot button that generates a plot of the current .gdat/.cdat/.scan file
 
 ## Requirements
 
@@ -20,6 +20,9 @@ Various highlighting issues
 * Need to update theme colors, using too many colors currently
 * In the species/seed species block, the expression that determines the starting species counts does not allow spaces. 
 * Any rule that has a line label of "0" and also has "0" as it's reactants will break the highlighting (e.g. following rule "0 0 -> A k" won't highlight correctly).
+
+A couple issues with buttons
+* Run button finish warning pops up immediate and doesn't wait for the run to finish. This is hard to check for a couple reasons, the main one being that a BNGL file can generate various files and we can't check if the terminal is responsive again from VSCode API directly. 
 
 ## Installation
 
@@ -55,6 +58,6 @@ Notes:
 
 ## Release Notes
 
-No releases yet, current working version is 0.2.2. The extension currently supports mostly functional highlighting, various snippets and a run button that requires BioNetGen command line interface ([you can get it here](https://github.com/ASinanSaglam/BNG_cli))
+No releases yet, current working version is 0.2.7. The extension currently supports mostly functional highlighting, various snippets and a run button that requires BioNetGen command line interface ([you can get it here](https://github.com/ASinanSaglam/BNG_cli)) and very basic plotting support for .gdat/.cdat/.scan files. 
 
 -----------------------------------------------------------------------------------------------------------
