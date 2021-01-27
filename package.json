@@ -29,7 +29,7 @@
         "languages": [{
             "id": "bngl",
             "aliases": ["BioNetGen Language", "bng"],
-            "extensions": [".bngl", ".gdat", ".cdat", ".scan"],
+            "extensions": [".bngl", ".gdat", ".cdat", ".scan", ".gml"],
             "configuration": "./bngl-language-configuration.json"
         }],
         "grammars": [{
@@ -78,6 +78,14 @@
                     "dark": "./assets/plot_icon_dark.svg",
                     "light": "./assets/plot_icon_light.svg"
                 }
+            },
+            {
+                "command": "bng.webview",
+                "title": "Testing webview",
+                "icon": {
+                    "dark": "./assets/plot_icon_dark.svg",
+                    "light": "./assets/plot_icon_light.svg"
+                }
             }
         ],
         "menus": {
@@ -104,6 +112,12 @@
                 "group": "navigation",
                 "title": "Plot scan",
                 "command": "bng.plot_scan"
+            },
+            {
+                "when": "resourceLangId == bngl && resourceExtname == .gml",
+                "group": "navigation",
+                "title": "Webview",
+                "command": "bng.webview"
             }]
         },
         "keybindings": [{

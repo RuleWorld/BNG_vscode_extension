@@ -11,7 +11,7 @@ This is a [VSCode](https://code.visualstudio.com/) language extension for BioNet
 
 ## Requirements
 
-To use the run and plot buttons the default terminal you are using needs to have [Perl](https://www.perl.org/) installed as well as [BioNetGen commmand line interface](https://github.com/ASinanSaglam/BNG_cli) installed (you can do so with 'pip install -i https://test.pypi.org/simple/ bionetgen'). 
+To use the run and plot buttons the default terminal you are using needs to have [Perl](https://www.perl.org/) installed as well as [BioNetGen commmand line interface](https://github.com/ASinanSaglam/BNG_cli) installed (you can do so with 'pip install -i https://test.pypi.org/simple/ bionetgen'). Current required version of the CLI is 0.2.2. Please note that both of these tools are in active development and is subject to large changes.
 
 ## Known Issues
 
