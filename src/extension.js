@@ -18,6 +18,7 @@ function activate(context) {
 	const runCommandName      = 'bng.run_bngl';
 	const plotgdatCommandName = 'bng.plot_gdat';
 	const plotcdatCommandName = 'bng.plot_cdat';
+	const plotscanCommandName = 'bng.plot_scan';
 
 	function runCommandHandler() {
 		// first we try to grab our terminal and create one if it doesn't exist
@@ -138,6 +139,38 @@ function activate(context) {
 			}
 		);
 	}
+	function plotscanCommandHandler() {
+		let term = vscode.window.terminals.find(i => i.name == "bngl_term");
+		if (term == undefined) {
+			term = vscode.window.createTerminal("bngl_term");
+		}
+		// find basename of the file we are working with
+		let fpath = vscode.window.activeTextEditor.document.fileName;
+		// TODO: this is a hack to find basename, find where
+		// the real basename function is that works with URIs
+		let li_u = fpath.lastIndexOf('/')+1;
+		let li_w = fpath.lastIndexOf('\\')+1;
+		let li_f = Math.max(li_u,li_w);
+		let fname = fpath.substring(li_f);
+		let fname_noext = fname.replace(".scan", "");
+		// set the path to be copied to
+		let outpath = fpath.replace(fname, `${fname_noext}_scan.png`);
+		// set the terminal command we want to run
+		let term_cmd = `bionetgen plot -i ${fpath} -o ${outpath} --legend`;
+		// focus on the terminal and run the command
+		term.show();
+		term.sendText(term_cmd);
+		let outUri = vscode.Uri.file(outpath);
+		let timeout_mili = 10000;
+
+		checkImage(outpath, timeout_mili).then(() => {
+			vscode.window.showInformationMessage(`Done plotting ${fpath} to ${outpath} with exit code`); 		
+			vscode.commands.executeCommand('vscode.open', outUri);
+		}).catch(() => {
+				vscode.window.showInformationMessage(`Plotting didn't finish within ${timeout_mili} miliseconds`); 			
+			}
+		);
+	}
 	// The command has been defined in the package.json file
 	// Now provide the implementation of the command with  registerCommand
 	// The commandId parameter must match the command field in package.json
@@ -147,6 +180,8 @@ function activate(context) {
 	context.subscriptions.push(disposable2);
 	let disposable3 = vscode.commands.registerCommand(plotcdatCommandName, plotcdatCommandHandler);
 	context.subscriptions.push(disposable3);
+	let disposable4 = vscode.commands.registerCommand(plotscanCommandName, plotscanCommandHandler);
+	context.subscriptions.push(disposable4);
 }
 
 /**

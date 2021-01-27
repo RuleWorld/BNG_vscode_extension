@@ -12,7 +12,7 @@
     "name": "bngl",
     "displayName": "BioNetGen Language",
     "description": "BNG language extension for vscode",
-    "version": "0.2.5",
+    "version": "0.2.6",
     "engines": {
         "vscode": "^1.52.0"
     },
@@ -29,7 +29,7 @@
         "languages": [{
             "id": "bngl",
             "aliases": ["BioNetGen Language", "bng"],
-            "extensions": [".bngl", ".gdat", ".cdat"],
+            "extensions": [".bngl", ".gdat", ".cdat", ".scan"],
             "configuration": "./bngl-language-configuration.json"
         }],
         "grammars": [{
@@ -70,6 +70,14 @@
                     "dark": "./assets/plot_icon_dark.svg",
                     "light": "./assets/plot_icon_light.svg"
                 }
+            },
+            {
+                "command": "bng.plot_scan",
+                "title": "Plot scan",
+                "icon": {
+                    "dark": "./assets/plot_icon_dark.svg",
+                    "light": "./assets/plot_icon_light.svg"
+                }
             }
         ],
         "menus": {
@@ -90,13 +98,37 @@
                 "group": "navigation",
                 "title": "Plot cdat",
                 "command": "bng.plot_cdat"
+            },
+            {
+                "when": "resourceLangId == bngl && resourceExtname == .scan",
+                "group": "navigation",
+                "title": "Plot scan",
+                "command": "bng.plot_scan"
             }]
         },
         "keybindings": [{
             "command": "bng.run_bngl",
             "key": "ctrl+shift+f1",
             "mac": "cmd+shift+f1",
-            "when": "resourceLangId == bngl"
+            "when": "resourceLangId == bngl && resourceExtname == .bngl"
+        },
+        {
+            "command": "bng.plot_gdat",
+            "key": "ctrl+shift+f1",
+            "mac": "cmd+shift+f1",
+            "when": "resourceLangId == bngl && resourceExtname == .gdat"
+        },
+        {
+            "command": "bng.plot_cdat",
+            "key": "ctrl+shift+f1",
+            "mac": "cmd+shift+f1",
+            "when": "resourceLangId == bngl && resourceExtname == .cdat"
+        },
+        {
+            "command": "bng.plot_scan",
+            "key": "ctrl+shift+f1",
+            "mac": "cmd+shift+f1",
+            "when": "resourceLangId == bngl && resourceExtname == .gdat"
         }],
         "scripts": {
             "lint": "eslint .",

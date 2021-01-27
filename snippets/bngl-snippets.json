@@ -102,7 +102,7 @@
     "simulate": {
         "scope": "bngl",
         "prefix": "simulate",
-        "body": ["simulate({method=>\"${1|ode,ssa,pla,nf|}\",t_start=>$2,t_end=>$3,n_steps=>$4$0})"]
+        "body": ["simulate({method=>\"${1|ode,ssa,nf,pla|}\",t_start=>$2,t_end=>$3,n_steps=>$4$0})"]
     },
     "simulate_ode": {
         "scope": "bngl",
@@ -127,7 +127,7 @@
     "parameter_scan": {
         "scope": "bngl",
         "prefix": "parameter_scan",
-        "body": ["parameter_scan({t_start=>$1,t_end=>$2,n_steps=>$3,parameter=>\"$4\",par_min=>$5,par_max=>$6,n_scan_pts=>$7,log_scale=>${8|0,1|}$0})"]
+        "body": ["parameter_scan({method=>\"${1|ode,ssa,nf,pla|}\"t_start=>$2,t_end=>$3,n_steps=>$4,parameter=>\"$5\",par_min=>$6,par_max=>$7,n_scan_pts=>$8,log_scale=>${9|0,1|}$0})"]
     },
     "bifurcate": {
         "scope": "bngl",
