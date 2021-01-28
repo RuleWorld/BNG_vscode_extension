@@ -184,17 +184,18 @@ function activate(context) {
 	context.subscriptions.push(disposable3);
 	let disposable4 = vscode.commands.registerCommand(plotscanCommandName, plotscanCommandHandler);
 	context.subscriptions.push(disposable4);
-	let disposable5 = vscode.commands.registerCommand(webviewCommandName, PlotPanel.createOrShow);
+	let disposable5 = vscode.commands.registerCommand(webviewCommandName, () => {PlotPanel.createOrShow(context.extensionUri)});
 	context.subscriptions.push(disposable5);
 
 	if (vscode.window.registerWebviewPanelSerializer) {
 		// Make sure we register a serializer in activation event
 		vscode.window.registerWebviewPanelSerializer(PlotPanel.viewType, {
 			async deserializeWebviewPanel(webviewPanel, state) {
-				console.log(`Got state: ${state}`);
 				// Reset the webview options so we use latest uri for `localResourceRoots`.
-				webviewPanel.webview.options = { enableScripts: true };
-				PlotPanel.revive(webviewPanel, ".gml");
+				webviewPanel.webview.options = { enableScripts: true, localResourceRoots: [vscode.Uri.joinPath(context.extensionUri, 'media')] };
+				let fname = vscode.window.activeTextEditor.document.fileName;
+				let extension = fname.split(".").pop();
+				PlotPanel.revive(webviewPanel, extension);
 			}
 		});
 	}
@@ -236,6 +237,8 @@ class PlotPanel {
 	static cur_panel;
 	/** @type {String} */
 	static viewType = "plot";
+	/** @type {vscode.Uri} */
+	static _extensionUri;
 	/** @type {vscode.WebviewPanel} */
 	_panel;
 	/** @type {String} */
@@ -244,6 +247,8 @@ class PlotPanel {
 	viewTitle;
 	/** @type {vscode.Disposable[]} */
 	_disposables = [];
+	/** @type {String} */
+	_nonce;
 
 	/**
 	 * Tracks plot panel
@@ -283,7 +288,7 @@ class PlotPanel {
 			message => {
 				switch (message.command) {
 					case 'alert':
-						vscode.window.showErrorMessage(message.text);
+						vscode.window.showInformationMessage(message.text);
 						return;
 				}
 			},
@@ -292,39 +297,152 @@ class PlotPanel {
 		);
 	} 
 
+	/**
+	 * 
+	 * @param {vscode.WebviewPanel} panel 
+	 * @param {String} extension 
+	 */
 	static revive(panel, extension) {
 		PlotPanel.cur_panel = new PlotPanel(panel, extension)
 	}
 
 	_update() {
+		// set nonce 
+		this._nonce = get_nonce();
+		// each update should run this maybe?
+		let fname = vscode.window.activeTextEditor.document.fileName;
+		let extension = fname.split(".").pop();
+		// get webview to pass to set_html functions
 		const webview = this._panel.webview;
 		// content depends on the extension
-		switch (this._cur_ext) {
+		switch (extension) {
 			case "gml":
 				this._set_gml(webview);
+				this._panel.title = "GML Viewer";
 				return;
-			case "plot":
+			case "gdat":
 				this._set_plot(webview);
+				this._panel.title = "Plot viewer";
+				return;
+			case "cdat":
+				this._set_plot(webview);
+				this._panel.title = "Plot viewer";
+				return;
+			case "scan":
+				this._set_plot(webview);
+				this._panel.title = "Scan Plot";
 				return;
 		}
 	}
 
+	/**
+	 * 
+	 * @param {vscode.Webview} webview 
+	 */
 	_set_gml(webview) {
+		// Local path to main script run in the webview
+		const scriptPathOnDisk = vscode.Uri.joinPath(PlotPanel._extensionUri, 'media', 'main.js');
+
+		// And the uri we use to load this script in the webview
+		const scriptUri = webview.asWebviewUri(scriptPathOnDisk);
+
+		// Local path to css styles
+		// const styleResetPath = vscode.Uri.joinPath(this._extensionUri, 'media', 'reset.css');
+		// const stylesPathMainPath = vscode.Uri.joinPath(this._extensionUri, 'media', 'vscode.css');
+
+		// Uri to load styles into webview
+		//const stylesResetUri = webview.asWebviewUri(styleResetPath);
+		//const stylesMainUri = webview.asWebviewUri(stylesPathMainPath);
+		
+		// Finally set the HTML
 		webview.html = `<!DOCTYPE html>
-		<html lang="en">
-		<head>
-			<meta charset="UTF-8">
-			<title>GML Viewer</title>
-		</head>
-		<body>
-			<h1 id="GML">We will show a network plot here</h1>
-		</body>
-		</html>`;
+			<html lang="en">
+			<head>
+				<meta charset="UTF-8">
+				<!--
+					Use a content security policy to only allow loading images from https or from our extension directory,
+					and only allow scripts that have a specific nonce.
+				-->
+				<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${webview.cspSource}; img-src ${webview.cspSource} https:; script-src 'nonce-${this._nonce}';">
+				<meta name="viewport" content="width=device-width, initial-scale=1.0">
+				<title>GML Viewer</title>
+			</head>
+			<body>
+				<h1 id="plot">We will show a line plot here</h1>
+				<script nonce="${this._nonce}" src="${scriptUri}"></script>
+			</body>
+			</html>`;
+		// now we'll parse the editor text and turn it into a 
+		// data format we can pass along to the webview that's open
+		let text = vscode.window.activeTextEditor.document.getText();
+		let data_arr = this.parse_gml(text);
+		webview.postMessage({
+			command: 'network',
+			context: 'data',
+			data: data_arr
+		});
 	}
 
-	_set_plot(webwview) {
-		webwview.html
-		return;
+	/**
+	 * 
+	 * @param {vscode.Webview} webview 
+	 */
+	_set_plot(webview) {
+		// Local path to main script run in the webview
+		const scriptPathOnDisk = vscode.Uri.joinPath(PlotPanel._extensionUri, 'media', 'main.js');
+
+		// And the uri we use to load this script in the webview
+		const scriptUri = webview.asWebviewUri(scriptPathOnDisk);
+
+		// Local path to css styles
+		// const styleResetPath = vscode.Uri.joinPath(this._extensionUri, 'media', 'reset.css');
+		// const stylesPathMainPath = vscode.Uri.joinPath(this._extensionUri, 'media', 'vscode.css');
+
+		// Uri to load styles into webview
+		//const stylesResetUri = webview.asWebviewUri(styleResetPath);
+		//const stylesMainUri = webview.asWebviewUri(stylesPathMainPath);
+		
+		// Finally set the HTML
+		webview.html = `<!DOCTYPE html>
+			<html lang="en">
+			<head>
+				<meta charset="UTF-8">
+				<!--
+					Use a content security policy to only allow loading images from https or from our extension directory,
+					and only allow scripts that have a specific nonce.
+				-->
+				<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${webview.cspSource}; img-src ${webview.cspSource} https:; script-src 'nonce-${this._nonce}';">
+				<meta name="viewport" content="width=device-width, initial-scale=1.0">
+				<title>GML Viewer</title>
+			</head>
+			<body>
+				<h1 id="plot">We will show a line plot here</h1>
+				<script nonce="${this._nonce}" src="${scriptUri}"></script>
+			</body>
+			</html>`;
+		// now we'll parse the editor text and turn it into a 
+		// data format we can pass along to the webview that's open
+		let text = vscode.window.activeTextEditor.document.getText();
+		let data_arr = this.parse_dat(text);
+		webview.postMessage({
+			command: 'plot',
+			context: 'data',
+			data: data_arr
+		});
+	}
+
+	/**
+	 * 
+	 * @param {String} text 
+	 */
+	parse_dat(text) {
+		let lines = text.split("\n");
+		let splt_lines = lines.map(w => {w.split(/(\s+)/).filter( e => e.trim().length > 0)});
+		return splt_lines;
+	}
+
+	parse_gml(text) {
+		return "empty";
 	}
 
 	dispose() {
@@ -340,49 +458,52 @@ class PlotPanel {
 		}
 	}
 
-	static createOrShow() {
+	/**
+	 * 
+	 * @param {vscode.Uri} extensionUri 
+	 */
+	static createOrShow(extensionUri) {
+		// set extensionUri
+		PlotPanel._extensionUri = extensionUri;
 		// we want to pop open a new tab on the side
 		let column = vscode.ViewColumn.Beside;
 		// we want the extension to determine the type of 
 		// html we want to write
 		let fname = vscode.window.activeTextEditor.document.fileName;
 		let extension = fname.split(".").pop();
+		let title = "Unknown";
+		if (extension == "gml") {
+			title = "GML Viewer";
+		} else if (extension == "gdat" || extension == "cdat") {
+			title = "Plot viewer";
+		} else if (extension == "scan") {
+			title = "Scan Plot";
+		}
 
 		if (PlotPanel.cur_panel) {
+			PlotPanel.cur_panel._update();
 			PlotPanel.cur_panel._panel.reveal(column);
 			return;
 		}
 		const panel = vscode.window.createWebviewPanel(
 			PlotPanel.viewType,
-			"GML Viewer",
+			title,
 			column || vscode.ViewColumn.Beside,
-			{ enableScripts: true }
+			{ enableScripts: true, localResourceRoots: [vscode.Uri.joinPath(extensionUri, 'media')] }
 		);
 
 		PlotPanel.cur_panel = new PlotPanel(panel, extension)
 	}
 }
-/*
-function webviewCommandHandler() {
-	// let panel = vscode.window.createWebviewPanel();
-	const panel = vscode.window.createWebviewPanel(
-		"gmlTesting",
-		"GML TEST",
-		vscode.ViewColumn.One,
-		{ enableScripts: true }
-	);
-	panel.webview.html = `<!DOCTYPE html>
-	<html lang="en">
-	<head>
-		<meta charset="UTF-8">
-		<title>Cat Coding</title>
-	</head>
-	<body>
-		<h1 id="lines-of-code-counter">0</h1>
-	</body>
-	</html>`
+
+function get_nonce() {
+	let text = '';
+	const possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+	for (let i = 0; i < 32; i++) {
+		text += possible.charAt(Math.floor(Math.random() * possible.length));
+	}
+	return text;
 }
-*/
 
 exports.activate = activate;
 

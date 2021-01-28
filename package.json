@@ -83,8 +83,8 @@
                 "command": "bng.webview",
                 "title": "Testing webview",
                 "icon": {
-                    "dark": "./assets/plot_icon_dark.svg",
-                    "light": "./assets/plot_icon_light.svg"
+                    "dark": "./assets/network_dark.svg",
+                    "light": "./assets/network_light.svg"
                 }
             }
         ],
@@ -102,10 +102,22 @@
                 "command": "bng.plot_gdat"
             },
             {
+                "when": "resourceLangId == bngl && resourceExtname == .gdat",
+                "group": "navigation",
+                "title": "GML View",
+                "command": "bng.webview"
+            },
+            {
                 "when": "resourceLangId == bngl && resourceExtname == .cdat",
                 "group": "navigation",
                 "title": "Plot cdat",
                 "command": "bng.plot_cdat"
+            },
+            {
+                "when": "resourceLangId == bngl && resourceExtname == .cdat",
+                "group": "navigation",
+                "title": "GML View",
+                "command": "bng.webview"
             },
             {
                 "when": "resourceLangId == bngl && resourceExtname == .scan",
@@ -116,7 +128,7 @@
             {
                 "when": "resourceLangId == bngl && resourceExtname == .gml",
                 "group": "navigation",
-                "title": "Webview",
+                "title": "GML View",
                 "command": "bng.webview"
             }]
         },
