@@ -1,3 +1,12 @@
+// Author: Ali Sinan Saglam
+// Email: asinansaglam@gmail.com
+// Github: https://github.com/ASinanSaglam/
+
+// Extension code heavily inspired by the examples from
+// https://github.com/microsoft/vscode-extension-samples
+// Webview code heavily modified from
+// https://github.com/microsoft/vscode-extension-samples/tree/master/webview-sample
+
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 const vscode = require('vscode');
@@ -355,13 +364,19 @@ class PlotPanel {
 		// And the uri we use to load this script in the webview
 		const scriptUri = webview.asWebviewUri(scriptPathOnDisk);
 
+		// Local path to main script run in the webview
+		const plotlyOnDisk = vscode.Uri.joinPath(PlotPanel._extensionUri, 'media', 'plotly-latest.min.js');
+
+		// And the uri we use to load this script in the webview
+		const plotlyUri = webview.asWebviewUri(plotlyOnDisk);
+
 		// Local path to css styles
 		// const styleResetPath = vscode.Uri.joinPath(this._extensionUri, 'media', 'reset.css');
-		// const stylesPathMainPath = vscode.Uri.joinPath(this._extensionUri, 'media', 'vscode.css');
+		const stylesPathMainPath = vscode.Uri.joinPath(PlotPanel._extensionUri, 'media', 'main.css');
 
 		// Uri to load styles into webview
 		//const stylesResetUri = webview.asWebviewUri(styleResetPath);
-		//const stylesMainUri = webview.asWebviewUri(stylesPathMainPath);
+		const stylesMainUri = webview.asWebviewUri(stylesPathMainPath);
 		
 		// Finally set the HTML
 		webview.html = `<!DOCTYPE html>
@@ -372,23 +387,27 @@ class PlotPanel {
 					Use a content security policy to only allow loading images from https or from our extension directory,
 					and only allow scripts that have a specific nonce.
 				-->
-				<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${webview.cspSource}; img-src ${webview.cspSource} https:; script-src 'nonce-${this._nonce}';">
+				<meta http-equiv="Content-Security-Policy" style-src ${webview.cspSource}; script-src 'nonce-${this._nonce}';>
 				<meta name="viewport" content="width=device-width, initial-scale=1.0">
-				<title>GML Viewer</title>
+				<link href="${stylesMainUri}" rel="stylesheet">
+				<title>GML viewer</title>
 			</head>
 			<body>
-				<h1 id="plot">We will show a line plot here</h1>
-				<script nonce="${this._nonce}" src="${scriptUri}"></script>
+				<h1 id="head">${this.fname}</h1>
+				<div id="plot" style="width:800px;height=400px;"></div>
+				<script nonce="${this._nonce}" src="${plotlyUri}" type="text/javascript"></script>
+				<script nonce="${this._nonce}" src="${scriptUri}" type="text/javascript"></script>
 			</body>
 			</html>`;
 		// now we'll parse the editor text and turn it into a 
 		// data format we can pass along to the webview that's open
 		let text = vscode.window.activeTextEditor.document.getText();
-		let data_arr = this.parse_gml(text);
+		let dat_tpl = this.parse_gml(text);
 		webview.postMessage({
 			command: 'network',
 			context: 'data',
-			data: data_arr
+			names: dat_tpl[0],
+			data: dat_tpl[1]
 		});
 	}
 
@@ -411,16 +430,11 @@ class PlotPanel {
 
 		// Local path to css styles
 		// const styleResetPath = vscode.Uri.joinPath(this._extensionUri, 'media', 'reset.css');
-		// const stylesPathMainPath = vscode.Uri.joinPath(this._extensionUri, 'media', 'vscode.css');
+		const stylesPathMainPath = vscode.Uri.joinPath(PlotPanel._extensionUri, 'media', 'main.css');
 
 		// Uri to load styles into webview
 		//const stylesResetUri = webview.asWebviewUri(styleResetPath);
-		//const stylesMainUri = webview.asWebviewUri(stylesPathMainPath);
-		
-		// <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${webview.cspSource}; img-src ${webview.cspSource} https:; script-src 'nonce-${this._nonce}';">
-		// nonce="${this._nonce}" 
-		// nonce="${this._nonce}" 
-		// nonce="${this._nonce}" 
+		const stylesMainUri = webview.asWebviewUri(stylesPathMainPath);
 		
 		// Finally set the HTML
 		webview.html = `<!DOCTYPE html>
@@ -431,14 +445,16 @@ class PlotPanel {
 					Use a content security policy to only allow loading images from https or from our extension directory,
 					and only allow scripts that have a specific nonce.
 				-->
+				<meta http-equiv="Content-Security-Policy" style-src ${webview.cspSource}; script-src 'nonce-${this._nonce}';>
 				<meta name="viewport" content="width=device-width, initial-scale=1.0">
-				<title>GML Viewer</title>
+				<link href="${stylesMainUri}" rel="stylesheet">
+				<title>Plotly viewer</title>
 			</head>
 			<body>
 				<h1 id="head">${this.fname}</h1>
 				<div id="plot" style="width:800px;height=400px;"></div>
-				<script src="${plotlyUri}" type="text/javascript"></script>
-				<script src="${scriptUri}" type="text/javascript"></script>
+				<script nonce="${this._nonce}" src="${plotlyUri}" type="text/javascript"></script>
+				<script nonce="${this._nonce}" src="${scriptUri}" type="text/javascript"></script>
 			</body>
 			</html>`;
 		// now we'll parse the editor text and turn it into a 
@@ -479,8 +495,12 @@ class PlotPanel {
 		return [names,data];
 	}
 
+	/**
+	 * 
+	 * @param {String} text 
+	 */
 	parse_gml(text) {
-		return "empty";
+		return ["names", "data"];
 	}
 
 	dispose() {
