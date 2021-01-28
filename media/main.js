@@ -14,7 +14,32 @@
             case 'plot':
                 // message.data will contain the data
                 // message.names will contain the names of time series
-                plot.textContent = `${message.names[0]} = ${message.data[0]}`
+                let plot_data = [];
+                let plot_options = { 
+                    margin: { t:0 },
+                    width: 800,
+                    height: 400,
+                    xaxis: { title: message.names[0] },
+                    yaxis: { title: 'concentration' },
+                    legend: {
+                        y: 0.1,
+                        font: {
+                          size: 12
+                        }
+                    }
+                };
+                for (let i=0;i<message.names.length;i++) {
+                    if (i == 0) {
+                        continue;
+                    }
+                    let this_data = {
+                        x: message.data[0],
+                        y: message.data[i],
+                        name: message.names[i]
+                    }
+                    plot_data.push(this_data);
+                }
+                Plotly.newPlot(plot, plot_data, plot_options);
                 break;
             case 'network':
                 vscode.postMessage({

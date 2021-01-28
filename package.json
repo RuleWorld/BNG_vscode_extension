@@ -12,7 +12,7 @@
     "name": "bngl",
     "displayName": "BioNetGen Language",
     "description": "BNG language extension for vscode",
-    "version": "0.2.7",
+    "version": "0.2.8",
     "engines": {
         "vscode": "^1.52.0"
     },
@@ -57,7 +57,7 @@
             }},
             {
                 "command": "bng.plot_gdat",
-                "title": "Plot gdat",
+                "title": "CLI Plotting",
                 "icon": {
                     "dark": "./assets/plot_icon_dark.svg",
                     "light": "./assets/plot_icon_light.svg"
@@ -65,7 +65,7 @@
             },
             {
                 "command": "bng.plot_cdat",
-                "title": "Plot cdat",
+                "title": "CLI Plotting",
                 "icon": {
                     "dark": "./assets/plot_icon_dark.svg",
                     "light": "./assets/plot_icon_light.svg"
@@ -73,7 +73,7 @@
             },
             {
                 "command": "bng.plot_scan",
-                "title": "Plot scan",
+                "title": "CLI Plotting",
                 "icon": {
                     "dark": "./assets/plot_icon_dark.svg",
                     "light": "./assets/plot_icon_light.svg"
@@ -81,10 +81,10 @@
             },
             {
                 "command": "bng.webview",
-                "title": "Testing webview",
+                "title": "Built-in plotting",
                 "icon": {
-                    "dark": "./assets/network_dark.svg",
-                    "light": "./assets/network_light.svg"
+                    "dark": "./assets/for_plotly_dark.svg",
+                    "light": "./assets/for_plotly_light.svg"
                 }
             }
         ],
@@ -104,7 +104,7 @@
             {
                 "when": "resourceLangId == bngl && resourceExtname == .gdat",
                 "group": "navigation",
-                "title": "GML View",
+                "title": "Plotly",
                 "command": "bng.webview"
             },
             {
@@ -116,7 +116,7 @@
             {
                 "when": "resourceLangId == bngl && resourceExtname == .cdat",
                 "group": "navigation",
-                "title": "GML View",
+                "title": "Plotly",
                 "command": "bng.webview"
             },
             {
@@ -124,6 +124,12 @@
                 "group": "navigation",
                 "title": "Plot scan",
                 "command": "bng.plot_scan"
+            },
+            {
+                "when": "resourceLangId == bngl && resourceExtname == .scan",
+                "group": "navigation",
+                "title": "Plotly",
+                "command": "bng.webview"
             },
             {
                 "when": "resourceLangId == bngl && resourceExtname == .gml",
@@ -154,7 +160,7 @@
             "command": "bng.plot_scan",
             "key": "ctrl+shift+f1",
             "mac": "cmd+shift+f1",
-            "when": "resourceLangId == bngl && resourceExtname == .gdat"
+            "when": "resourceLangId == bngl && resourceExtname == .scan"
         }],
         "scripts": {
             "lint": "eslint .",
