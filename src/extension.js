@@ -423,11 +423,12 @@ class PlotPanel {
 		// now we'll parse the editor text and turn it into a 
 		// data format we can pass along to the webview that's open
 		let text = vscode.window.activeTextEditor.document.getText();
-		let data_arr = this.parse_dat(text);
+		let dat_tpl = this.parse_dat(text);
 		webview.postMessage({
 			command: 'plot',
 			context: 'data',
-			data: data_arr
+			names: dat_tpl[0],
+			data: dat_tpl[1]
 		});
 	}
 
@@ -436,9 +437,25 @@ class PlotPanel {
 	 * @param {String} text 
 	 */
 	parse_dat(text) {
-		let lines = text.split("\n");
-		let splt_lines = lines.map(w => {w.split(/(\s+)/).filter( e => e.trim().length > 0)});
-		return splt_lines;
+		// we want to split the newlines
+		let lines = text.split(/([\n\r])/).filter( e => e.trim().length > 0 );
+		// and we want to split by the whitespace and remove 
+		// any element that's pure whitespace so we are left with 
+		// just the numbers
+		let splt_lines = lines.map(
+			w => w.split(/(\s+)/).filter(
+				e => e.trim().length > 0
+			)
+		);
+		// we now will take each column and return the data for each 
+		// name such that name[0] and data[0] is the name of the x
+		// axis and name[1:] and data[1:] are the rest 
+		let names = splt_lines[0].slice(1,splt_lines[0].length);
+		let data = splt_lines.slice(1,splt_lines.length);
+		data = 	data[0].map(
+			(_,colIndex) => data.map(row => row[colIndex])
+		);
+		return [names,data];
 	}
 
 	parse_gml(text) {
