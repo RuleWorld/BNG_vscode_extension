@@ -7,7 +7,8 @@ This is a [VSCode](https://code.visualstudio.com/) language extension for BioNet
 * Syntax highlighting for BioNetGen modelling language
 * Various snippets to make writing BNGL simpler
 * A run button that automatically generates a timestamped folder and runs the current model
-* A plot button that generates a plot of the current .gdat/.cdat/.scan file
+* A plot button that generates a plot of the current .gdat/.cdat/.scan file using the CLI
+* Another plotting button that uses plotly to generate built-in plots within VSCode
 
 ## Requirements
 
