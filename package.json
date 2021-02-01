@@ -12,7 +12,7 @@
     "name": "bngl",
     "displayName": "BioNetGen Language",
     "description": "BNG language extension for vscode",
-    "version": "0.2.8",
+    "version": "0.2.9",
     "engines": {
         "vscode": "^1.52.0"
     },
@@ -26,35 +26,52 @@
         "onLanguage:bngl"
     ],
     "contributes": {
-        "languages": [{
-            "id": "bngl",
-            "aliases": ["BioNetGen Language", "bng"],
-            "extensions": [".bngl", ".gdat", ".cdat", ".scan", ".gml"],
-            "configuration": "./bngl-language-configuration.json"
-        }],
-        "grammars": [{
-            "language": "bngl",
-            "scopeName": "source.bngl",
-            "path": "./syntaxes/bngl.tmLanguage.json"
-        }],
+        "languages": [
+            {
+                "id": "bngl",
+                "aliases": [
+                    "BioNetGen Language",
+                    "bng"
+                ],
+                "extensions": [
+                    ".bngl",
+                    ".gdat",
+                    ".cdat",
+                    ".scan",
+                    ".gml"
+                ],
+                "configuration": "./bngl-language-configuration.json"
+            }
+        ],
+        "grammars": [
+            {
+                "language": "bngl",
+                "scopeName": "source.bngl",
+                "path": "./syntaxes/bngl.tmLanguage.json"
+            }
+        ],
         "snippets": [
             {
                 "language": "bngl",
                 "path": "./snippets/bngl-snippets.json"
             }
         ],
-        "themes": [{
-            "label": "dark-bngl",
-            "uiTheme": "vs-dark",
-            "path": "./themes/dark-bngl.json"
-        }],
-        "commands": [{
-            "command": "bng.run_bngl",
-            "title": "Run BNG",
-            "icon": {
-                "dark": "./assets/flagman.png",
-                "light": "./assets/flagman.png"
-            }},
+        "themes": [
+            {
+                "label": "dark-bngl",
+                "uiTheme": "vs-dark",
+                "path": "./themes/dark-bngl.json"
+            }
+        ],
+        "commands": [
+            {
+                "command": "bng.run_bngl",
+                "title": "Run BNG",
+                "icon": {
+                    "dark": "./assets/flagman.png",
+                    "light": "./assets/flagman.png"
+                }
+            },
             {
                 "command": "bng.plot_gdat",
                 "title": "CLI Plotting",
@@ -89,85 +106,89 @@
             }
         ],
         "menus": {
-            "editor/title": [{
-                "when": "resourceLangId == bngl && resourceExtname == .bngl",
-                "group": "navigation",
-                "title": "Run BNG",
-                "command": "bng.run_bngl"
-            },
-            {
-                "when": "resourceLangId == bngl && resourceExtname == .gdat",
-                "group": "navigation",
-                "title": "Plot gdat",
-                "command": "bng.plot_gdat"
-            },
-            {
-                "when": "resourceLangId == bngl && resourceExtname == .gdat",
-                "group": "navigation",
-                "title": "Plotly",
-                "command": "bng.webview"
-            },
-            {
-                "when": "resourceLangId == bngl && resourceExtname == .cdat",
-                "group": "navigation",
-                "title": "Plot cdat",
-                "command": "bng.plot_cdat"
-            },
-            {
-                "when": "resourceLangId == bngl && resourceExtname == .cdat",
-                "group": "navigation",
-                "title": "Plotly",
-                "command": "bng.webview"
-            },
-            {
-                "when": "resourceLangId == bngl && resourceExtname == .scan",
-                "group": "navigation",
-                "title": "Plot scan",
-                "command": "bng.plot_scan"
-            },
-            {
-                "when": "resourceLangId == bngl && resourceExtname == .scan",
-                "group": "navigation",
-                "title": "Plotly",
-                "command": "bng.webview"
-            },
-            {
-                "when": "resourceLangId == bngl && resourceExtname == .gml",
-                "group": "navigation",
-                "title": "GML View",
-                "command": "bng.webview"
-            }]
+            "editor/title": [
+                {
+                    "when": "resourceLangId == bngl && resourceExtname == .bngl",
+                    "group": "navigation",
+                    "title": "Run BNG",
+                    "command": "bng.run_bngl"
+                },
+                {
+                    "when": "resourceLangId == bngl && resourceExtname == .gdat",
+                    "group": "navigation",
+                    "title": "Plot gdat",
+                    "command": "bng.plot_gdat"
+                },
+                {
+                    "when": "resourceLangId == bngl && resourceExtname == .gdat",
+                    "group": "navigation",
+                    "title": "Plotly",
+                    "command": "bng.webview"
+                },
+                {
+                    "when": "resourceLangId == bngl && resourceExtname == .cdat",
+                    "group": "navigation",
+                    "title": "Plot cdat",
+                    "command": "bng.plot_cdat"
+                },
+                {
+                    "when": "resourceLangId == bngl && resourceExtname == .cdat",
+                    "group": "navigation",
+                    "title": "Plotly",
+                    "command": "bng.webview"
+                },
+                {
+                    "when": "resourceLangId == bngl && resourceExtname == .scan",
+                    "group": "navigation",
+                    "title": "Plot scan",
+                    "command": "bng.plot_scan"
+                },
+                {
+                    "when": "resourceLangId == bngl && resourceExtname == .scan",
+                    "group": "navigation",
+                    "title": "Plotly",
+                    "command": "bng.webview"
+                },
+                {
+                    "when": "resourceLangId == bngl && resourceExtname == .gml",
+                    "group": "navigation",
+                    "title": "GML View",
+                    "command": "bng.webview"
+                }
+            ]
         },
-        "keybindings": [{
-            "command": "bng.run_bngl",
-            "key": "ctrl+shift+f1",
-            "mac": "cmd+shift+f1",
-            "when": "resourceLangId == bngl && resourceExtname == .bngl"
-        },
-        {
-            "command": "bng.plot_gdat",
-            "key": "ctrl+shift+f1",
-            "mac": "cmd+shift+f1",
-            "when": "resourceLangId == bngl && resourceExtname == .gdat"
-        },
-        {
-            "command": "bng.plot_cdat",
-            "key": "ctrl+shift+f1",
-            "mac": "cmd+shift+f1",
-            "when": "resourceLangId == bngl && resourceExtname == .cdat"
-        },
-        {
-            "command": "bng.plot_scan",
-            "key": "ctrl+shift+f1",
-            "mac": "cmd+shift+f1",
-            "when": "resourceLangId == bngl && resourceExtname == .scan"
-        }],
+        "keybindings": [
+            {
+                "command": "bng.run_bngl",
+                "key": "ctrl+shift+f1",
+                "mac": "cmd+shift+f1",
+                "when": "resourceLangId == bngl && resourceExtname == .bngl"
+            },
+            {
+                "command": "bng.plot_gdat",
+                "key": "ctrl+shift+f1",
+                "mac": "cmd+shift+f1",
+                "when": "resourceLangId == bngl && resourceExtname == .gdat"
+            },
+            {
+                "command": "bng.plot_cdat",
+                "key": "ctrl+shift+f1",
+                "mac": "cmd+shift+f1",
+                "when": "resourceLangId == bngl && resourceExtname == .cdat"
+            },
+            {
+                "command": "bng.plot_scan",
+                "key": "ctrl+shift+f1",
+                "mac": "cmd+shift+f1",
+                "when": "resourceLangId == bngl && resourceExtname == .scan"
+            }
+        ],
         "scripts": {
             "lint": "eslint .",
             "pretest": "npm run lint",
             "test": "node ./test/runTest.js"
-          },
-          "devDependencies": {
+        },
+        "devDependencies": {
             "@types/glob": "^7.1.3",
             "@types/mocha": "^8.0.4",
             "@types/node": "^12.11.7",
@@ -176,7 +197,17 @@
             "glob": "^7.1.6",
             "mocha": "^8.1.3",
             "typescript": "^4.1.2",
-            "vscode-test": "^1.4.1"
-          }
+            "vscode-test": "^1.4.1",
+            "jquery": "^1.7||^2.0||^3.0",
+            "cytoscape": "^3.17.0",
+            "plotly": "^1.58.0",
+            "cytoscape-graphml": "^1.0"
+        }
+    },
+    "dependencies": {
+        "cytoscape": "^3.18.0",
+        "cytoscape-graphml": "^1.0.6",
+        "jquery": "^3.5.1",
+        "plotly": "^1.0.6"
     }
 }

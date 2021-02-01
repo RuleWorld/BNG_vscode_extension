@@ -82,6 +82,7 @@ function activate(context) {
 		term.show();
 		term.sendText(term_cmd);
 		// Done running, let the user know
+		// TODO: Wait until it's done
 		vscode.window.showInformationMessage(`Done running ${fname} in folder ${fname_noext}/${fold_name}`);
 	}
 	function plotgdatCommandHandler() {
@@ -192,7 +193,7 @@ function activate(context) {
 	context.subscriptions.push(disposable3);
 	let disposable4 = vscode.commands.registerCommand(plotscanCommandName, plotscanCommandHandler);
 	context.subscriptions.push(disposable4);
-	let disposable5 = vscode.commands.registerCommand(webviewCommandName, () => {PlotPanel.createOrShow(context.extensionUri)});
+	let disposable5 = vscode.commands.registerCommand(webviewCommandName, () => {PlotPanel.create(context.extensionUri)});
 	context.subscriptions.push(disposable5);
 
 	if (vscode.window.registerWebviewPanelSerializer) {
@@ -241,58 +242,75 @@ function checkImage(outpath, timeout) {
 }
 
 class PlotPanel {
-	/** @type {PlotPanel} */
-	static cur_panel;
+	/** @type {PlotPanel[]} */
+	static panels = [];
+	/** @type {Number} */
+	static cur_planel_id = 0;
 	/** @type {String} */
 	static viewType = "plot";
 	/** @type {vscode.Uri} */
 	static _extensionUri;
-	/** @type {String} */
-	fname;
-	/** @type {vscode.WebviewPanel} */
+	/** @type {String[]} */
+	static fnames = [];
+	/** @type {String[]} */
+	static fpaths = [];
+	/** @type {String[]} */
+	static extensions = [];
+	/** @type {String[]} */
+	static viewTitles = []
+	/**	@type {vscode.WebviewPanel} */
 	_panel;
-	/** @type {String} */
-	cur_ext;
-	/** @type {String} */
-	viewTitle;
+	/**	@type {String} */
+	_ext;
+	/**	@type {String} */
+	_text;
+	/**	@type {String} */
+	_name;
+	/** @type {any} */
+	_data = undefined;
 	/** @type {vscode.Disposable[]} */
 	_disposables = [];
 	/** @type {String} */
 	_nonce;
+	/** @type {vscode.Uri} */
+	scriptUri;
+	/** @type {vscode.Uri} */
+	plotlyUri;
+	/** @type {vscode.Uri} */
+	cytoUri
+	/** @type {vscode.Uri} */
+	cytoGMLUri;
+	/** @type {vscode.Uri} */
+	jqUri
+	/** @type {vscode.Uri} */
+	stylesMainUri
 
 	/**
 	 * Tracks plot panel
 	 * @param {vscode.WebviewPanel} panel
 	 * @param {String} extension
+	 * @param {String} text
 	 */
-	constructor (panel, extension) {
-		// setting current panel and extension
+	constructor (panel, extension, text) {
+		// set our stuff
 		this._panel = panel;
-		this._cur_ext = extension;
-		// decide on type and title depending on extension
-		if (extension == "gml") {
-			this.viewTitle = "GML viewer";
-		} else if (extension == "gdat" || extension == "cdat" || extension == "scan") {
-			this.viewTitle = "Plot viewer";
-		} else {
-			this.viewTitle = "Undefined plot";
-		}
+		this._ext = extension;
+		this._text = text;
+		this._name = PlotPanel.get_current_name();
 		// initial html
-		this._update();
+		this._setup();
 		// listen to dispose
 		this._panel.onDidDispose(() => this.dispose(), null, this._disposables);
-
-		// Update the content based on view changes
+		// // Update the content based on view changes
 		this._panel.onDidChangeViewState(
 			e => {
 				if (this._panel.visible) {
-					this._update();
+					this._show();
 				}
 			},
 			null,
 			this._disposables
 		);
-
 		// Handle messages from the webview
 		this._panel.webview.onDidReceiveMessage(
 			message => {
@@ -313,42 +331,66 @@ class PlotPanel {
 	 * @param {String} extension 
 	 */
 	static revive(panel, extension) {
-		PlotPanel.cur_panel = new PlotPanel(panel, extension)
+		// get current text
+		let text = vscode.window.activeTextEditor.document.getText();
+		PlotPanel.panels.push(new PlotPanel(panel, extension, text))
 	}
 
-	_update() {
+	_setup() {
 		// set nonce 
 		this._nonce = get_nonce();
-		// each update should run this maybe?
-		let fname = vscode.window.activeTextEditor.document.fileName;
-		let extension = fname.split(".").pop();
-		// TODO: this is a hack to find basename, find where
-		// the real basename function is that works with URIs
-		let li_u = fname.lastIndexOf('/')+1;
-		let li_w = fname.lastIndexOf('\\')+1;
-		let li_f = Math.max(li_u,li_w);
-		let name = fname.substring(li_f);
-		let fname_noext = name.replace("."+extension, "");
-		this.fname = fname_noext
+
+		// get webview to pass to set_html functions
+		const webview = this._panel.webview;
+		
+		// Local path to main script run in the webview
+		const scriptPathOnDisk = vscode.Uri.joinPath(PlotPanel._extensionUri, 'media', 'main.js');
+		// And the uri we use to load this script in the webview
+		this.scriptUri = webview.asWebviewUri(scriptPathOnDisk);
+		// Local path to main script run in the webview
+		const plotlyOnDisk = vscode.Uri.joinPath(PlotPanel._extensionUri, 'media', 'plotly-latest.min.js');
+		// And the uri we use to load this script in the webview
+		this.plotlyUri = webview.asWebviewUri(plotlyOnDisk);
+		// Local path to main script run in the webview
+		const cytoOnDisk = vscode.Uri.joinPath(PlotPanel._extensionUri, 'media', 'cytoscape.min.js');
+		const cytoGMLOnDisk = vscode.Uri.joinPath(PlotPanel._extensionUri, 'media', 'cytoscape-graphml.js');
+		const jqOnDisk = vscode.Uri.joinPath(PlotPanel._extensionUri, 'media', 'jquery-3.5.1.min.js');
+		// And the uri we use to load this script in the webview
+		this.cytoUri = webview.asWebviewUri(cytoOnDisk);
+		this.cytoGMLUri = webview.asWebviewUri(cytoGMLOnDisk);
+		this.jqUri = webview.asWebviewUri(jqOnDisk);
+		// Local path to css styles
+		const stylesPathMainPath = vscode.Uri.joinPath(PlotPanel._extensionUri, 'media', 'main.css');
+		// Uri to load styles into webview
+		this.stylesMainUri = webview.asWebviewUri(stylesPathMainPath);
+
+		// content depends on the extension
+		this._panel.title = `${this._ext}/${this._name}`;
+		switch (this._ext) {
+			case "gml":
+				this._set_gml(webview);
+				return;
+			case "gdat":
+			case "cdat":
+			case "scan":
+				this._set_plot(webview);
+				return;
+		}
+		
+	}
+
+	_show() {
 		// get webview to pass to set_html functions
 		const webview = this._panel.webview;
 		// content depends on the extension
-		switch (extension) {
+		switch (this._ext) {
 			case "gml":
 				this._set_gml(webview);
-				this._panel.title = "GML Viewer";
 				return;
 			case "gdat":
-				this._set_plot(webview);
-				this._panel.title = "Plot viewer";
-				return;
 			case "cdat":
-				this._set_plot(webview);
-				this._panel.title = "Plot viewer";
-				return;
 			case "scan":
 				this._set_plot(webview);
-				this._panel.title = "Scan Plot";
 				return;
 		}
 	}
@@ -358,18 +400,7 @@ class PlotPanel {
 	 * @param {vscode.Webview} webview 
 	 */
 	_set_gml(webview) {
-		// Local path to main script run in the webview
-		const scriptPathOnDisk = vscode.Uri.joinPath(PlotPanel._extensionUri, 'media', 'main.js');
-
-		// And the uri we use to load this script in the webview
-		const scriptUri = webview.asWebviewUri(scriptPathOnDisk);
-
-		// Local path to main script run in the webview
-		const plotlyOnDisk = vscode.Uri.joinPath(PlotPanel._extensionUri, 'media', 'plotly-latest.min.js');
-
-		// And the uri we use to load this script in the webview
-		const plotlyUri = webview.asWebviewUri(plotlyOnDisk);
-
+		
 		// Local path to css styles
 		// const styleResetPath = vscode.Uri.joinPath(this._extensionUri, 'media', 'reset.css');
 		const stylesPathMainPath = vscode.Uri.joinPath(PlotPanel._extensionUri, 'media', 'main.css');
@@ -389,25 +420,25 @@ class PlotPanel {
 				-->
 				<meta http-equiv="Content-Security-Policy" style-src ${webview.cspSource}; script-src 'nonce-${this._nonce}';>
 				<meta name="viewport" content="width=device-width, initial-scale=1.0">
-				<link href="${stylesMainUri}" rel="stylesheet">
+				<link href="${this.stylesMainUri}" rel="stylesheet">
 				<title>GML viewer</title>
 			</head>
 			<body>
-				<h1 id="head">${this.fname}</h1>
-				<div id="plot" style="width:800px;height=400px;"></div>
-				<script nonce="${this._nonce}" src="${plotlyUri}" type="text/javascript"></script>
-				<script nonce="${this._nonce}" src="${scriptUri}" type="text/javascript"></script>
+				<h1 id="head">${this._ext}/${this._name}</h1>
+				<div id="network"></div>
+				<script nonce="${this._nonce}" src="${this.jqUri}" type="text/javascript"></script>
+				<script nonce="${this._nonce}" src="${this.plotlyUri}" type="text/javascript"></script>
+				<script nonce="${this._nonce}" src="${this.cytoUri}" type="text/javascript"></script>
+				<script nonce="${this._nonce}" src="${this.scriptUri}" type="text/javascript"></script>
 			</body>
 			</html>`;
+
 		// now we'll parse the editor text and turn it into a 
 		// data format we can pass along to the webview that's open
-		let text = vscode.window.activeTextEditor.document.getText();
-		let dat_tpl = this.parse_gml(text);
 		webview.postMessage({
 			command: 'network',
 			context: 'data',
-			names: dat_tpl[0],
-			data: dat_tpl[1]
+			data: this._text
 		});
 	}
 
@@ -415,27 +446,7 @@ class PlotPanel {
 	 * 
 	 * @param {vscode.Webview} webview 
 	 */
-	_set_plot(webview) {
-		// Local path to main script run in the webview
-		const scriptPathOnDisk = vscode.Uri.joinPath(PlotPanel._extensionUri, 'media', 'main.js');
-
-		// And the uri we use to load this script in the webview
-		const scriptUri = webview.asWebviewUri(scriptPathOnDisk);
-
-		// Local path to main script run in the webview
-		const plotlyOnDisk = vscode.Uri.joinPath(PlotPanel._extensionUri, 'media', 'plotly-latest.min.js');
-
-		// And the uri we use to load this script in the webview
-		const plotlyUri = webview.asWebviewUri(plotlyOnDisk);
-
-		// Local path to css styles
-		// const styleResetPath = vscode.Uri.joinPath(this._extensionUri, 'media', 'reset.css');
-		const stylesPathMainPath = vscode.Uri.joinPath(PlotPanel._extensionUri, 'media', 'main.css');
-
-		// Uri to load styles into webview
-		//const stylesResetUri = webview.asWebviewUri(styleResetPath);
-		const stylesMainUri = webview.asWebviewUri(stylesPathMainPath);
-		
+	_set_plot(webview) {		
 		// Finally set the HTML
 		webview.html = `<!DOCTYPE html>
 			<html lang="en">
@@ -447,25 +458,27 @@ class PlotPanel {
 				-->
 				<meta http-equiv="Content-Security-Policy" style-src ${webview.cspSource}; script-src 'nonce-${this._nonce}';>
 				<meta name="viewport" content="width=device-width, initial-scale=1.0">
-				<link href="${stylesMainUri}" rel="stylesheet">
+				<link href="${this.stylesMainUri}" rel="stylesheet">
 				<title>Plotly viewer</title>
 			</head>
 			<body>
-				<h1 id="head">${this.fname}</h1>
-				<div id="plot" style="width:800px;height=400px;"></div>
-				<script nonce="${this._nonce}" src="${plotlyUri}" type="text/javascript"></script>
-				<script nonce="${this._nonce}" src="${scriptUri}" type="text/javascript"></script>
+				<h1 id="head">${this._ext}/${this._name}</h1>
+				<div id="plot"></div>
+				<script nonce="${this._nonce}" src="${this.plotlyUri}" type="text/javascript"></script>
+				<script nonce="${this._nonce}" src="${this.scriptUri}" type="text/javascript"></script>
 			</body>
 			</html>`;
 		// now we'll parse the editor text and turn it into a 
 		// data format we can pass along to the webview that's open
-		let text = vscode.window.activeTextEditor.document.getText();
-		let dat_tpl = this.parse_dat(text);
+		if (this._data == undefined) {
+			this._data =  this.parse_dat(this._text);
+		} 
+
 		webview.postMessage({
 			command: 'plot',
 			context: 'data',
-			names: dat_tpl[0],
-			data: dat_tpl[1]
+			names: this._data[0],
+			data: this._data[1]
 		});
 	}
 
@@ -495,19 +508,10 @@ class PlotPanel {
 		return [names,data];
 	}
 
-	/**
-	 * 
-	 * @param {String} text 
-	 */
-	parse_gml(text) {
-		return ["names", "data"];
-	}
-
 	dispose() {
-		PlotPanel.cur_panel = undefined;
+		// clear panel
+		this._panel = undefined;
 		// clean up
-		this._panel.dispose();
-
 		while (this._disposables.length) {
 			const x = this._disposables.pop();
 			if (x) {
@@ -516,19 +520,40 @@ class PlotPanel {
 		}
 	}
 
+	// public methods to get current values of certain variables
+	static get_current_panel() {
+		return PlotPanel.panels[PlotPanel.cur_planel_id]
+	}
+
+	static get_current_title() {
+		return PlotPanel.viewTitles[PlotPanel.cur_planel_id]
+	}
+
+	static get_current_extension() {
+		return PlotPanel.extensions[PlotPanel.cur_planel_id]
+	}
+
+	static get_current_path() {
+		return PlotPanel.fpaths[PlotPanel.cur_planel_id]
+	}
+
+	static get_current_name() {
+		return PlotPanel.fnames[PlotPanel.cur_planel_id]
+	}
+
 	/**
 	 * 
 	 * @param {vscode.Uri} extensionUri 
 	 */
-	static createOrShow(extensionUri) {
+	static create(extensionUri) {
 		// set extensionUri
 		PlotPanel._extensionUri = extensionUri;
 		// we want to pop open a new tab on the side
 		let column = vscode.ViewColumn.Beside;
 		// we want the extension to determine the type of 
-		// html we want to write
-		let fname = vscode.window.activeTextEditor.document.fileName;
-		let extension = fname.split(".").pop();
+		// file we want to write
+		let fpath = vscode.window.activeTextEditor.document.fileName;
+		let extension = fpath.split(".").pop();
 		let title = "Unknown";
 		if (extension == "gml") {
 			title = "GML Viewer";
@@ -537,20 +562,31 @@ class PlotPanel {
 		} else if (extension == "scan") {
 			title = "Scan Plot";
 		}
-
-		if (PlotPanel.cur_panel) {
-			PlotPanel.cur_panel._update();
-			PlotPanel.cur_panel._panel.reveal(column);
-			return;
-		}
+		// TODO: this is a hack to find basename, find where
+		// the real basename function is that works with URIs
+		let li_u = fpath.lastIndexOf('/')+1;
+		let li_w = fpath.lastIndexOf('\\')+1;
+		let li_f = Math.max(li_u,li_w);
+		let name = fpath.substring(li_f);
+		let fname = name.replace("."+extension, "");
+		// add to our lists
+		PlotPanel.extensions.push(extension);
+		PlotPanel.viewTitles.push(title);
+		PlotPanel.fpaths.push(fpath);
+		PlotPanel.fnames.push(fname);
+		// create panel
 		const panel = vscode.window.createWebviewPanel(
 			PlotPanel.viewType,
-			title,
+			PlotPanel.get_current_title(),
 			column || vscode.ViewColumn.Beside,
 			{ enableScripts: true, localResourceRoots: [vscode.Uri.joinPath(extensionUri, 'media')] }
 		);
-
-		PlotPanel.cur_panel = new PlotPanel(panel, extension)
+		// get current text
+		let text = vscode.window.activeTextEditor.document.getText();
+		// add the panel to our list
+		let new_panel = new PlotPanel(panel, extension, text);
+		PlotPanel.panels.push(new_panel);
+		PlotPanel.cur_planel_id += 1;
 	}
 }
 

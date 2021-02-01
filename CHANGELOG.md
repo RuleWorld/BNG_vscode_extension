@@ -11,3 +11,6 @@ Currently we have ```.bngl``` run button, a ```.gdat/.cdat/.scan``` file plottin
 
 - 0.2.8
 Added plotly plotting to ```gdat/cdat/scan``` files
+
+- 0.2.9
+Major behavior changes, every click on the built-in plotting now pops open a new tab. Included jQuery. Working nonce for scripts. GML viewer still under development.

@@ -15,6 +15,22 @@ body {
 	background-color: var(--vscode-editor-background);
 }
 
+#plot {
+	height: 100%;
+	width: 100%;
+	position: absolute;
+	left: 0;
+	top: 50px;
+}
+
+#network {
+	height: 100%;
+	width: 100%;
+	position: absolute;
+	left: 0;
+	top: 50px;
+}
+
 ol,
 ul {
 	padding-left: var(--container-paddding);

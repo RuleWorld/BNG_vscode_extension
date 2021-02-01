@@ -4,8 +4,7 @@
     const vscode = acquireVsCodeApi();
 
     const oldState = vscode.getState();
-
-    const plot = document.getElementById('plot');
+    const network = document.getElementById('network');
 
     // Handle messages sent from the extension to the webview
     window.addEventListener('message', event => {
@@ -39,14 +38,64 @@
                     }
                     plot_data.push(this_data);
                 }
-                Plotly.newPlot(plot, plot_data, plot_options);
+                Plotly.newPlot("plot", plot_data, plot_options);
                 break;
             case 'network':
-                vscode.postMessage({
-                    command: 'alert',
-                    text: `we got sent data, context: ${message.context}`
+                // render a network in plot
+                let elements = {
+                    nodes: [
+                        { data: { id: 'a' }, position: { x: 100, y: 100 } },
+                        { data: { id: 'b' } },
+                        { data: { id: 'c' } },
+                        { data: { id: 'd' } },
+                        { data: { id: 'e' } },
+                        { data: { id: 'f' } },
+                        { data: { id: 'g' } }
+                    ],
+                    edges: [
+                        { data: { id: 'ab', source: 'a', target: 'b' }},
+                        { data: { id: 'eb', source: 'e', target: 'b' }},
+                        { data: { id: 'ag', source: 'a', target: 'g' }},
+                        { data: { id: 'fd', source: 'f', target: 'd' }},
+                        { data: { id: 'fe', source: 'f', target: 'e' }},
+                        { data: { id: 'bc', source: 'b', target: 'c' }},
+                        { data: { id: 'ce', source: 'c', target: 'e' }}
+                    ]
+                };
+                let style = [ // the stylesheet for the graph
+                    { selector: 'node',
+                        style: {
+                        'background-color': '#999',
+                        'label': 'data(id)',
+                        'color': '#999',
+                        'min-zoomed-font-size': '12'
+                        }
+                    },
+                    { selector: 'edge',
+                        style: {
+                        'width': 3,
+                        'line-color': '#ccc',
+                        'target-arrow-color': '#ccc',
+                        'target-arrow-shape': 'triangle',
+                        'curve-style': 'bezier'
+                        }
+                    }
+                ];  
+                let layout_opts = {
+                    name: 'cose',
+                    fit: true,
+                    animate: true,
+                    randomize: true
+                };
+                var cy = cytoscape({
+                    container: network,
+                    elements: elements,
+                    style: style,
+                    layout: layout_opts
                 });
-                plot.textContent = `${message.data}`
+                var layout = cy.layout( layout_opts );
+                layout.run();
+                cy.mount(network);
                 break;
         }
     });
