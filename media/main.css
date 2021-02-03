@@ -21,6 +21,7 @@ body {
 	position: absolute;
 	left: 0;
 	top: 50px;
+	z-index: 0;
 }
 
 #network {
@@ -29,6 +30,39 @@ body {
 	position: absolute;
 	left: 0;
 	top: 50px;
+	z-index: 0;
+}
+
+#head_div {
+	float: left;
+}
+
+#top_buttons {
+	border: none;
+	text-align: center;
+	outline: 1px solid transparent;
+	outline-offset: 2px !important;
+	color: white;
+	background: grey;
+	position: absolute; /* Position them relative to the browser window */
+	top: -50px; /* Position them outside of the screen */
+	right: 20px;
+	transition: 0.3s; /* Add transition on hover */
+	padding: 15px; /* 15px padding */
+	width: 200px; /* Set a specific width */
+	text-decoration: none; /* Remove underline */
+	font-size: 20px; /* Increase font size */
+	border-radius: 0 0 5px 5px; /* Rounded corners on the top right and bottom right side */
+	z-index: 99 !important;
+}
+
+#top_buttons:hover {
+	cursor: pointer;
+	top: 0;
+}
+
+#top_buttons:focus {
+	outline-color: var(--vscode-focusBorder);
 }
 
 ol,

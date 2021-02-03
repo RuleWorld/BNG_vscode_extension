@@ -6,6 +6,32 @@
     const oldState = vscode.getState();
     const network = document.getElementById('network');
 
+    // add functions to buttons
+    // const ref_button = document.getElementById("refresh_button");
+    // ref_button.onclick = function () {
+            // const vscode = acquireVsCodeApi();
+    //     // send refresh signal
+    //     vscode.postMessage({
+    //         command: 'alert',
+    //         context: 'plot',
+    //         text: "what"
+    //     })
+    // }
+    // $("#refresh_button").click(function () {
+    //     // send refresh signal
+    //     vscode.postMessage({
+    //         command: 'alert',
+    //         context: 'plot',
+    //         text: "what"
+    //     })
+    // });
+    
+    $("#refresh_button").click(function(){
+        vscode.postMessage({
+            command: "refresh",
+            context: "plot"
+        })
+    });
     // Handle messages sent from the extension to the webview
     window.addEventListener('message', event => {
         const message = event.data; // The json data that the extension sent
@@ -16,8 +42,7 @@
                 let plot_data = [];
                 let plot_options = { 
                     margin: { t:0 },
-                    width: 800,
-                    height: 400,
+                    autosize: true,
                     xaxis: { title: message.names[0] },
                     yaxis: { title: 'concentration' },
                     legend: {
@@ -82,14 +107,13 @@
                     }
                 ];  
                 let layout_opts = {
-                    name: 'cose',
+                    name: 'breadthfirst',
                     fit: true,
-                    animate: true,
-                    randomize: true
+                    animate: true
                 };
                 var cy = cytoscape({
                     container: network,
-                    elements: elements,
+                    elements: message.data["elements"],
                     style: style,
                     layout: layout_opts
                 });

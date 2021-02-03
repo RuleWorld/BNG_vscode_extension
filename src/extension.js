@@ -266,6 +266,8 @@ class PlotPanel {
 	_text;
 	/**	@type {String} */
 	_name;
+	/**	@type {Boolean} */
+	_visible = false;
 	/** @type {any} */
 	_data = undefined;
 	/** @type {vscode.Disposable[]} */
@@ -304,8 +306,11 @@ class PlotPanel {
 		// // Update the content based on view changes
 		this._panel.onDidChangeViewState(
 			e => {
-				if (this._panel.visible) {
-					this._show();
+				if (this._panel.visible && !this._visible) {
+					this._visible = true;
+					// this._show();
+				} else if (!this._panel.visible && this._visible) {
+					this._visible = false;
 				}
 			},
 			null,
@@ -317,6 +322,9 @@ class PlotPanel {
 				switch (message.command) {
 					case 'alert':
 						vscode.window.showInformationMessage(message.text);
+						return;
+					case 'refresh':
+						this._show();
 						return;
 				}
 			},
@@ -363,20 +371,11 @@ class PlotPanel {
 		const stylesPathMainPath = vscode.Uri.joinPath(PlotPanel._extensionUri, 'media', 'main.css');
 		// Uri to load styles into webview
 		this.stylesMainUri = webview.asWebviewUri(stylesPathMainPath);
-
+		// set visibility to figure out updates
+		this._visible = true;
 		// content depends on the extension
 		this._panel.title = `${this._ext}/${this._name}`;
-		switch (this._ext) {
-			case "gml":
-				this._set_gml(webview);
-				return;
-			case "gdat":
-			case "cdat":
-			case "scan":
-				this._set_plot(webview);
-				return;
-		}
-		
+		this._show();
 	}
 
 	_show() {
@@ -427,7 +426,6 @@ class PlotPanel {
 				<h1 id="head">${this._ext}/${this._name}</h1>
 				<div id="network"></div>
 				<script nonce="${this._nonce}" src="${this.jqUri}" type="text/javascript"></script>
-				<script nonce="${this._nonce}" src="${this.plotlyUri}" type="text/javascript"></script>
 				<script nonce="${this._nonce}" src="${this.cytoUri}" type="text/javascript"></script>
 				<script nonce="${this._nonce}" src="${this.scriptUri}" type="text/javascript"></script>
 			</body>
@@ -438,8 +436,12 @@ class PlotPanel {
 		webview.postMessage({
 			command: 'network',
 			context: 'data',
-			data: this._text
+			data: this._load_gml(this._text)
 		});
+	}
+	
+	_load_gml(text) {
+		return JSON.parse(text)
 	}
 
 	/**
@@ -462,8 +464,12 @@ class PlotPanel {
 				<title>Plotly viewer</title>
 			</head>
 			<body>
-				<h1 id="head">${this._ext}/${this._name}</h1>
+				<div id="head_div"><h1 id="head">${this._ext}/${this._name}</h1></div>
 				<div id="plot"></div>
+				<div id="top_buttons">
+				<button id="refresh_button" class="button" type="button">Refresh</button>
+				</div>
+				<script nonce="${this._nonce}" src="${this.jqUri}" type="text/javascript"></script>
 				<script nonce="${this._nonce}" src="${this.plotlyUri}" type="text/javascript"></script>
 				<script nonce="${this._nonce}" src="${this.scriptUri}" type="text/javascript"></script>
 			</body>
@@ -579,7 +585,10 @@ class PlotPanel {
 			PlotPanel.viewType,
 			PlotPanel.get_current_title(),
 			column || vscode.ViewColumn.Beside,
-			{ enableScripts: true, localResourceRoots: [vscode.Uri.joinPath(extensionUri, 'media')] }
+			{ enableScripts: true, 
+			  localResourceRoots: [vscode.Uri.joinPath(extensionUri, 'media')],
+			  retainContextWhenHidden: true
+			}
 		);
 		// get current text
 		let text = vscode.window.activeTextEditor.document.getText();
