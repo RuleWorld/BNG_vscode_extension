@@ -274,6 +274,8 @@ class PlotPanel {
 	_disposables = [];
 	/** @type {String} */
 	_nonce;
+	/** @type {vscode.TextDocument} */
+	_document;
 	/** @type {vscode.Uri} */
 	scriptUri;
 	/** @type {vscode.Uri} */
@@ -324,7 +326,11 @@ class PlotPanel {
 						vscode.window.showInformationMessage(message.text);
 						return;
 					case 'refresh':
-						this._show();
+						switch (message.context) {
+							case 'view':
+								this._show();
+								return;
+						}
 						return;
 				}
 			},
@@ -425,6 +431,9 @@ class PlotPanel {
 			<body>
 				<h1 id="head">${this._ext}/${this._name}</h1>
 				<div id="network"></div>
+				<div id="top_buttons">
+				<button id="layout_button" class="button" type="button">Redo layout</button>
+				</div>
 				<script nonce="${this._nonce}" src="${this.jqUri}" type="text/javascript"></script>
 				<script nonce="${this._nonce}" src="${this.cytoUri}" type="text/javascript"></script>
 				<script nonce="${this._nonce}" src="${this.scriptUri}" type="text/javascript"></script>
@@ -457,6 +466,10 @@ class PlotPanel {
 				<!--
 					Use a content security policy to only allow loading images from https or from our extension directory,
 					and only allow scripts that have a specific nonce.
+					<button onclick="dropdown_show()" class="dropbtn">Some option menu</button>
+					<div id="axis_dropdown" class="dropdown-content">
+						<button id="logy_button" class="button" type="button">Test</button>
+					</div>
 				-->
 				<meta http-equiv="Content-Security-Policy" style-src ${webview.cspSource}; script-src 'nonce-${this._nonce}';>
 				<meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -464,14 +477,12 @@ class PlotPanel {
 				<title>Plotly viewer</title>
 			</head>
 			<body>
-				<div id="head_div"><h1 id="head">${this._ext}/${this._name}</h1></div>
 				<div id="plot"></div>
-				<div id="top_buttons">
-				<button id="refresh_button" class="button" type="button">Refresh</button>
-				</div>
 				<script nonce="${this._nonce}" src="${this.jqUri}" type="text/javascript"></script>
 				<script nonce="${this._nonce}" src="${this.plotlyUri}" type="text/javascript"></script>
 				<script nonce="${this._nonce}" src="${this.scriptUri}" type="text/javascript"></script>
+				<div id="top_buttons">
+			</div>
 			</body>
 			</html>`;
 		// now we'll parse the editor text and turn it into a 
@@ -555,7 +566,7 @@ class PlotPanel {
 		// set extensionUri
 		PlotPanel._extensionUri = extensionUri;
 		// we want to pop open a new tab on the side
-		let column = vscode.ViewColumn.Beside;
+		let column = vscode.ViewColumn.Active;
 		// we want the extension to determine the type of 
 		// file we want to write
 		let fpath = vscode.window.activeTextEditor.document.fileName;
@@ -584,7 +595,7 @@ class PlotPanel {
 		const panel = vscode.window.createWebviewPanel(
 			PlotPanel.viewType,
 			PlotPanel.get_current_title(),
-			column || vscode.ViewColumn.Beside,
+			column || vscode.ViewColumn.Active,
 			{ enableScripts: true, 
 			  localResourceRoots: [vscode.Uri.joinPath(extensionUri, 'media')],
 			  retainContextWhenHidden: true

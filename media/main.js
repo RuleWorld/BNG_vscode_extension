@@ -6,32 +6,10 @@
     const oldState = vscode.getState();
     const network = document.getElementById('network');
 
-    // add functions to buttons
-    // const ref_button = document.getElementById("refresh_button");
-    // ref_button.onclick = function () {
-            // const vscode = acquireVsCodeApi();
-    //     // send refresh signal
-    //     vscode.postMessage({
-    //         command: 'alert',
-    //         context: 'plot',
-    //         text: "what"
-    //     })
-    // }
-    // $("#refresh_button").click(function () {
-    //     // send refresh signal
-    //     vscode.postMessage({
-    //         command: 'alert',
-    //         context: 'plot',
-    //         text: "what"
-    //     })
-    // });
-    
-    $("#refresh_button").click(function(){
-        vscode.postMessage({
-            command: "refresh",
-            context: "plot"
-        })
-    });
+    function dropdown_show() {
+        document.getElementById("axis_dropdown").classList.toggle("show");
+    }
+
     // Handle messages sent from the extension to the webview
     window.addEventListener('message', event => {
         const message = event.data; // The json data that the extension sent
@@ -41,6 +19,7 @@
                 // message.names will contain the names of time series
                 let plot_data = [];
                 let plot_options = { 
+                    showlegend: false,
                     margin: { t:0 },
                     autosize: true,
                     xaxis: { title: message.names[0] },
@@ -50,7 +29,70 @@
                         font: {
                           size: 12
                         }
-                    }
+                    },
+                    updatemenus: [{
+                        pad: {'r': 10, 't': 10},
+                        showactive: true,
+                        y: 0.9,
+                        yanchor: 'top',
+                        buttons: [{
+                            method: 'restyle',
+                            args: ['mode', 'lines'],
+                            label: 'lines'
+                        },
+                        {
+                            method: 'restyle',
+                            args: ['mode', 'markers'],
+                            label: 'markers'
+                        },
+                        {
+                            method: 'restyle',
+                            args: ['mode', 'lines+markers'],
+                            label: 'lines+markers'
+                        }] 
+                    },
+                    {
+                        pad: {'r': 10, 't': 10},
+                        showactive: true,
+                        y: 0.8,
+                        yanchor: 'top',
+                        buttons: [{
+                            method: 'relayout',
+                            args: ['showlegend', false],
+                            label: 'legend off'
+                        },
+                        {
+                            method: 'relayout',
+                            args: ['showlegend', true],
+                            label: 'legend on'
+                        }] 
+                    },
+                    {
+                        pad: {'r': 10, 't': 10},
+                        showactive: true,
+                        y: 0.7,
+                        yanchor: 'top',
+                        buttons: [{
+                            method: 'relayout',
+                            args: ['xaxis.type', 'linear'],
+                            label: 'linear x'
+                        },
+                            {
+                            method: 'relayout',
+                            args: ['xaxis.type', 'log'],
+                            label: 'logx'
+                        },
+                        {
+                            method: 'relayout',
+                            args: ['yaxis.type', 'linear'],
+                            label: 'linear y'
+                        },
+                        {
+                            method: 'relayout',
+                            args: ['yaxis.type', 'log'],
+                            label: 'logy'
+                        }] 
+                    }],
                 };
                 for (let i=0;i<message.names.length;i++) {
                     if (i == 0) {
@@ -63,7 +105,26 @@
                     }
                     plot_data.push(this_data);
                 }
-                Plotly.newPlot("plot", plot_data, plot_options);
+                var plot = document.getElementById('plot');
+                Plotly.newPlot(plot, plot_data, plot_options);
+                plot.on('plotly_selected', function(eventData) {
+                    var curve_set = new Set();
+                    eventData.points.forEach(function(pt) {
+                        curve_set.add(pt.curveNumber);
+                    });
+                    if (curve_set.size > 0) {
+                        Plotly.restyle(plot, {
+                            visible: false
+                        });
+                        Plotly.restyle(plot, {
+                            visible: true
+                        }, Array.from(curve_set));
+                    } else if (curve_set.size == 0) {
+                        Plotly.restyle(plot, {
+                            visible: true
+                        });
+                    }
+                });
                 break;
             case 'network':
                 // render a network in plot
@@ -107,9 +168,9 @@
                     }
                 ];  
                 let layout_opts = {
-                    name: 'breadthfirst',
+                    name: 'cose',
                     fit: true,
-                    animate: true
+                    animate: "end"
                 };
                 var cy = cytoscape({
                     container: network,
@@ -119,6 +180,9 @@
                 });
                 var layout = cy.layout( layout_opts );
                 layout.run();
+                $("#layout_button").click(function(){
+                    layout.run();
+                });
                 cy.mount(network);
                 break;
         }

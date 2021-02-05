@@ -37,22 +37,55 @@ body {
 	float: left;
 }
 
+/* Dropdown Button */
+.dropbtn {
+	background-color: #3498DB;
+	color: white;
+	padding: 16px;
+	font-size: 12px;
+	border: none;
+	cursor: pointer;
+}
+
+/* Dropdown button on hover & focus */
+.dropbtn:hover, .dropbtn:focus {
+	background-color: #2980B9;
+}
+
+/* The container <div> - needed to position the dropdown content */
 #top_buttons {
+	position: relative;
+	display: inline-block;
+}
+
+/* Dropdown Content (Hidden by Default) */
+#axis_dropdown {
+	display: none;
+	position: absolute;
+	background-color: #f1f1f1;
+	min-width: 160px;
+	box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+	z-index: 99 !important;
+}  
+/* Show the dropdown menu (use JS to add this class to the .dropdown-content container when the user clicks on the dropdown button) */
+.show {display:block;}
+
+/* #top_buttons {
 	border: none;
 	text-align: center;
 	outline: 1px solid transparent;
 	outline-offset: 2px !important;
 	color: white;
 	background: grey;
-	position: absolute; /* Position them relative to the browser window */
-	top: -50px; /* Position them outside of the screen */
+	position: absolute; 
+	top: -50px; 
 	right: 20px;
-	transition: 0.3s; /* Add transition on hover */
-	padding: 15px; /* 15px padding */
-	width: 200px; /* Set a specific width */
-	text-decoration: none; /* Remove underline */
-	font-size: 20px; /* Increase font size */
-	border-radius: 0 0 5px 5px; /* Rounded corners on the top right and bottom right side */
+	transition: 0.3s; 
+	padding: 15px; 
+	width: 200px; 
+	text-decoration: none; 
+	font-size: 20px;
+	border-radius: 0 0 5px 5px; 
 	z-index: 99 !important;
 }
 
@@ -63,7 +96,7 @@ body {
 
 #top_buttons:focus {
 	outline-color: var(--vscode-focusBorder);
-}
+} */
 
 ol,
 ul {

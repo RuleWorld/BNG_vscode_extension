@@ -4,7 +4,7 @@
         "type": "git",
         "url": "https://github.com/ASinanSaglam/bngl-grammar-vscode"
     },
-    "icon": "assets/icon.png",
+    "icon": "assets/flagman.png",
     "galleryBanner": {
         "color": "#C80000",
         "theme": "dark"
@@ -12,7 +12,7 @@
     "name": "bngl",
     "displayName": "BioNetGen Language",
     "description": "BNG language extension for vscode",
-    "version": "0.2.9",
+    "version": "0.3.0",
     "engines": {
         "vscode": "^1.52.0"
     },

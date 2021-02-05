@@ -104,30 +104,10 @@
         "prefix": "simulate",
         "body": ["simulate({method=>\"${1|ode,ssa,nf,pla|}\",t_start=>$2,t_end=>$3,n_steps=>$4$0})"]
     },
-    "simulate_ode": {
-        "scope": "bngl",
-        "prefix": "simulate_ode",
-        "body": ["simulate_ode({t_start=>$1,t_end=>$2,n_steps=>$3,sparse=>${4:0}$0})"]
-    },
-    "simulate_ssa": {
-        "scope": "bngl",
-        "prefix": "simulate_ssa",
-        "body": ["simulate_ssa({t_start=>$1,t_end=>$2,n_steps=>$3$0})"]
-    },
-    "simulate_pla": {
-        "scope": "bngl",
-        "prefix": "simulate_pla",
-        "body": ["simulate_pla({t_start=>$1,t_end=>$2,n_steps=>$3$0})"]
-    },
-    "simulate_nf": {
-        "scope": "bngl",
-        "prefix": "simulate_nf",
-        "body": ["simulate_nf({t_start=>$1,t_end=>$2,n_steps=>$3$0})"]
-    },
     "parameter_scan": {
         "scope": "bngl",
         "prefix": "parameter_scan",
-        "body": ["parameter_scan({method=>\"${1|ode,ssa,nf,pla|}\"t_start=>$2,t_end=>$3,n_steps=>$4,parameter=>\"$5\",par_min=>$6,par_max=>$7,n_scan_pts=>$8,log_scale=>${9|0,1|}$0})"]
+        "body": ["parameter_scan({method=>\"${1|ode,ssa,nf,pla|}\",t_start=>$2,t_end=>$3,n_steps=>$4,parameter=>\"$5\",par_min=>$6,par_max=>$7,n_scan_pts=>$8,log_scale=>${9|0,1|}$0})"]
     },
     "bifurcate": {
         "scope": "bngl",
