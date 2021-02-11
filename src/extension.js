@@ -54,7 +54,8 @@ function activate(context) {
 		const year = date.getFullYear();
 		const month = `${date.getMonth() + 1}`.padStart(2, '0');
 		const day =`${date.getDate()}`.padStart(2, '0');
-		const fold_name = `${year}_${month}_${day}_${date.getHours()}_${date.getMinutes()}`
+		const seconds = `${date.getSeconds()}`.padStart(2, '0');
+		const fold_name = `${year}_${month}_${day}_${date.getHours()}_${date.getMinutes()}_${seconds}`
 		// Get workspace URI
 		let curr_workspace_uri = vscode.workspace.getWorkspaceFolder(vscode.window.activeTextEditor.document.uri).uri;
 		// find basename of the file we are working with
@@ -77,7 +78,7 @@ function activate(context) {
 		// copy the file into our new folder
 		vscode.workspace.fs.copy(curr_doc_uri, copy_path);
 		// set the terminal command we want to run
-		let term_cmd = `bionetgen run -i ${copy_path.fsPath} -o ${new_fold_uri.fsPath}`;
+		let term_cmd = `bionetgen run -i "${copy_path.fsPath}" -o "${new_fold_uri.fsPath}"`;
 		// focus on the terminal and run the command
 		term.show();
 		term.sendText(term_cmd);
