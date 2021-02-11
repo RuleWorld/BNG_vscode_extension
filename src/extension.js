@@ -103,7 +103,7 @@ function activate(context) {
 		// set the path to be copied to
 		let outpath = fpath.replace(fname, `${fname_noext}_gdat.png`);
 		// set the terminal command we want to run
-		let term_cmd = `bionetgen plot -i ${fpath} -o ${outpath} --legend`;
+		let term_cmd = `bionetgen plot -i "${fpath}" -o "${outpath}" --legend`;
 		// focus on the terminal and run the command
 		term.show();
 		term.sendText(term_cmd);
@@ -135,7 +135,7 @@ function activate(context) {
 		// set the path to be copied to
 		let outpath = fpath.replace(fname, `${fname_noext}_cdat.png`);
 		// set the terminal command we want to run
-		let term_cmd = `bionetgen plot -i ${fpath} -o ${outpath}`;
+		let term_cmd = `bionetgen plot -i "${fpath}" -o "${outpath}"`;
 		// focus on the terminal and run the command
 		term.show();
 		term.sendText(term_cmd);
@@ -168,7 +168,7 @@ function activate(context) {
 		// set the path to be copied to
 		let outpath = fpath.replace(fname, `${fname_noext}_scan.png`);
 		// set the terminal command we want to run
-		let term_cmd = `bionetgen plot -i ${fpath} -o ${outpath} --legend`;
+		let term_cmd = `bionetgen plot -i "${fpath}" -o "${outpath}" --legend`;
 		// focus on the terminal and run the command
 		term.show();
 		term.sendText(term_cmd);

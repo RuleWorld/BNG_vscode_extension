@@ -17,3 +17,6 @@ Major behavior changes, every click on the built-in plotting now pops open a new
 
 - 0.3.0
 Plots appear in active window to give it more size. Plots now have some options on the left of the plot. Lasso selecting plots allow you to sub select time series, this is subject to heavy modification in the future. 
+
+- 0.3.1
+Quote protecting paths so paths that contain spaces will work. Added seconds to timestamps.
