@@ -18,8 +18,24 @@
                 // message.data will contain the data
                 // message.names will contain the names of time series
                 let plot_data = [];
+                for (let i=0;i<message.names.length;i++) {
+                    if (i == 0) {
+                        continue;
+                    }
+                    let this_data = {
+                        x: message.data[0],
+                        y: message.data[i],
+                        name: message.names[i]
+                    }
+                    plot_data.push(this_data);
+                }
+                let legend_status = false;
+                if ( plot_data.length < 6) {
+                    legend_status = true
+                }
                 let plot_options = { 
-                    showlegend: false,
+                    showlegend: legend_status,
+                    hovermode: 'closest',
                     margin: { t:0 },
                     autosize: true,
                     xaxis: { title: message.names[0] },
@@ -94,17 +110,6 @@
                         }] 
                     }],
                 };
-                for (let i=0;i<message.names.length;i++) {
-                    if (i == 0) {
-                        continue;
-                    }
-                    let this_data = {
-                        x: message.data[0],
-                        y: message.data[i],
-                        name: message.names[i]
-                    }
-                    plot_data.push(this_data);
-                }
                 var plot = document.getElementById('plot');
                 Plotly.newPlot(plot, plot_data, plot_options);
                 plot.on('plotly_selected', function(eventData) {
