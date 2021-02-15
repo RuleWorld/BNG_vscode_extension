@@ -20,3 +20,6 @@ Plots appear in active window to give it more size. Plots now have some options 
 
 - 0.3.1
 Quote protecting paths so paths that contain spaces will work. Added seconds to timestamps.
+
+- 0.3.2
+Plotly hovermode default changed to closest, legends are on by default if there's <= 5 series
