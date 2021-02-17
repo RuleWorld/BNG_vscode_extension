@@ -42,7 +42,7 @@
     "RuleLine": {
         "scope": "bngl",
         "prefix": "RuleLine",
-        "body": ["${1:Reactant1} + ${2:Reactant2} ${3|->,<->|} ${4:Product1} + ${5:Product2} ${6:RateConstant}$0"]
+        "body": ["${1:RuleNane}: ${2:Reactant1} + ${3:Reactant2} ${4|->,<->|} ${5:Product1} + ${6:Product2} ${7:RateConstant}$0"]
     },
     "model": {
         "scope": "bngl",
@@ -102,7 +102,7 @@
     "simulate": {
         "scope": "bngl",
         "prefix": "simulate",
-        "body": ["simulate({method=>\"${1|ode,ssa,nf,pla|}\",t_start=>$2,t_end=>$3,n_steps=>$4$0})"]
+        "body": ["simulate({method=>\"${1|ode,ssa,nf,pla|}\",t_end=>$2,n_steps=>$3$0})"]
     },
     "parameter_scan": {
         "scope": "bngl",

@@ -35,6 +35,7 @@
                 ],
                 "extensions": [
                     ".bngl",
+                    ".net",
                     ".gdat",
                     ".cdat",
                     ".scan",

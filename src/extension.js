@@ -84,7 +84,7 @@ function activate(context) {
 		term.sendText(term_cmd);
 		// Done running, let the user know
 		// TODO: Wait until it's done
-		vscode.window.showInformationMessage(`Done running ${fname} in folder ${fname_noext}/${fold_name}`);
+		vscode.window.showInformationMessage(`Started running ${fname} in folder ${fname_noext}/${fold_name}`);
 	}
 	function plotgdatCommandHandler() {
 		let term = vscode.window.terminals.find(i => i.name == "bngl_term");
@@ -341,7 +341,6 @@ class PlotPanel {
 	} 
 
 	/**
-	 * 
 	 * @param {vscode.WebviewPanel} panel 
 	 * @param {String} extension 
 	 */
