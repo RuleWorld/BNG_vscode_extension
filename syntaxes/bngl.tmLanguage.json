@@ -235,6 +235,9 @@
 		"param_line": {
 			"name": "meta.parameter.line.bngl",
 			"patterns": [{
+				"include": "#line-label"
+			},
+			{
 				"begin": "([A-Za-z][A-Za-z0-9_]*)\\s*(\\=)?\\s*",
 				"beginCaptures": {
 					"1": { "name": "name", "patterns": [{ "include": "#names" }] },
@@ -250,13 +253,13 @@
 			},
 			{
 				"include": "#line-continuation"
-			},
-			{
-				"include": "#line-label"
 			}]
 		},
 		"moltype_line": {
 			"patterns": [{
+					"include": "#line-label"
+				},
+				{
 				"contentName": "meta.moleculetype.line.bngl",
 				"begin": "(?=[A-Za-z])",
 				"end": "\\s*(?=\\#|((?<!\\\\)\\n))",
@@ -267,15 +270,15 @@
 				}]
 			},
 			{
-				"include": "#line-label"
-			},
-			{
 				"include": "#line-continuation"
 			}]
 		},
 		"compartment_line": {
 			"name": "meta.compartment.line.bngl",
 			"patterns": [{
+					"include": "#line-label"
+				},
+				{
 				"begin": "([A-Za-z][A-Za-z0-9_]*)\\s+([2|3])\\s+",
 				"beginCaptures": {
 					"1": { "name": "meta.compartment.name.bngl", "patterns": [{ "include": "#names"}] },
@@ -288,14 +291,14 @@
 				"patterns": [{
 					"include": "#expressions"
 				}]
-			},
-			{
-				"include": "#line-label"
 			}]
 		},
 		"func_line": {
 			"name": "meta.function.line.bngl",
 			"patterns": [{
+					"include": "#line-label"
+				},
+				{
 				"begin": "([A-Za-z][A-Za-z0-9_]*)(\\([^\\n|\\#|\\)]*\\))?\\s*(\\s+|\\=)\\s*",
 				"beginCaptures": {
 					"1": { "name": "meta.function.name.bngl", "patterns": [{ "include": "#names"}] },
@@ -307,9 +310,6 @@
 				"patterns": [{
 					"include": "#expressions"
 				}]
-			},
-			{
-				"include": "#line-label"
 			}]
 		},
 		"line-continuation": {
@@ -336,7 +336,9 @@
 		},
 		"species_line": {
 			"name": "meta.species.line.bngl",
-			"patterns": [
+			"patterns": [{
+				"include": "#line-label"
+			},
 			{
 				"match": "(?=[A-Za-z]|\\%|\\@)([^\\n|\\#]+)\\s+([^((?<!\\\\)\\n)|\\#]+)",
 				"captures": {
@@ -348,14 +350,14 @@
 				"include": "#comments"
 			},
 			{
-				"include": "#line-label"
-			},
-			{
 				"include": "#line-continuation"
 			}]
 		},
 		"obs_line": {
 			"patterns": [{
+					"include": "#line-label"
+				},
+				{
 				"begin": "(Molecules|Species)\\s+([A-Za-z][A-Za-z0-9_]*)\\s+",
 				"beginCaptures": {
 					"1": { "name": "meta.observable.type.bngl", "patterns": [{ "include": "#obs_kwords"}] },
@@ -369,9 +371,6 @@
 					},
 					"end": "(?=\\#|\\n)"
 				}]
-			},
-			{
-				"include": "#line-label"
 			}]
 		},
 		"species_all": {
@@ -488,6 +487,9 @@
 		"rule_line": {
 			"name": "meta.rule.line.bngl",
 			"patterns": [{
+					"include": "#line-label"
+				},
+				{
 				"begin": "(?=[A-Za-z0]|\\@|\\%)([^\\n|\\#|\\<|\\-]+)\\s*(?=\\<|\\-)",
 				"beginCaptures": {
 					"1": { "name": "meta.rule.reactants.bngl", "patterns": [{ "include": "#reactants"}] }
@@ -496,9 +498,6 @@
 				"patterns": [{
 					"include": "#reaction_rhs"
 				}]
-			},
-			{
-				"include": "#line-label"
 			}]
 		},
 		"reactants": {
