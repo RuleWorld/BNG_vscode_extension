@@ -695,6 +695,30 @@
 			"settings": {
 				"foreground": "#44a34c",
 			}
+		},
+		{
+			"scope": "punctuation.action.arguments.begin_brace.bngl",
+			"settings": {
+				"foreground": "#5e7747",
+			}
+		},
+		{
+			"scope": "punctuation.action.arguments.end_brace.bngl",
+			"settings": {
+				"foreground": "#5e7747",
+			}
+		},
+		{
+			"scope": "punctuation.action.arguments.begin_paran.bngl",
+			"settings": {
+				"foreground": "#be4444",
+			}
+		},
+		{
+			"scope": "punctuation.action.arguments.end_paran.bngl",
+			"settings": {
+				"foreground": "#be4444",
+			}
 		}
 	]
 }
