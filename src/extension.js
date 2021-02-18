@@ -307,6 +307,7 @@ class PlotPanel {
 	 * @param {String} extension 
 	 */
 	static revive(panel, extension) {
+		// TODO this needs to actually revive the panel at some point
 		// get current text
 		let text = vscode.window.activeTextEditor.document.getText();
 		PlotPanel.panels.push(new PlotPanel(panel, extension, text))
