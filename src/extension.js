@@ -23,31 +23,32 @@ const os     = require('os');
 function activate(context) {
 	// TODO: Re-write this as TypeScript and use the compiler instead
 	// This line of code will only be executed once when your extension is activated
+	
+	// leaving this here in case we need to do something to the terminal
+	// that is  OS specific in the future
+	// let term = vscode.window.terminals.find(i => i.name == "bngl_term");
+	// if (term == undefined) {
+	// 	// you can get the OS via os.platform(). Options are:
+	// 	// linux/win32/darwin
+	// 	let plt = os.platform();
+	// 	if (plt.toString() == "win32") {
+	// 		term = vscode.window.createTerminal("bngl_term");
+	// 	} else if (plt.toString() == "linux") {
+	// 		term = vscode.window.createTerminal("bngl_term");
+	// 	} else if (plt.toString() == "darwin") {
+	// 		term = vscode.window.createTerminal("bngl_term");
+	// 	} else {
+	// 		vscode.window.showInformationMessage(`OS ${plt} is not supported, using default terminal options`);
+	// 		term = vscode.window.createTerminal("bngl_term");
+	// 	}
+	// }
 
-	const runCommandName      = 'bng.run_bngl';
-	const plotgdatCommandName = 'bng.plot_gdat';
-	const plotcdatCommandName = 'bng.plot_cdat';
-	const plotscanCommandName = 'bng.plot_scan';
-	const webviewCommandName = 'bng.webview';
-
+	// function that deals with running bngl files
 	function runCommandHandler() {
 		// first we try to grab our terminal and create one if it doesn't exist
-		// TOOD: Instantiate terminal appropriately depending on the OS 
-		// you can get the OS via os.platform(). Options are:
-		// linux/win32/darwin
 		let term = vscode.window.terminals.find(i => i.name == "bngl_term");
 		if (term == undefined) {
-			let plt = os.platform();
-			if (plt.toString() == "win32") {
-				term = vscode.window.createTerminal("bngl_term");
-			} else if (plt.toString() == "linux") {
-				term = vscode.window.createTerminal("bngl_term");
-			} else if (plt.toString() == "darwin") {
-				term = vscode.window.createTerminal("bngl_term");
-			} else {
-				vscode.window.showInformationMessage(`OS ${plt} is not supported, using default terminal options`);
-				term = vscode.window.createTerminal("bngl_term");
-			}
+			term = vscode.window.createTerminal("bngl_term");
 		}
 		// next we make a folder friendly time stamp
 		const date = new Date();
@@ -55,7 +56,7 @@ function activate(context) {
 		const month = `${date.getMonth() + 1}`.padStart(2, '0');
 		const day =`${date.getDate()}`.padStart(2, '0');
 		const seconds = `${date.getSeconds()}`.padStart(2, '0');
-		const fold_name = `${year}_${month}_${day}_${date.getHours()}_${date.getMinutes()}_${seconds}`
+		const fold_name = `${year}_${month}_${day}__${date.getHours()}_${date.getMinutes()}_${seconds}`
 		// Get workspace URI
 		let curr_workspace_uri = vscode.workspace.getWorkspaceFolder(vscode.window.activeTextEditor.document.uri).uri;
 		// find basename of the file we are working with
@@ -70,6 +71,8 @@ function activate(context) {
 		// Get folder URI to make the new folder
 		let new_fold_uri = vscode.Uri.joinPath(curr_workspace_uri, fname_noext, fold_name);
 		// Create new directory 
+		// FIXME if a file of the same name as the folder exists
+		// this command fails to run. At least let the user know
 		vscode.workspace.fs.createDirectory(new_fold_uri);
 		// get current file path
 		let curr_doc_uri = vscode.window.activeTextEditor.document.uri;
@@ -82,11 +85,11 @@ function activate(context) {
 		// focus on the terminal and run the command
 		term.show();
 		term.sendText(term_cmd);
-		// Done running, let the user know
-		// TODO: Wait until it's done
+		// Started running, let the user know
 		vscode.window.showInformationMessage(`Started running ${fname} in folder ${fname_noext}/${fold_name}`);
 	}
-	function plotgdatCommandHandler() {
+	// one function for plotting gdat/cdat/scan files
+	function plotDatCommandHandler() {
 		let term = vscode.window.terminals.find(i => i.name == "bngl_term");
 		if (term == undefined) {
 			term = vscode.window.createTerminal("bngl_term");
@@ -99,50 +102,25 @@ function activate(context) {
 		let li_w = fpath.lastIndexOf('\\')+1;
 		let li_f = Math.max(li_u,li_w);
 		let fname = fpath.substring(li_f);
-		let fname_noext = fname.replace(".gdat", "");
+		let split = fname.split('.');
+		let ext = split.pop();
+		let fname_noext = split.join('.');
 		// set the path to be copied to
-		let outpath = fpath.replace(fname, `${fname_noext}_gdat.png`);
+		let outpath = fpath.replace(fname, `${fname_noext}_${ext}.png`);
 		// set the terminal command we want to run
-		let term_cmd = `bionetgen plot -i "${fpath}" -o "${outpath}" --legend`;
-		// focus on the terminal and run the command
-		term.show();
-		term.sendText(term_cmd);
-		let outUri = vscode.Uri.file(outpath);
-		let timeout_mili = 10000;
-
-		checkImage(outpath, timeout_mili).then(() => {
-			vscode.window.showInformationMessage(`Done plotting ${fpath} to ${outpath} with exit code`); 		
-			vscode.commands.executeCommand('vscode.open', outUri);
-		}).catch(() => {
-				vscode.window.showInformationMessage(`Plotting didn't finish within ${timeout_mili} miliseconds`); 			
-			}
-		);
-	}
-	function plotcdatCommandHandler() {
-		let term = vscode.window.terminals.find(i => i.name == "bngl_term");
-		if (term == undefined) {
-			term = vscode.window.createTerminal("bngl_term");
+		let term_cmd;
+		if ( ext == "gdat" || ext == "scan") {
+			term_cmd = `bionetgen plot -i "${fpath}" -o "${outpath}" --legend`;
+		} else {
+			term_cmd = `bionetgen plot -i "${fpath}" -o "${outpath}"`;
 		}
-		// find basename of the file we are working with
-		let fpath = vscode.window.activeTextEditor.document.fileName;
-		// TODO: this is a hack to find basename, find where
-		// the real basename function is that works with URIs
-		let li_u = fpath.lastIndexOf('/')+1;
-		let li_w = fpath.lastIndexOf('\\')+1;
-		let li_f = Math.max(li_u,li_w);
-		let fname = fpath.substring(li_f);
-		let fname_noext = fname.replace(".cdat", "");
-		// set the path to be copied to
-		let outpath = fpath.replace(fname, `${fname_noext}_cdat.png`);
-		// set the terminal command we want to run
-		let term_cmd = `bionetgen plot -i "${fpath}" -o "${outpath}"`;
 		// focus on the terminal and run the command
 		term.show();
 		term.sendText(term_cmd);
-		// We need to async check if the image exists and if it does
-		// we let the user know and open the image
 		let outUri = vscode.Uri.file(outpath);
 		let timeout_mili = 10000;
+		// let's check to see if our image file is created within 10s
+		// if so, open it
 		checkImage(outpath, timeout_mili).then(() => {
 			vscode.window.showInformationMessage(`Done plotting ${fpath} to ${outpath} with exit code`); 		
 			vscode.commands.executeCommand('vscode.open', outUri);
@@ -151,52 +129,29 @@ function activate(context) {
 			}
 		);
 	}
-	function plotscanCommandHandler() {
-		let term = vscode.window.terminals.find(i => i.name == "bngl_term");
-		if (term == undefined) {
-			term = vscode.window.createTerminal("bngl_term");
-		}
-		// find basename of the file we are working with
-		let fpath = vscode.window.activeTextEditor.document.fileName;
-		// TODO: this is a hack to find basename, find where
-		// the real basename function is that works with URIs
-		let li_u = fpath.lastIndexOf('/')+1;
-		let li_w = fpath.lastIndexOf('\\')+1;
-		let li_f = Math.max(li_u,li_w);
-		let fname = fpath.substring(li_f);
-		let fname_noext = fname.replace(".scan", "");
-		// set the path to be copied to
-		let outpath = fpath.replace(fname, `${fname_noext}_scan.png`);
-		// set the terminal command we want to run
-		let term_cmd = `bionetgen plot -i "${fpath}" -o "${outpath}" --legend`;
-		// focus on the terminal and run the command
-		term.show();
-		term.sendText(term_cmd);
-		let outUri = vscode.Uri.file(outpath);
-		let timeout_mili = 10000;
-
-		checkImage(outpath, timeout_mili).then(() => {
-			vscode.window.showInformationMessage(`Done plotting ${fpath} to ${outpath} with exit code`); 		
-			vscode.commands.executeCommand('vscode.open', outUri);
-		}).catch(() => {
-				vscode.window.showInformationMessage(`Plotting didn't finish within ${timeout_mili} miliseconds`); 			
-			}
-		);
-	}
+	// names of the commands we want to register
+	const runCommandName      = 'bng.run_bngl';
+	const plotgdatCommandName = 'bng.plot_gdat';
+	const plotcdatCommandName = 'bng.plot_cdat';
+	const plotscanCommandName = 'bng.plot_scan';
+	const webviewCommandName = 'bng.webview';
 	// The command has been defined in the package.json file
 	// Now provide the implementation of the command with  registerCommand
 	// The commandId parameter must match the command field in package.json
 	let disposable1 = vscode.commands.registerCommand(runCommandName, runCommandHandler);
 	context.subscriptions.push(disposable1);
-	let disposable2 = vscode.commands.registerCommand(plotgdatCommandName, plotgdatCommandHandler);
+	// these are the plotting commands for gdat/cdat/scan files
+	let disposable2 = vscode.commands.registerCommand(plotgdatCommandName, plotDatCommandHandler);
 	context.subscriptions.push(disposable2);
-	let disposable3 = vscode.commands.registerCommand(plotcdatCommandName, plotcdatCommandHandler);
+	let disposable3 = vscode.commands.registerCommand(plotcdatCommandName, plotDatCommandHandler);
 	context.subscriptions.push(disposable3);
-	let disposable4 = vscode.commands.registerCommand(plotscanCommandName, plotscanCommandHandler);
+	let disposable4 = vscode.commands.registerCommand(plotscanCommandName, plotDatCommandHandler);
 	context.subscriptions.push(disposable4);
+	// this one generates the webview panel for built-in plotting
 	let disposable5 = vscode.commands.registerCommand(webviewCommandName, () => {PlotPanel.create(context.extensionUri)});
 	context.subscriptions.push(disposable5);
-
+	// TODO make this work
+	// resurrect webview 
 	if (vscode.window.registerWebviewPanelSerializer) {
 		// Make sure we register a serializer in activation event
 		vscode.window.registerWebviewPanelSerializer(PlotPanel.viewType, {
@@ -216,12 +171,17 @@ function activate(context) {
  * @param {number} [timeout]
  */
 function checkImage(outpath, timeout) {
+	// this returns a promise that will wait until 
+	// a file given by outpath is found or a timeout
+	// limit is reached
 	return new Promise(function (resolve, reject) {
+		// timer that closes watcher if timeout is reached
 		var timer = setTimeout(function () {
 			watcher.close();
 			reject();
 		}, timeout);
-
+		// checks a path to see if it returns F_OK which 
+		// indicates that the file is visible/exists
 		fs.access(outpath, fs.constants.F_OK, function (err) {
 			if (!err) {
 				clearTimeout(timer);
@@ -229,6 +189,8 @@ function checkImage(outpath, timeout) {
 				resolve();
 			}
 		});
+		// checks a folder to see if a file is renamed 
+		// into the file we are watching out for
 		var dir = path.dirname(outpath);
 		var basename = path.basename(outpath);
 		var watcher = fs.watch(dir, function (eventType, filename) {
