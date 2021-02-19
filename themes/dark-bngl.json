@@ -603,19 +603,13 @@
 		{
 			"scope": "meta.molecule.name.bngl",
 			"settings": {
-				"foreground": "#ffffff",
+				"foreground": "#dadada",
 			}
 		},
 		{
 			"scope": "meta.component.name.bngl",
 			"settings": {
-				"foreground": "#bdbd12",
-			}
-		},
-		{
-			"scope": "variable.parameter.tag.name.bngl",
-			"settings": {
-				"foreground": "#db6767",
+				"foreground": "#76db87",
 			}
 		},
 		{
@@ -627,13 +621,13 @@
 		{
 			"scope": "variable.parameter.compartment.name.bngl",
 			"settings": {
-				"foreground": "#8667db",
+				"foreground": "#db6767",
 			}
 		},
 		{
 			"scope": "constant.language.compartment.symbol.bngl",
 			"settings": {
-				"foreground": "#828a3b",
+				"foreground": "#7abea4",
 			}
 		},
 		{
@@ -711,13 +705,25 @@
 		{
 			"scope": "punctuation.action.arguments.begin_paran.bngl",
 			"settings": {
-				"foreground": "#be4444",
+				"foreground": "#B9A381",
 			}
 		},
 		{
 			"scope": "punctuation.action.arguments.end_paran.bngl",
 			"settings": {
-				"foreground": "#be4444",
+				"foreground": "#B9A381",
+			}
+		},
+		{
+			"scope": "meta.moleculetype.name.bngl",
+			"settings": {
+				"foreground": "#dadada",
+			}
+		},
+		{
+			"scope": "meta.action.name.bngl",
+			"settings": {
+				"foreground": "#dadada",
 			}
 		}
 	]

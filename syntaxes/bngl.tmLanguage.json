@@ -243,7 +243,7 @@
 				"name": "entity.name.function.action.bngl",
 				"match": "^\\s*(generate_network|generate_hybrid_model|simulate|simulate_ode|simulate_ssa|simulate_pla|simulate_nf|parameter_scan|bifurcate|readFile|writeFile|writeModel|writeNetwork|writeXML|writeSBML|writeMfile|writeMexfile|writeMDL|visualize|setConcentration|addConcentration|saveConcentrations|resetConcentrations|setParameter|saveParameters|resetParameters|quit|setModelName|substanceUnits|version|setOption)(\\()(\\{)?([^\\n|\\#|\\}]+)?(\\})?(\\))",
 			    "captures": {
-					"1": { "name": "meta.action.name.bngl", "patterns": [{ "include": "#names"}] },
+					"1": { "name": "meta.action.name.bngl" },
 					"2": { "name": "punctuation.action.arguments.begin_paran.bngl" },
 					"3": { "name": "punctuation.action.arguments.begin_brace.bngl"},
 					"4": { "name": "meta.action.arguments.bngl", "patterns": [{ "include": "#action_arguments"}] },
@@ -331,9 +331,6 @@
 						"include": "#moltype"
 					}]
 				}]
-			},
-			{
-				"include": "#line-continuation"
 			}]
 		},
 		"compartment_line": {
@@ -375,16 +372,6 @@
 				}]
 			}]
 		},
-		"line-continuation": {
-			"patterns": [{
-				"begin": "(\\\\)\\n",
-				"beginCaptures": {
-					"1": { "name": "punctuation.separator.continuation.line.bngl" }
-				},
-				"end":"(?<!\\\\)\\n",
-				"contentName": "punctuation.line.continue.bngl"
-			}]
-		},
 		"func_args": {
 			"patterns": [{
 				"match": "([^\\n|\\#|\\,|\\(|\\)|\\s]+)",
@@ -411,9 +398,6 @@
 			},
 			{
 				"include": "#comments"
-			},
-			{
-				"include": "#line-continuation"
 			}]
 		},
 		"obs_line": {
@@ -526,7 +510,7 @@
 			"patterns": [{
 				"begin": "([A-Za-z][A-Za-z0-9_]*)\\(",
 				"beginCaptures": {
-					"1": { "name": "meta.moleculetype.name.bngl", "patterns": [{ "include": "#names" }] }
+					"1": { "name": "meta.moleculetype.name.bngl" }
 				},
 				"end": "(.*)\\)",
 				"endCaptures": {
