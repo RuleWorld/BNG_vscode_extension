@@ -218,6 +218,8 @@ class PlotPanel {
 	/** @type {String[]} */
 	static fpaths = [];
 	/** @type {String[]} */
+	static ffolds = [];
+	/** @type {String[]} */
 	static extensions = [];
 	/** @type {String[]} */
 	static viewTitles = []
@@ -285,9 +287,11 @@ class PlotPanel {
 		this._panel.webview.onDidReceiveMessage(
 			message => {
 				switch (message.command) {
+					// this is just for webpanel to send msg to the user
 					case 'alert':
 						vscode.window.showInformationMessage(message.text);
 						return;
+					// redraws the entire panel
 					case 'refresh':
 						switch (message.context) {
 							case 'view':
@@ -295,6 +299,44 @@ class PlotPanel {
 								return;
 						}
 						return;
+					// this is an image to save, the webview can't do this directly
+					case 'image':
+						switch (message.type) {
+							case 'png':
+								let fu = vscode.Uri.file(message.folder);
+								// absolute path to the file we want to save
+								let iu = vscode.Uri.joinPath(fu,`${message.title}.png`);
+								// extract png data in base64
+								let png_data = message.text.replace("data:image/png;base64,","");
+								// decode base64 string and get a buffer/uint8arr
+								let buf = Buffer.from(png_data, 'base64');
+								// save the file
+								vscode.workspace.fs.writeFile(iu, buf);
+								// let user know
+								vscode.window.showInformationMessage(
+									`image saved to ${iu.fsPath}`
+								);
+								return;
+							case 'svg': 
+								let sfu = vscode.Uri.file(message.folder);
+								// absolute path to the file we want to save
+								let siu = vscode.Uri.joinPath(sfu,`${message.title}.svg`);
+								// extract svg data which is already decoded to a string
+								var svg_dec = decodeURIComponent(message.text);
+								// remove identifer?
+								var svg_str = svg_dec.replace("data:image/svg+xml,", "");
+								// create a buffer to save to a file
+								let sbuf = Buffer.from(svg_str);
+								// save the file
+								vscode.workspace.fs.writeFile(siu, sbuf);
+								// let user know
+								vscode.window.showInformationMessage(
+									`image saved to ${siu.fsPath}`
+								);
+								return;
+							
+						}
+
 				}
 			},
 			null,
@@ -392,10 +434,11 @@ class PlotPanel {
 				<title>GML viewer</title>
 			</head>
 			<body>
-				<h1 id="head">${this._ext}/${this._name}</h1>
+				<div id="page_title" style="display: none;">${this._name}_${this._ext}</div>
+				<div id="folder" style="display: none;">${PlotPanel.get_current_folder()}</div>
 				<div id="network"></div>
 				<div id="top_buttons">
-				<button id="layout_button" class="button" type="button">Redo layout</button>
+				  <button id="layout_button" class="button" type="button">Redo layout</button>
 				</div>
 				<script nonce="${this._nonce}" src="${this.jqUri}" type="text/javascript"></script>
 				<script nonce="${this._nonce}" src="${this.cytoUri}" type="text/javascript"></script>
@@ -429,10 +472,6 @@ class PlotPanel {
 				<!--
 					Use a content security policy to only allow loading images from https or from our extension directory,
 					and only allow scripts that have a specific nonce.
-					<button onclick="dropdown_show()" class="dropbtn">Some option menu</button>
-					<div id="axis_dropdown" class="dropdown-content">
-						<button id="logy_button" class="button" type="button">Test</button>
-					</div>
 				-->
 				<meta http-equiv="Content-Security-Policy" style-src ${webview.cspSource}; script-src 'nonce-${this._nonce}';>
 				<meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -440,12 +479,12 @@ class PlotPanel {
 				<title>Plotly viewer</title>
 			</head>
 			<body>
+				<div id="page_title" style="display: none;">${this._name}_${this._ext}</div>
+				<div id="folder" style="display: none;">${PlotPanel.get_current_folder()}</div>
 				<div id="plot"></div>
 				<script nonce="${this._nonce}" src="${this.jqUri}" type="text/javascript"></script>
 				<script nonce="${this._nonce}" src="${this.plotlyUri}" type="text/javascript"></script>
 				<script nonce="${this._nonce}" src="${this.scriptUri}" type="text/javascript"></script>
-				<div id="top_buttons">
-			</div>
 			</body>
 			</html>`;
 		// now we'll parse the editor text and turn it into a 
@@ -521,6 +560,10 @@ class PlotPanel {
 		return PlotPanel.fnames[PlotPanel.cur_planel_id]
 	}
 
+	static get_current_folder() {
+		return PlotPanel.ffolds[PlotPanel.cur_planel_id]
+	}
+
 	/**
 	 * 
 	 * @param {vscode.Uri} extensionUri 
@@ -547,6 +590,7 @@ class PlotPanel {
 		let li_u = fpath.lastIndexOf('/')+1;
 		let li_w = fpath.lastIndexOf('\\')+1;
 		let li_f = Math.max(li_u,li_w);
+		let folder = fpath.substring(0,li_f);
 		let name = fpath.substring(li_f);
 		let fname = name.replace("."+extension, "");
 		// add to our lists
@@ -554,6 +598,7 @@ class PlotPanel {
 		PlotPanel.viewTitles.push(title);
 		PlotPanel.fpaths.push(fpath);
 		PlotPanel.fnames.push(fname);
+		PlotPanel.ffolds.push(folder);
 		// create panel
 		const panel = vscode.window.createWebviewPanel(
 			PlotPanel.viewType,

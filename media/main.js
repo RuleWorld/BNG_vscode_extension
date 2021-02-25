@@ -6,9 +6,8 @@
     const oldState = vscode.getState();
     const network = document.getElementById('network');
 
-    function dropdown_show() {
-        document.getElementById("axis_dropdown").classList.toggle("show");
-    }
+    const page_title = document.getElementById('page_title').innerText;
+    const page_folder = document.getElementById('folder').innerText;
 
     // Handle messages sent from the extension to the webview
     window.addEventListener('message', event => {
@@ -49,8 +48,10 @@
                     updatemenus: [{
                         pad: {'r': 10, 't': 10},
                         showactive: true,
-                        y: 0.9,
                         yanchor: 'top',
+                        xanchor: "left",
+                        y: 1.18,
+                        x: 0,
                         buttons: [{
                             method: 'restyle',
                             args: ['mode', 'lines'],
@@ -70,8 +71,10 @@
                     {
                         pad: {'r': 10, 't': 10},
                         showactive: true,
-                        y: 0.8,
                         yanchor: 'top',
+                        xanchor: "left",
+                        y: 1.18,
+                        x: 0.2,
                         buttons: [{
                             method: 'relayout',
                             args: ['showlegend', false],
@@ -86,8 +89,10 @@
                     {
                         pad: {'r': 10, 't': 10},
                         showactive: true,
-                        y: 0.7,
                         yanchor: 'top',
+                        xanchor: "left",
+                        y: 1.18,
+                        x: 0.37,
                         buttons: [{
                             method: 'relayout',
                             args: ['xaxis.type', 'linear'],
@@ -110,8 +115,55 @@
                         }] 
                     }],
                 };
+                let config = {
+                    modeBarButtonsToAdd: [
+                        {
+                            name: 'png',
+                            icon: Plotly.Icons.camera,
+                            click: function (gd) {
+                              let img = Plotly.toImage(gd, {
+                                format:'png',
+                                width: gd._fullLayout.width,
+                                height: gd._fullLayout.height
+                              }).then(
+                                  function(url) {
+                                    vscode.postMessage({
+                                        command: 'image',
+                                        type: 'png',
+                                        title: page_title,
+                                        folder: page_folder,
+                                        text: url
+                                    })
+                                  }
+                              );
+                            }
+                        },
+                        {
+                            name: 'svg',
+                            icon: Plotly.Icons.camera,
+                            click: function (gd) {
+                                let img = Plotly.toImage(gd, {
+                                    format:'svg',
+                                    width: gd._fullLayout.width,
+                                    height: gd._fullLayout.height
+                                  }).then(
+                                      function(url) {
+                                        vscode.postMessage({
+                                            command: 'image',
+                                            type: 'svg',
+                                            title: page_title,
+                                            folder: page_folder,
+                                            text: url
+                                        })
+                                    }
+                                );
+                            }
+                        }
+                    ],
+                    modeBarButtonsToRemove: ['toImage']
+                };
                 var plot = document.getElementById('plot');
-                Plotly.newPlot(plot, plot_data, plot_options);
+                Plotly.newPlot(plot, plot_data, plot_options, config);
                 plot.on('plotly_selected', function(eventData) {
                     var curve_set = new Set();
                     eventData.points.forEach(function(pt) {
