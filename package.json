@@ -2,7 +2,7 @@
     "publisher": "als251",
     "repository": {
         "type": "git",
-        "url": "https://github.com/ASinanSaglam/BNG_vscode_extension"
+        "url": "https://github.com/RuleWorld/BNG_vscode_extension"
     },
     "icon": "assets/flagman.png",
     "galleryBanner": {
