@@ -29,7 +29,7 @@
                     plot_data.push(this_data);
                 }
                 let legend_status = false;
-                if ( plot_data.length < 11) {
+                if ( plot_data.length < 21) {
                     legend_status = true
                 }
                 let plot_options = { 
