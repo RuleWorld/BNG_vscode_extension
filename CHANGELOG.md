@@ -28,4 +28,7 @@ Plotly hovermode default changed to closest, legends are on by default if there'
 Included net files to the list of file extensions this extension supports and added the syntax for it. Various small behavior changes, couple bug fixes and a couple snippet changes.
 
 - 0.3.4
-Moved plotly dropdown menus to the top. Fixed download image issue. 
+Moved plotly dropdown menus to the top. Fixed download image issue.
+
+- 0.3.5
+Fixed highlighing issue with line labels, wasn't highlighting without indent. Added README gifs to assets. 
