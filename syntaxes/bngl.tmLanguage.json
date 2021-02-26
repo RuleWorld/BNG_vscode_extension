@@ -298,13 +298,11 @@
 		"param_line": {
 			"name": "meta.parameter.line.bngl",
 			"patterns": [{
-				"include": "#line-label"
-			},
-			{
-				"begin": "([A-Za-z][A-Za-z0-9_]*)\\s*(\\=)?\\s*",
+				"begin": "^\\s*([0-9]+\\s+|[A-Za-z][A-Za-z0-9_]*\\s*\\:)?\\s*([A-Za-z][A-Za-z0-9_]*)\\s*(\\=)?\\s*",
 				"beginCaptures": {
-					"1": { "name": "name", "patterns": [{ "include": "#names" }] },
-					"2": { "name": "equal" }
+					"1": { "name": "constant.language.line_label.bngl", "patterns": [{"name": "test.colon","match": "\\:"}] },
+					"2": { "name": "name", "patterns": [{ "include": "#names" }] },
+					"3": { "name": "equal" }
 				},
 				"end": "\\s*(?=\\#|((?<!\\\\)\\n))",
 				"patterns": [{
@@ -320,11 +318,11 @@
 		},
 		"moltype_line": {
 			"patterns": [{
-					"include": "#line-label"
-				},
-				{
 				"contentName": "meta.moleculetype.line.bngl",
-				"begin": "(?=[A-Za-z])",
+				"begin": "^\\s*([0-9]+\\s+|[A-Za-z][A-Za-z0-9_]*\\s*\\:)?\\s*(?=[A-Za-z])",
+				"beginCaptures": {
+					"1": { "name": "constant.language.line_label.bngl", "patterns": [{"name": "test.colon","match": "\\:"}] }
+				},
 				"end": "\\s*(?=\\#|((?<!\\\\)\\n))",
 				"patterns": [{
 					"patterns": [{
@@ -336,13 +334,11 @@
 		"compartment_line": {
 			"name": "meta.compartment.line.bngl",
 			"patterns": [{
-					"include": "#line-label"
-				},
-				{
-				"begin": "([A-Za-z][A-Za-z0-9_]*)\\s+([2|3])\\s+",
+				"begin": "^\\s*([0-9]+\\s+|[A-Za-z][A-Za-z0-9_]*\\s*\\:)?\\s*([A-Za-z][A-Za-z0-9_]*)\\s+([2|3])\\s+",
 				"beginCaptures": {
-					"1": { "name": "meta.compartment.name.bngl", "patterns": [{ "include": "#names"}] },
-					"2": { "name": "meta.compartment.dimensionality.bngl", "patterns": [{ "include": "#constants"}] }
+					"1": { "name": "constant.language.line_label.bngl", "patterns": [{"name": "test.colon","match": "\\:"}] },
+					"2": { "name": "meta.compartment.name.bngl", "patterns": [{ "include": "#names"}] },
+					"3": { "name": "meta.compartment.dimensionality.bngl", "patterns": [{ "include": "#constants"}] }
 				},
 				"end": "(\\s[A-Za-z][A-Za-z0-9_]*)?\\s*(?=\\#|((?<!\\\\)\\n))",
 				"endCaptures": {
@@ -356,14 +352,12 @@
 		"func_line": {
 			"name": "meta.function.line.bngl",
 			"patterns": [{
-					"include": "#line-label"
-				},
-				{
-				"begin": "([A-Za-z][A-Za-z0-9_]*)(\\([^\\n|\\#|\\)]*\\))?\\s*(\\s+|\\=)\\s*",
+				"begin": "^\\s*([0-9]+\\s+|[A-Za-z][A-Za-z0-9_]*\\s*\\:)?\\s*([A-Za-z][A-Za-z0-9_]*)(\\([^\\n|\\#|\\)]*\\))?\\s*(\\s+|\\=)\\s*",
 				"beginCaptures": {
-					"1": { "name": "meta.function.name.bngl", "patterns": [{ "include": "#names"}] },
-					"2": { "name": "meta.function.arguments.bngl", "patterns": [{ "include": "#func_args"}]},
-					"3": { "name": "meta.function.define_sym.bngl", "patterns": [{ "include": "#constants"}] }
+					"1": { "name": "constant.language.line_label.bngl", "patterns": [{"name": "test.colon","match": "\\:"}] },
+					"2": { "name": "meta.function.name.bngl", "patterns": [{ "include": "#names"}] },
+					"3": { "name": "meta.function.arguments.bngl", "patterns": [{ "include": "#func_args"}]},
+					"4": { "name": "meta.function.define_sym.bngl", "patterns": [{ "include": "#constants"}] }
 				},
 				"end": "(?=\\#|((?<!\\\\)\\n))",
 				"contentName": "function.def",
@@ -387,13 +381,11 @@
 		"species_line": {
 			"name": "meta.species.line.bngl",
 			"patterns": [{
-				"include": "#line-label"
-			},
-			{
-				"match": "(?=[A-Za-z]|\\%|\\@)([^\\n|\\#]+)\\s+([^((?<!\\\\)\\n)|\\#]+)",
+				"match": "^\\s*([0-9]+\\s+|[A-Za-z][A-Za-z0-9_]*\\s*\\:)?\\s*(?=[A-Za-z]|\\%|\\@)([^\\n|\\#]+)\\s+([^((?<!\\\\)\\n)|\\#]+)",
 				"captures": {
-					"1": { "name": "meta.species.pattern.bngl", "patterns": [{ "include": "#species_pat" }] },
-					"2": { "name": "meta.species.amount.bngl", "patterns": [{ "include": "#expressions"}] }
+					"1": { "name": "constant.language.line_label.bngl", "patterns": [{"name": "test.colon","match": "\\:"}] },
+					"2": { "name": "meta.species.pattern.bngl", "patterns": [{ "include": "#species_pat" }] },
+					"3": { "name": "meta.species.amount.bngl", "patterns": [{ "include": "#expressions"}] }
 				}
 			},
 			{
@@ -402,13 +394,11 @@
 		},
 		"obs_line": {
 			"patterns": [{
-					"include": "#line-label"
-				},
-				{
-				"begin": "(Molecules|Species)\\s+([A-Za-z][A-Za-z0-9_]*)\\s+",
+				"begin": "^\\s*([0-9]+\\s+|[A-Za-z][A-Za-z0-9_]*\\s*\\:)?\\s*(Molecules|Species)\\s+([A-Za-z][A-Za-z0-9_]*)\\s+",
 				"beginCaptures": {
-					"1": { "name": "meta.observable.type.bngl", "patterns": [{ "include": "#obs_kwords"}] },
-					"2": { "name": "meta.observable.name.bngl", "patterns": [{ "include": "#names"}] }
+					"1": { "name": "constant.language.line_label.bngl", "patterns": [{"name": "test.colon","match": "\\:"}] },
+					"2": { "name": "meta.observable.type.bngl", "patterns": [{ "include": "#obs_kwords"}] },
+					"3": { "name": "meta.observable.name.bngl", "patterns": [{ "include": "#names"}] }
 				},
 				"end": "\\s*(?=\\#|\\n)",
 				"patterns": [{
@@ -534,12 +524,10 @@
 		"rule_line": {
 			"name": "meta.rule.line.bngl",
 			"patterns": [{
-					"include": "#line-label"
-				},
-				{
-				"begin": "(?=[A-Za-z0]|\\@|\\%)([^\\n|\\#|\\<|\\-]+)\\s*(?=\\<|\\-)",
+				"begin": "^\\s*([0-9]+\\s+|[A-Za-z][A-Za-z0-9_]*\\s*\\:)?\\s*(?=[A-Za-z0]|\\@|\\%)([^\\n|\\#|\\<|\\-]+)\\s*(?=\\<|\\-)",
 				"beginCaptures": {
-					"1": { "name": "meta.rule.reactants.bngl", "patterns": [{ "include": "#reactants"}] }
+					"1": { "name": "constant.language.line_label.bngl", "patterns": [{"name": "test.colon","match": "\\:"}] },
+					"2": { "name": "meta.rule.reactants.bngl", "patterns": [{ "include": "#reactants"}] }
 				},
 				"end": "(?=\\#|\\n)",
 				"patterns": [{
