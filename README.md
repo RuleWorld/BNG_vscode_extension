@@ -18,18 +18,6 @@ This is a [VSCode](https://code.visualstudio.com/) language extension for BioNet
 
 To use the run and plot buttons the default terminal you are using needs to have [Perl](https://www.perl.org/) installed as well as [BioNetGen commmand line interface](https://github.com/ASinanSaglam/BNG_cli) installed (you can do so with 'pip install bionetgen'). Current required version of the CLI is 0.2.6. Please note that both of these tools are in active early development and is subject to sweeping changes.
 
-## Known Issues
-
-Some highlighting issues
-* Line breaks do not work
-* Theme colors will be updated
-
-Some plotting issues
-* Can't save plots from built-in plotting
-* Built-in plotting alignment
-
-Please submit an issue [here](https://github.com/ASinanSaglam/BNG_vscode_extension/issues) if you find one. 
-
 ## Installation
 
 The extension can be found in the marketplace as "BioNetGen Language". 
@@ -59,6 +47,19 @@ Notes and tips:
 * To inspect elements (for checking highlighting issues): 
   Control + shift + P -> Developer: Inspect Editor Tokens and Scopes
 
+Please see [here](docs/guide.md) for a simple starter guide.
+
+## Known Issues
+
+Some highlighting issues
+* Line breaks do not work
+* Theme colors will be updated
+
+Some plotting issues
+* Can't save plots from built-in plotting
+* Built-in plotting alignment
+
+Please submit an issue [here](https://github.com/ASinanSaglam/BNG_vscode_extension/issues) if you find one. 
 
 ## Release Notes
 
