@@ -1,6 +1,6 @@
 # BioNetGen VSCode extension
 
-This is a [VSCode](https://code.visualstudio.com/) language extension for BioNetGen modelling language. 
+This is a [VSCode](https://code.visualstudio.com/) language extension for BioNetGen modelling language. Please read the [installation guide](https://github.com/RuleWorld/BNG_vscode_extension#installation) and see [here](docs/guide.md) for a simple starter guide.
 
 ## Features
 
@@ -46,8 +46,6 @@ Notes and tips:
 * If suggestions disappear for tab autocomplete when typing in the .bngl file, control + space to show suggestions again
 * To inspect elements (for checking highlighting issues): 
   Control + shift + P -> Developer: Inspect Editor Tokens and Scopes
-
-Please see [here](docs/guide.md) for a simple starter guide.
 
 ## Known Issues
 
