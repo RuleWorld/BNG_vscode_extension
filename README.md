@@ -2,17 +2,15 @@
 
 This is a [VSCode](https://code.visualstudio.com/) language extension for BioNetGen modelling language. Please read the [installation guide](https://github.com/RuleWorld/BNG_vscode_extension#installation) and see [here](docs/guide.md) for a simple starter guide.
 
+* TODO: A featured model example gif
+
 ## Features
 
 * Syntax highlighting for BioNetGen modelling language
 * Various snippets to make writing BNGL simpler
-  <img src=https://raw.githubusercontent.com/RuleWorld/BNG_vscode_extension/main/assets/snippets.gif>
 * A run button that automatically generates a timestamped folder and runs the current model
-  <img src=https://raw.githubusercontent.com/RuleWorld/BNG_vscode_extension/main/assets/runner.gif>
 * A plot button that generates a plot of the current .gdat/.cdat/.scan file using the CLI
-  <img src=https://raw.githubusercontent.com/RuleWorld/BNG_vscode_extension/main/assets/plotting_cli.gif>
 * Another plotting button that uses plotly to generate built-in plots within VSCode
-  <img src=https://raw.githubusercontent.com/RuleWorld/BNG_vscode_extension/main/assets/plotting.gif>
 
 ## Requirements
 
