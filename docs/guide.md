@@ -1,3 +1,15 @@
 ## Starter guide
 
-Testing relative links. 
+TODO: 
+* Add gifs and images for everything
+* Write snippet guide
+
+Once the extension is installed you can create a new file with ".bngl". This file will be automatically detected and you should see a run button at the top right corner of the file if the extension is running correctly. 
+
+Next you can start writing your model. This VSCode extension supports a large list of snippets that can help you write your model. For a full list, see [here](https://github.com/RuleWorld/BNG_vscode_extension/blob/main/snippets/bngl-snippets.json), we will update this with a snippet guide in the future. If you notice that there is no highlighting on certain parts of the model, please make sure you have the correct theme activated (see [here](https://code.visualstudio.com/docs/getstarted/themes#_selecting-the-color-theme) to learn how to select color themes), it should be called "dark-bngl". Currently only a dark theme is supported, we will include a light version in the future. 
+
+Once you finished writing the model, you can try running it. For the runner to work, the default terminal window VSCode opens should have access to perl, python and the [bionetgen library](https://pypi.org/project/bionetgen/). See [here](https://github.com/RuleWorld/PyBioNetGen) for more instructions on how to install the library. We suggest you use the [anaconda python distribution](https://docs.anaconda.com/anaconda/install/) for your python of choice. You can test if you have the library installed by [opening up a new terminal](https://code.visualstudio.com/docs/editor/integrated-terminal#_terminal-keybindings) and running ```bionetgen -h``` in the terminal, if you see the help documentation the library should be installed correctly and the runner should work. 
+
+Once you press the run button (or use the shortcut ctrl(or cmd for MacOS)+shift+F1 instead), the extension should create a new folder with the same name as the model and a time stamped folder under that folder and should run your BNGL file in that time stamped folder after making a copy of the bngl it is using. Please note that the run button only runs the model as is and nothing more. 
+
+Once you have some gdat/cdat/scan files to look at you can open them up and you should see two new buttons instead of the run button. The button on the right should plot your file into a png with some basic defaults (options to change these options will be provided in future releases). The button on the left should open a new window with an interactive plot (thanks to [plotly.js](https://plotly.com/javascript/), sometimes the plot doesn't open the first time you click on it, you can try again and it should work, I am actively hunting this bug down). The plotly window also allows you to save the image as a png as well as a svg file and has some nice interactive features. You can also change the plotting type to markers or lines+markers and use one of the selection tools to sub-select one of the time series. If you do an empty select it should bring back the original dataset.

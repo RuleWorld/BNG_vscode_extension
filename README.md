@@ -59,6 +59,9 @@ Some plotting issues
 * Can't save plots from built-in plotting
 * Built-in plotting alignment
 
+Plotly issue
+* Sometimes the plot doesn't show up the first time you click the button
+
 Please submit an issue [here](https://github.com/ASinanSaglam/BNG_vscode_extension/issues) if you find one. 
 
 ## Release Notes
