@@ -70,16 +70,30 @@ function activate(context) {
 		let fname_noext = fname.replace(".bngl", "");
 		// Get folder URI to make the new folder
 		let new_fold_uri = vscode.Uri.joinPath(curr_workspace_uri, fname_noext, fold_name);
-		// Create new directory 
-		// FIXME if a file of the same name as the folder exists
-		// this command fails to run. At least let the user know
-		vscode.workspace.fs.createDirectory(new_fold_uri);
+		
 		// get current file path
 		let curr_doc_uri = vscode.window.activeTextEditor.document.uri;
 		// set the path to be copied to
 		let copy_path = vscode.Uri.joinPath(new_fold_uri, fname);
-		// copy the file into our new folder
-		vscode.workspace.fs.copy(curr_doc_uri, copy_path);
+		// Create new directory and copy the file into our new folder
+		// FIXME if a file of the same name as the folder exists
+		// this command fails to run. At least let the user know
+		vscode.workspace.fs.createDirectory(new_fold_uri).then(() => {
+			vscode.workspace.fs.copy(curr_doc_uri, copy_path).then(() => {
+				// start a watcher
+				// for now let's only check for model_name.gdat
+				let outgdatUri = vscode.Uri.joinPath(new_fold_uri, `${fname_noext}.gdat`);
+				let outgdat = outgdatUri.fsPath;
+				let timeout_mili = 120000;
+				checkImage(outgdat, timeout_mili).then(() => {
+					vscode.window.showInformationMessage(`Found ${outgdat}`);
+					vscode.commands.executeCommand('vscode.open', outgdatUri);
+				}).catch(() => {
+					vscode.window.showInformationMessage(`Couldn't find ${outgdat} in ${timeout_mili} miliseconds`); 			
+					}
+				);
+			});
+		});	
 		// set the terminal command we want to run
 		let term_cmd = `bionetgen run -i "${copy_path.fsPath}" -o "${new_fold_uri.fsPath}"`;
 		// focus on the terminal and run the command
@@ -122,10 +136,10 @@ function activate(context) {
 		// let's check to see if our image file is created within 10s
 		// if so, open it
 		checkImage(outpath, timeout_mili).then(() => {
-			vscode.window.showInformationMessage(`Done plotting ${fpath} to ${outpath} with exit code`); 		
+			vscode.window.showInformationMessage(`Done plotting ${fpath} to ${outpath}`); 		
 			vscode.commands.executeCommand('vscode.open', outUri);
 		}).catch(() => {
-				vscode.window.showInformationMessage(`Plotting didn't finish within ${timeout_mili} miliseconds`); 			
+			vscode.window.showInformationMessage(`Plotting didn't finish within ${timeout_mili} miliseconds`); 			
 			}
 		);
 	}
