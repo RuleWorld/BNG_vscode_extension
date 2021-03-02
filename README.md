@@ -2,7 +2,7 @@
 
 This is a [VSCode](https://code.visualstudio.com/) language extension for BioNetGen modelling language. Please read the [installation guide](https://github.com/RuleWorld/BNG_vscode_extension#installation) and see [here](docs/guide.md) for a simple starter guide.
 
-* TODO: A featured model example gif
+<img src=https://raw.githubusercontent.com/RuleWorld/BNG_vscode_extension/main/assets/featured.gif>
 
 ## Features
 
@@ -40,7 +40,7 @@ which will open up a new window running the extension
 Notes and tips:
 * Make sure the theme is dark-bngl
 * To change the theme:
-  Control + shift + P -> Preferences: Color Theme  dark-bngl
+  Control + shift + P -> Preferences: Color Theme -> dark-bngl
 * If suggestions disappear for tab autocomplete when typing in the .bngl file, control + space to show suggestions again
 * To inspect elements (for checking highlighting issues): 
   Control + shift + P -> Developer: Inspect Editor Tokens and Scopes
@@ -62,6 +62,6 @@ Please submit an issue [here](https://github.com/ASinanSaglam/BNG_vscode_extensi
 
 ## Release Notes
 
-No releases yet, current working version is 0.3.3. The extension currently supports mostly functional highlighting, various snippets, a run button that requires BioNetGen command line interface ([you can get it here](https://github.com/RuleWorld/PyBioNetGen)) and very basic both via the command line interface as well as built-in plotting that uses [Plotly](https://plotly.com/javascript/) for .gdat/.cdat/.scan files. 
+No major releases yet. The extension currently supports mostly functional highlighting, various snippets, a run button that requires BioNetGen command line interface ([you can get it here](https://github.com/RuleWorld/PyBioNetGen)) and very basic both via the command line interface as well as built-in plotting that uses [Plotly](https://plotly.com/javascript/) for .gdat/.cdat/.scan files. 
 
 -----------------------------------------------------------------------------------------------------------
