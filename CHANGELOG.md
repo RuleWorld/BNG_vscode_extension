@@ -32,3 +32,6 @@ Moved plotly dropdown menus to the top. Fixed download image issue.
 
 - 0.3.5
 Fixed highlighing issue with line labels, wasn't highlighting without indent. Added README gifs to assets. 
+
+- 0.3.6
+The gdat file that shares a name with the model is now automatically opened after running a model.
