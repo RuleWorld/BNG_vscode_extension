@@ -2,8 +2,8 @@
 
 This is a [VS Code](https://code.visualstudio.com/) language extension for [BioNetGen modelling language](http://bionetgen.org/). Please read the [installation instructions](https://github.com/RuleWorld/BNG_vscode_extension#installation) and see [here](docs/guide.md) for a simple starter guide.
 
-<img src=https://raw.githubusercontent.com/RuleWorld/BNG_vscode_extension/main/assets/featured.gif>
-TODO: Some title
+<img src=https://raw.githubusercontent.com/RuleWorld/BNG_vscode_extension/main/assets/featured.gif title="Writing, running and plotting all done from within VS Code">
+
 
 ## Features
 
