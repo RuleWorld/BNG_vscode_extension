@@ -12,7 +12,7 @@
     "name": "bngl",
     "displayName": "BioNetGen Language",
     "description": "BNG language extension for vscode",
-    "version": "0.3.6",
+    "version": "0.3.7",
     "engines": {
         "vscode": "^1.52.0"
     },
@@ -167,21 +167,27 @@
             },
             {
                 "command": "bng.plot_gdat",
-                "key": "ctrl+shift+f1",
-                "mac": "cmd+shift+f1",
+                "key": "ctrl+shift+f2",
+                "mac": "cmd+shift+f2",
                 "when": "resourceLangId == bngl && resourceExtname == .gdat"
             },
             {
                 "command": "bng.plot_cdat",
-                "key": "ctrl+shift+f1",
-                "mac": "cmd+shift+f1",
+                "key": "ctrl+shift+f2",
+                "mac": "cmd+shift+f2",
                 "when": "resourceLangId == bngl && resourceExtname == .cdat"
             },
             {
                 "command": "bng.plot_scan",
+                "key": "ctrl+shift+f2",
+                "mac": "cmd+shift+f2",
+                "when": "resourceLangId == bngl && resourceExtname == .scan"
+            },
+            {
+                "command": "bng.webview",
                 "key": "ctrl+shift+f1",
                 "mac": "cmd+shift+f1",
-                "when": "resourceLangId == bngl && resourceExtname == .scan"
+                "when": "resourceExtname == .gdat || resourceExtname == .cdat || resourceExtname == .scan"
             }
         ],
         "scripts": {

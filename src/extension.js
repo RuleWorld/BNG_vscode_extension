@@ -61,35 +61,47 @@ function activate(context) {
 		let curr_workspace_uri = vscode.workspace.getWorkspaceFolder(vscode.window.activeTextEditor.document.uri).uri;
 		// find basename of the file we are working with
 		let fname = vscode.window.activeTextEditor.document.fileName;
-		// TODO: this is a hack to find basename, find where
-		// the real basename function is that works with URIs
-		let li_u = fname.lastIndexOf('/')+1;
-		let li_w = fname.lastIndexOf('\\')+1;
-		let li_f = Math.max(li_u,li_w);
-		fname = fname.substring(li_f);
+		// get base name
+		fname = path.basename(fname);
+		// remove extension
+		// TODO: Do a check here to make sure extension exists
 		let fname_noext = fname.replace(".bngl", "");
 		// Get folder URI to make the new folder
 		let new_fold_uri = vscode.Uri.joinPath(curr_workspace_uri, fname_noext, fold_name);
-		
 		// get current file path
 		let curr_doc_uri = vscode.window.activeTextEditor.document.uri;
 		// set the path to be copied to
 		let copy_path = vscode.Uri.joinPath(new_fold_uri, fname);
 		// Create new directory and copy the file into our new folder
-		// FIXME if a file of the same name as the folder exists
+		// FIXME: if a file of the same name as the folder exists
 		// this command fails to run. At least let the user know
 		vscode.workspace.fs.createDirectory(new_fold_uri).then(() => {
 			vscode.workspace.fs.copy(curr_doc_uri, copy_path).then(() => {
 				// start a watcher
 				// for now let's only check for model_name.gdat
-				let outgdatUri = vscode.Uri.joinPath(new_fold_uri, `${fname_noext}.gdat`);
-				let outgdat = outgdatUri.fsPath;
 				let timeout_mili = 120000;
-				checkImage(outgdat, timeout_mili).then(() => {
-					vscode.window.showInformationMessage(`Found ${outgdat}`);
-					vscode.commands.executeCommand('vscode.open', outgdatUri);
+				checkGdat(new_fold_uri.fsPath, timeout_mili).then(() => {
+					// we have a gdat in our folder, grab one and open
+					var files=fs.readdirSync(new_fold_uri.fsPath);
+					var outGdatPath;
+					for (var i=0;i<files.length;i++) {
+						let ext = files[i].split(".").pop();
+						if (ext == "gdat") {
+							outGdatPath = path.join(new_fold_uri.fsPath, files[i]);
+							break
+						}
+					}
+					let outGdatUri = vscode.Uri.file(outGdatPath);
+					vscode.commands.executeCommand('vscode.open', outGdatUri)
+						// .then(() => {
+						// // FIXME: find a way to check for the main process and open
+						// // after because this opens too quickly/set delay won't work
+						// setTimeout(() => {
+						// 	PlotPanel.create(context.extensionUri);
+						// }, 3000);
+						// });
 				}).catch(() => {
-					vscode.window.showInformationMessage(`Couldn't find ${outgdat} in ${timeout_mili} miliseconds`); 			
+					vscode.window.showInformationMessage(`Couldn't find a gdat in ${timeout_mili} miliseconds`); 			
 					}
 				);
 			});
@@ -110,14 +122,11 @@ function activate(context) {
 		}
 		// find basename of the file we are working with
 		let fpath = vscode.window.activeTextEditor.document.fileName;
-		// TODO: this is a hack to find basename, find where
-		// the real basename function is that works with URIs
-		let li_u = fpath.lastIndexOf('/')+1;
-		let li_w = fpath.lastIndexOf('\\')+1;
-		let li_f = Math.max(li_u,li_w);
-		let fname = fpath.substring(li_f);
+		let fname = path.basename(fpath);
+		// get extension 
 		let split = fname.split('.');
 		let ext = split.pop();
+		// filename without the extension
 		let fname_noext = split.join('.');
 		// set the path to be copied to
 		let outpath = fpath.replace(fname, `${fname_noext}_${ext}.png`);
@@ -209,6 +218,35 @@ function checkImage(outpath, timeout) {
 		var basename = path.basename(outpath);
 		var watcher = fs.watch(dir, function (eventType, filename) {
 			if (eventType == "rename" && filename == basename) {
+				clearTimeout(timer);
+				watcher.close();
+				resolve();
+			}
+		});
+	}
+	)
+}
+
+/**
+ * @param {string} outpath
+ * @param {number} [timeout]
+ */
+function checkGdat(outpath, timeout) {
+	// this returns a promise that will wait until 
+	// a folder given by outpath is found or a timeout
+	// limit is reached
+	return new Promise(function (resolve, reject) {
+		// timer that closes watcher if timeout is reached
+		var timer = setTimeout(function () {
+			watcher.close();
+			reject();
+		}, timeout);
+		// checks a folder to see if a gdat shows up
+		var watcher = fs.watch(outpath, function (eventType, filename) {
+			// get the extension of the file
+			let ext = filename.split(".").pop();
+			// if it's a gdat file, resolve the promise
+			if (eventType == "rename" && ext == "gdat") {
 				clearTimeout(timer);
 				watcher.close();
 				resolve();

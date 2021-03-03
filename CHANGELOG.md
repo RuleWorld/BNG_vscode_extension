@@ -35,3 +35,6 @@ Fixed highlighing issue with line labels, wasn't highlighting without indent. Ad
 
 - 0.3.6
 The gdat file that shares a name with the model is now automatically opened after running a model.
+
+- 0.3.6
+Any gdat file that's found under the folder after running is automatically opened. Plotly plots are now assigned to ctrl/cmd+shift+f1 for easier plotting, CLI plotting is now on f2. Heavily updated readme and guide.
