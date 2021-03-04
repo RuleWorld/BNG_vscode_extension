@@ -74,23 +74,7 @@
                 }
             },
             {
-                "command": "bng.plot_gdat",
-                "title": "CLI Plotting",
-                "icon": {
-                    "dark": "./assets/plot_icon_dark.svg",
-                    "light": "./assets/plot_icon_light.svg"
-                }
-            },
-            {
-                "command": "bng.plot_cdat",
-                "title": "CLI Plotting",
-                "icon": {
-                    "dark": "./assets/plot_icon_dark.svg",
-                    "light": "./assets/plot_icon_light.svg"
-                }
-            },
-            {
-                "command": "bng.plot_scan",
+                "command": "bng.plot_dat",
                 "title": "CLI Plotting",
                 "icon": {
                     "dark": "./assets/plot_icon_dark.svg",
@@ -118,7 +102,7 @@
                     "when": "resourceLangId == bngl && resourceExtname == .gdat",
                     "group": "navigation",
                     "title": "Plot gdat",
-                    "command": "bng.plot_gdat"
+                    "command": "bng.plot_dat"
                 },
                 {
                     "when": "resourceLangId == bngl && resourceExtname == .gdat",
@@ -130,7 +114,7 @@
                     "when": "resourceLangId == bngl && resourceExtname == .cdat",
                     "group": "navigation",
                     "title": "Plot cdat",
-                    "command": "bng.plot_cdat"
+                    "command": "bng.plot_dat"
                 },
                 {
                     "when": "resourceLangId == bngl && resourceExtname == .cdat",
@@ -142,7 +126,7 @@
                     "when": "resourceLangId == bngl && resourceExtname == .scan",
                     "group": "navigation",
                     "title": "Plot scan",
-                    "command": "bng.plot_scan"
+                    "command": "bng.plot_dat"
                 },
                 {
                     "when": "resourceLangId == bngl && resourceExtname == .scan",
@@ -166,22 +150,10 @@
                 "when": "resourceLangId == bngl && resourceExtname == .bngl"
             },
             {
-                "command": "bng.plot_gdat",
+                "command": "bng.plot_dat",
                 "key": "ctrl+shift+f2",
                 "mac": "cmd+shift+f2",
-                "when": "resourceLangId == bngl && resourceExtname == .gdat"
-            },
-            {
-                "command": "bng.plot_cdat",
-                "key": "ctrl+shift+f2",
-                "mac": "cmd+shift+f2",
-                "when": "resourceLangId == bngl && resourceExtname == .cdat"
-            },
-            {
-                "command": "bng.plot_scan",
-                "key": "ctrl+shift+f2",
-                "mac": "cmd+shift+f2",
-                "when": "resourceLangId == bngl && resourceExtname == .scan"
+                "when": "resourceExtname == .gdat || resourceExtname == .cdat || resourceExtname == .scan"
             },
             {
                 "command": "bng.webview",

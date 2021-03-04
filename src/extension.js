@@ -92,7 +92,7 @@ function activate(context) {
 						}
 					}
 					let outGdatUri = vscode.Uri.file(outGdatPath);
-					vscode.commands.executeCommand('vscode.open', outGdatUri)
+					vscode.commands.executeCommand('vscode.open', outGdatUri);
 						// .then(() => {
 						// // FIXME: find a way to check for the main process and open
 						// // after because this opens too quickly/set delay won't work
@@ -154,9 +154,7 @@ function activate(context) {
 	}
 	// names of the commands we want to register
 	const runCommandName      = 'bng.run_bngl';
-	const plotgdatCommandName = 'bng.plot_gdat';
-	const plotcdatCommandName = 'bng.plot_cdat';
-	const plotscanCommandName = 'bng.plot_scan';
+	const plotDatCommandName = 'bng.plot_dat';
 	const webviewCommandName = 'bng.webview';
 	// The command has been defined in the package.json file
 	// Now provide the implementation of the command with  registerCommand
@@ -164,15 +162,11 @@ function activate(context) {
 	let disposable1 = vscode.commands.registerCommand(runCommandName, runCommandHandler);
 	context.subscriptions.push(disposable1);
 	// these are the plotting commands for gdat/cdat/scan files
-	let disposable2 = vscode.commands.registerCommand(plotgdatCommandName, plotDatCommandHandler);
+	let disposable2 = vscode.commands.registerCommand(plotDatCommandName, plotDatCommandHandler);
 	context.subscriptions.push(disposable2);
-	let disposable3 = vscode.commands.registerCommand(plotcdatCommandName, plotDatCommandHandler);
-	context.subscriptions.push(disposable3);
-	let disposable4 = vscode.commands.registerCommand(plotscanCommandName, plotDatCommandHandler);
-	context.subscriptions.push(disposable4);
 	// this one generates the webview panel for built-in plotting
-	let disposable5 = vscode.commands.registerCommand(webviewCommandName, () => {PlotPanel.create(context.extensionUri)});
-	context.subscriptions.push(disposable5);
+	let disposable3 = vscode.commands.registerCommand(webviewCommandName, () => {PlotPanel.create(context.extensionUri)});
+	context.subscriptions.push(disposable3);
 	// TODO make this work
 	// resurrect webview 
 	if (vscode.window.registerWebviewPanelSerializer) {
