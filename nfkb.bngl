@@ -46,15 +46,15 @@ Molecules ikkN ikk(s~N) #neutral ikk
 Molecules ikka ikk(s~A) #activated ikk
 Molecules TNFR_a TNFR(st~a) #active TNFR
 Molecules TNFR_i TNFR(st~i) #inactive TNFR
-Molecules TNF TNF() #TNF
+ label: Molecules TNF TNF() #TNF
 end observables
 
 begin seed species
 nfkb(loc~n,ikba) 0 #nuclear free nfkb
 nfkb(loc~c,ikba) 0 #cytoplasmic free nfkb
-ikba(loc~c,nfkb) 0#cytoplasmic free ikba
-nfkb(loc~c,ikba!1).ikba(loc~c,nfkb!1)   10^Tot_NFKB   #cytoplasmic ikba-nfkb complex
-ikba(loc~n,nfkb) 0 #nuclear free ikba
+0 @t%tag:$ikba(loc~c,nfkb).B(loc) 0 #cytoplasmic free ikba
+label: @C:$nfkb(loc~c,ikba!1).ikba(loc~c,nfkb!1) 10^Tot_NFKB  #cytoplasmic ikba-nfkb complex
+$ikba(loc~n,nfkb) 0 #nuclear free ikba
 nfkb(loc~n,ikba!1).ikba(loc~n,nfkb!1) 0 #nuclear ikba-nfkb complex
 ikk(s~N) 10^IKK_N #neutral ikk
 ikk(s~A) 0 #activated ikk
