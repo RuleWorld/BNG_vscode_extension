@@ -381,7 +381,7 @@
 		"species_line": {
 			"name": "meta.species.line.bngl",
 			"patterns": [{
-				"match": "^\\s*([0-9]+\\s+|[A-Za-z][A-Za-z0-9_]*\\s*\\:)?\\s*(?=[A-Za-z]|\\%|\\@|\\$|\\{matchOnce\\})([^\\n|\\#]+)(?<=\\))\\s+([^\\n|\\#]+)\\s*(?=\\n|\\#)",
+				"match": "^\\s*([0-9]+\\s+|[A-Za-z][A-Za-z0-9_]*\\s*\\:)?\\s*(?=[A-Za-z]|\\%|\\@|\\$|\\{matchOnce\\})([^\\n|\\#]+)(?<=\\)|\\@[A-Za-z][A-Za-z0-9_]*|\\%[A-Za-z0-9][A-Za-z0-9_]*)\\s+([^\\n|\\#]+)\\s*(?=\\n|\\#)",
 				"captures": {
 					"1": { "name": "constant.language.line_label.bngl", "patterns": [{"name": "test.colon","match": "\\:"}] },
 					"2": { "name": "meta.species.pattern.bngl", "patterns": [{ "include": "#species_pat" }] },

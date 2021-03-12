@@ -38,3 +38,6 @@ The gdat file that shares a name with the model is now automatically opened afte
 
 - 0.3.6
 Any gdat file that's found under the folder after running is automatically opened. Plotly plots are now assigned to ctrl/cmd+shift+f1 for easier plotting, CLI plotting is now on f2. Heavily updated readme and guide.
+
+- 0.3.8
+Bugfixes to syntax highlighting in species block, mods are not recognized correctly and spaces after species amount doesn't break amount highlighting
