@@ -36,7 +36,7 @@ c1a = -3.2082 #NFkB mediated production of free cytoplasmic IkB
 end parameters
 
 begin observables
-Molecules nNFKB nfkb(loc~n,ikba) #nuclear free nfkb
+Molecules nNFKB nfkb(loc~n,ikba)>=10 #nuclear free nfkb
 Molecules cNFKB nfkb(loc~c,ikba) #cytoplasmic free nfkb
 Molecules cikba ikba(loc~c,nfkb) #cytoplasmic free ikba
 Species Ccomplex nfkb(loc~c,ikba!1).ikba(loc~c,nfkb!1) #cytoplasmic ikba-nfkb complex
@@ -54,10 +54,10 @@ nfkb(loc~n,ikba) 0 #nuclear free nfkb
 nfkb(loc~c,ikba) 0 #cytoplasmic free nfkb
 0 @t%tag:$ikba(loc~c,nfkb).B(loc) 0 #cytoplasmic free ikba
 label: @C:$nfkb(loc~c,ikba!1).ikba(loc~c,nfkb!1) 10^Tot_NFKB  #cytoplasmic ikba-nfkb complex
-$ikba(loc~n,nfkb) 0 #nuclear free ikba
+$ikba(loc~n,nfkb) 0     #nuclear free ikba
 nfkb(loc~n,ikba!1).ikba(loc~n,nfkb!1) 0 #nuclear ikba-nfkb complex
-ikk(s~N) 10^IKK_N #neutral ikk
-ikk(s~A) 0 #activated ikk
+ikk(s~N)@comp 10^IKK_N #neutral ikk
+{matchOnce}ikk(s~A)%tag 0 #activated ikk
 TNFR(st~a)           0 #active TNFR
 TNFR(st~i)           10^R #inactive TNFR
 TNF() 			0 #TNF

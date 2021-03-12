@@ -41,3 +41,6 @@ Any gdat file that's found under the folder after running is automatically opene
 
 - 0.3.8
 Bugfixes to syntax highlighting in species block, mods are not recognized correctly and spaces after species amount doesn't break amount highlighting
+
+- 0.3.9
+Further bugfixes to syntax highlighting. Separated "species" and "pattern" objects, they should work as expected now. "matchOnce" modifier was corrected to "MatchOnce". Multiple patterns in observable block also highlights correctly now. 

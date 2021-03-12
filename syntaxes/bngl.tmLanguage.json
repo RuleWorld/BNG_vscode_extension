@@ -381,10 +381,10 @@
 		"species_line": {
 			"name": "meta.species.line.bngl",
 			"patterns": [{
-				"match": "^\\s*([0-9]+\\s+|[A-Za-z][A-Za-z0-9_]*\\s*\\:)?\\s*(?=[A-Za-z]|\\%|\\@|\\$|\\{matchOnce\\})([^\\n|\\#]+)(?<=\\)|\\@[A-Za-z][A-Za-z0-9_]*|\\%[A-Za-z0-9][A-Za-z0-9_]*)\\s+([^\\n|\\#]+)\\s*(?=\\n|\\#)",
+				"match": "^\\s*([0-9]+\\s+|[A-Za-z][A-Za-z0-9_]*\\s*\\:)?\\s*(?=[A-Za-z]|\\%|\\@|\\$|\\{MatchOnce\\})([^\\n|\\#]+)(?<=\\)|\\@[A-Za-z][A-Za-z0-9_]*|\\%[A-Za-z0-9][A-Za-z0-9_]*)\\s+([^\\n|\\#]+)\\s*(?=\\n|\\#)",
 				"captures": {
 					"1": { "name": "constant.language.line_label.bngl", "patterns": [{"name": "test.colon","match": "\\:"}] },
-					"2": { "name": "meta.species.pattern.bngl", "patterns": [{ "include": "#species_pat" }] },
+					"2": { "name": "meta.species.pattern.bngl", "patterns": [{ "include": "#species_base" }] },
 					"3": { "name": "meta.species.amount.bngl", "patterns": [{ "include": "#expressions"}] }
 				}
 			},
@@ -404,10 +404,33 @@
 				"patterns": [{
 					"begin": "([^\\#|\\n]+)",
 					"beginCaptures": {
-						"1": { "name": "meta.observable.pattern", "patterns": [{ "include": "#species_pat" }] }
+						"1": { "name": "meta.observable.pattern", "patterns": [{ "include": "#multi_species" }] }
 					},
 					"end": "(?=\\#|\\n)"
 				}]
+			}]
+		},
+		"multi_species": {
+			"patterns": [{
+				"match": "\\s*(([^\\n|\\#|\\s|\\,]|(?<!\\)\\,)|(?<!\\)\\@[A-Za-z][A-Za-z0-9_]*\\,)|(?<!\\)\\%[A-Za-z0-9][A-Za-z0-9_]*\\,)|(?<!\\<[0-9]+\\,)|(?<!\\>[0-9]+\\,)|(?<!\\=[0-9]+\\,))+)\\s*(\\,)?\\s*",
+				"captures": {
+					"1": { "name": "meta.species.multi_part.bngl", "patterns": [{ "include": "#species_pat" }] },
+					"3": { "name": "meta.species.pat_sep.bngl" }
+				}
+			}]
+		},
+		"species_base_all": {
+			"patterns": [{
+				"match": "\\s*(0)\\s*",
+				"captures": {
+					"1": { "name": "meta.species.null_pat.bngl" }
+				}
+			},
+			{
+				"match": "(.*)",
+				"captures": {
+					"1": { "name": "meta.species.non_null_pat.bngl", "patterns": [{ "include": "#species_base"}] }
+				}
 			}]
 		},
 		"species_all": {
@@ -424,9 +447,22 @@
 				}
 			}]
 		},
+		"species_base": {
+			"patterns": [{
+				"match": "(\\@[A-Za-z][A-Za-z0-9_]*)?(\\%[A-Za-z0-9][A-Za-z0-9_]*)?(\\@[A-Za-z][A-Za-z0-9_]*)?(\\:|\\:\\:)?(\\$)?([^\\n|\\#|\\:|\\$|\\<|\\>|\\=]+)",
+				"captures": {
+					"1": { "name": "keyword.control.species.compartment.bngl", "patterns": [{"include": "#compartment"}] },
+					"2": { "name": "keyword.other.species.tag.bngl", "patterns": [{"include": "#tag"}] },
+					"3": { "name": "keyword.control.species.compartment.bngl", "patterns": [{"include": "#compartment"}] },
+					"4": { "name": "keyword.operator.species.total.bngl"},
+					"5": { "name": "constant.numeric.species.mod.bngl" },
+					"6": { "name": "meta.species.bngl", "patterns": [{ "include": "#species" }]}
+				}
+			}]
+		},
 		"species_pat": {
 			"patterns": [{
-				"match": "(\\@[A-Za-z][A-Za-z0-9_]*)?(\\%[A-Za-z0-9][A-Za-z0-9_]*)?(\\@[A-Za-z][A-Za-z0-9_]*)?(\\:|\\:\\:)?(\\$|\\{matchOnce\\})?([^\\n|\\#|\\:|\\$|\\<|\\>|\\=]+)((\\<|\\<\\=|\\=\\=|\\=\\>|\\>)[0-9]+)?",
+				"match": "(\\@[A-Za-z][A-Za-z0-9_]*)?(\\%[A-Za-z0-9][A-Za-z0-9_]*)?(\\@[A-Za-z][A-Za-z0-9_]*)?(\\:|\\:\\:)?(\\$|\\{MatchOnce\\})?([^\\n|\\#|\\:|\\$|\\<|\\>|\\=]+)((\\<|\\<\\=|\\=\\=|\\>\\=|\\>)[0-9]+)?",
 				"captures": {
 					"1": { "name": "keyword.control.species.compartment.bngl", "patterns": [{"include": "#compartment"}] },
 					"2": { "name": "keyword.other.species.tag.bngl", "patterns": [{"include": "#tag"}] },
