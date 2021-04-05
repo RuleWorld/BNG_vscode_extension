@@ -167,37 +167,37 @@
     "setConcentration": {
         "scope": "bngl",
         "prefix": "setConcentrations",
-        "body": ["setConcentration({\"$1\",$2})"]
+        "body": ["setConcentration(\"$1\",$2)"]
     },
     "addConcentration": {
         "scope": "bngl",
         "prefix": "addConcentration",
-        "body": ["addConcentration({\"$1\",$2})"]
+        "body": ["addConcentration(\"$1\",$2)"]
     },
     "saveConcentrations": {
         "scope": "bngl",
         "prefix": "saveConcentrations",
-        "body": ["saveConcentrations({[\"$1\"$0]})"]
+        "body": ["saveConcentrations([\"$1\"$0])"]
     },
     "resetConcentrations": {
         "scope": "bngl",
         "prefix": "resetConcentrations",
-        "body": ["resetConcentration({[\"$1\"$0]})"]
+        "body": ["resetConcentration([\"$1\"$0])"]
     },
     "setParameter": {
         "scope": "bngl",
         "prefix": "setParameter",
-        "body": ["setParameter({\"$1\",$2})"]
+        "body": ["setParameter(\"$1\",$2)"]
     },
     "saveParameters": {
         "scope": "bngl",
         "prefix": "saveParameters",
-        "body": ["saveParameters({[\"$1\"$0]})"]
+        "body": ["saveParameters([\"$1\"$0])"]
     },
     "resetParameters": {
         "scope": "bngl",
         "prefix": "resetParameters",
-        "body": ["resetParameters({[\"$1\"$0]})"]
+        "body": ["resetParameters([\"$1\"$0])"]
     },
     "quit": {
         "scope": "bngl",
@@ -207,22 +207,22 @@
     "setModelName": {
         "scope": "bngl",
         "prefix": "setModelName",
-        "body": ["setModelName({\"$1\"})$0"]
+        "body": ["setModelName(\"$1\")$0"]
     },
     "substanceUnits": {
         "scope": "bngl",
         "prefix": "substanceUnits",
-        "body": ["substanceUnits({\"$1\"})$0"]
+        "body": ["substanceUnits(\"$1\")$0"]
     },
     "version": {
         "scope": "bngl",
         "prefix": "version",
-        "body": ["version({\"$1\"})$0"]
+        "body": ["version(\"$1\")$0"]
     },
     "setOption": {
         "scope": "bngl",
         "prefix": "setOption",
-        "body": ["setOption({\"$1\",\"$2\"$0})"]
+        "body": ["setOption(\"$1\",\"$2\"$0)"]
     },
     "abs": {
         "scope": "bngl",
