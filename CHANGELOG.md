@@ -44,3 +44,6 @@ Bugfixes to syntax highlighting in species block, mods are not recognized correc
 
 - 0.3.9
 Further bugfixes to syntax highlighting. Separated "species" and "pattern" objects, they should work as expected now. "matchOnce" modifier was corrected to "MatchOnce". Multiple patterns in observable block also highlights correctly now. 
+
+- 0.4.0
+Fixed some incorrect snippets
