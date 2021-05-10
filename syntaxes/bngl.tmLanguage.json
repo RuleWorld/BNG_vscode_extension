@@ -23,15 +23,17 @@
 		"model": {
 			"patterns": [{
 				"name": "entity.name.section.model.bngl",
-				"begin": "(begin)(\\s+)(model)(\\s*)\\n",
+				"begin": "(begin)(\\s+)(model)(\\s*.*)\\n",
 				"beginCaptures": {
 					"1": { "name": "entity.name.section.model.begin.bngl", "patterns": [{"include": "#block_tag_mod"}] },
-					"3": { "name": "entity.name.section.model.name.bngl", "patterns": [{"include": "#block_tag_name"}]}
+					"3": { "name": "entity.name.section.model.name.bngl", "patterns": [{"include": "#block_tag_name"}]},
+					"4": { "name": "entity.name.section.model.comment.bngl", "patterns": [{"include": "#comments"}]}
 				},
-				"end": "(end)(\\s+)(model)(\\s*)\\n",
+				"end": "(end)(\\s+)(model)(\\s*.*)\\n",
 				"endCaptures": {
 					"1": { "name": "entity.name.section.model.end.bngl", "patterns": [{"include": "#block_tag_mod"}] },
-					"3": { "name": "entity.name.section.model.name.bngl", "patterns": [{"include": "#block_tag_name"}]}
+					"3": { "name": "entity.name.section.model.name.bngl", "patterns": [{"include": "#block_tag_name"}]},
+					"4": { "name": "entity.name.section.model.comment.bngl", "patterns": [{"include": "#comments"}]}
 				},
 				"patterns": [{
 					"include": "#blocks"
@@ -44,15 +46,17 @@
 		"blocks": {
 			"patterns": [{
 				"name": "entity.name.section.parameters.bngl",
-				"begin": "(begin)(\\s+)(parameters)(\\s*)\\n",
+				"begin": "(begin)(\\s+)(parameters)(\\s*.*)\\n",
 				"beginCaptures": {
 					"1": { "name": "entity.name.section.model.begin.bngl", "patterns": [{"include": "#block_tag_mod"}] },
-					"3": { "name": "entity.name.section.model.name.bngl", "patterns": [{"include": "#block_tag_name"}]}
+					"3": { "name": "entity.name.section.model.name.bngl", "patterns": [{"include": "#block_tag_name"}]},
+					"4": { "name": "entity.name.section.model.comment.bngl", "patterns": [{"include": "#comments"}]}
 				},
-				"end": "(end)(\\s+)(parameters)(\\s*)\\n",
+				"end": "(end)(\\s+)(parameters)(\\s*.*)\\n",
 				"endCaptures": {
 					"1": { "name": "entity.name.section.model.end.bngl", "patterns": [{"include": "#block_tag_mod"}] },
-					"3": { "name": "entity.name.section.model.name.bngl", "patterns": [{"include": "#block_tag_name"}]}
+					"3": { "name": "entity.name.section.model.name.bngl", "patterns": [{"include": "#block_tag_name"}]},
+					"4": { "name": "entity.name.section.model.comment.bngl", "patterns": [{"include": "#comments"}]}
 				},
 				"patterns": [
 					{
@@ -67,15 +71,17 @@
 			},
 			{
 				"name": "entity.name.section.compartments.bngl",
-				"begin": "(begin)(\\s+)(compartments)(\\s*)\\n",
+				"begin": "(begin)(\\s+)(compartments)(\\s*.*)\\n",
 				"beginCaptures": {
 					"1": { "name": "entity.name.section.model.begin.bngl", "patterns": [{"include": "#block_tag_mod"}] },
-					"3": { "name": "entity.name.section.model.name.bngl", "patterns": [{"include": "#block_tag_name"}]}
+					"3": { "name": "entity.name.section.model.name.bngl", "patterns": [{"include": "#block_tag_name"}]},
+					"4": { "name": "entity.name.section.model.comment.bngl", "patterns": [{"include": "#comments"}]}
 				},
-				"end": "(end)(\\s+)(compartments)(\\s*)\\n",
+				"end": "(end)(\\s+)(compartments)(\\s*.*)\\n",
 				"endCaptures": {
 					"1": { "name": "entity.name.section.model.end.bngl", "patterns": [{"include": "#block_tag_mod"}] },
-					"3": { "name": "entity.name.section.model.name.bngl", "patterns": [{"include": "#block_tag_name"}]}
+					"3": { "name": "entity.name.section.model.name.bngl", "patterns": [{"include": "#block_tag_name"}]},
+					"4": { "name": "entity.name.section.model.comment.bngl", "patterns": [{"include": "#comments"}]}
 				},
 				"patterns": [{
 					"include": "#comments"
@@ -86,15 +92,17 @@
 			},
 			{
 				"name": "entity.name.section.moleculetypes.bngl",
-				"begin": "(begin)(\\s+)(molecule\\s+types)(\\s*)\\n",
+				"begin": "(begin)(\\s+)(molecule\\s+types)(\\s*.*)\\n",
 				"beginCaptures": {
 					"1": { "name": "entity.name.section.model.begin.bngl", "patterns": [{"include": "#block_tag_mod"}] },
-					"3": { "name": "entity.name.section.model.name.bngl", "patterns": [{"include": "#block_tag_name"}]}
+					"3": { "name": "entity.name.section.model.name.bngl", "patterns": [{"include": "#block_tag_name"}]},
+					"4": { "name": "entity.name.section.model.comment.bngl", "patterns": [{"include": "#comments"}]}
 				},
-				"end": "(end)(\\s+)(molecule\\s+types)(\\s*)\\n",
+				"end": "(end)(\\s+)(molecule\\s+types)(\\s*.*)\\n",
 				"endCaptures": {
 					"1": { "name": "entity.name.section.model.end.bngl", "patterns": [{"include": "#block_tag_mod"}] },
-					"3": { "name": "entity.name.section.model.name.bngl", "patterns": [{"include": "#block_tag_name"}]}
+					"3": { "name": "entity.name.section.model.name.bngl", "patterns": [{"include": "#block_tag_name"}]},
+					"4": { "name": "entity.name.section.model.comment.bngl", "patterns": [{"include": "#comments"}]}
 				},
 				"patterns": [
 				{
@@ -106,15 +114,17 @@
 			},
 			{
 				"name": "entity.name.section.rules.bngl",
-				"begin": "(begin)(\\s+)(reaction\\s+rules)(\\s*)\\n",
+				"begin": "(begin)(\\s+)(reaction\\s+rules)(\\s*.*)\\n",
 				"beginCaptures": {
 					"1": { "name": "entity.name.section.model.begin.bngl", "patterns": [{"include": "#block_tag_mod"}] },
-					"3": { "name": "entity.name.section.model.name.bngl", "patterns": [{"include": "#block_tag_name"}]}
+					"3": { "name": "entity.name.section.model.name.bngl", "patterns": [{"include": "#block_tag_name"}]},
+					"4": { "name": "entity.name.section.model.comment.bngl", "patterns": [{"include": "#comments"}]}
 				},
-				"end": "(end)(\\s+)(reaction\\s+rules)(\\s*)\\n",
+				"end": "(end)(\\s+)(reaction\\s+rules)(\\s*.*)\\n",
 				"endCaptures": {
 					"1": { "name": "entity.name.section.model.end.bngl", "patterns": [{"include": "#block_tag_mod"}] },
-					"3": { "name": "entity.name.section.model.name.bngl", "patterns": [{"include": "#block_tag_name"}]}
+					"3": { "name": "entity.name.section.model.name.bngl", "patterns": [{"include": "#block_tag_name"}]},
+					"4": { "name": "entity.name.section.model.comment.bngl", "patterns": [{"include": "#comments"}]}
 				},
 				"patterns": [{
 					"include": "#comments"
@@ -125,15 +135,17 @@
 			},
 			{
 				"name": "entity.name.section.functions.bngl",
-				"begin": "(begin)(\\s+)(functions)(\\s*)\\n",
+				"begin": "(begin)(\\s+)(functions)(\\s*.*)\\n",
 				"beginCaptures": {
 					"1": { "name": "entity.name.section.model.begin.bngl", "patterns": [{"include": "#block_tag_mod"}] },
-					"3": { "name": "entity.name.section.model.name.bngl", "patterns": [{"include": "#block_tag_name"}]}
+					"3": { "name": "entity.name.section.model.name.bngl", "patterns": [{"include": "#block_tag_name"}]},
+					"4": { "name": "entity.name.section.model.comment.bngl", "patterns": [{"include": "#comments"}]}
 				},
-				"end": "(end)(\\s+)(functions)(\\s*)\\n",
+				"end": "(end)(\\s+)(functions)(\\s*.*)\\n",
 				"endCaptures": {
 					"1": { "name": "entity.name.section.model.end.bngl", "patterns": [{"include": "#block_tag_mod"}] },
-					"3": { "name": "entity.name.section.model.name.bngl", "patterns": [{"include": "#block_tag_name"}]}
+					"3": { "name": "entity.name.section.model.name.bngl", "patterns": [{"include": "#block_tag_name"}]},
+					"4": { "name": "entity.name.section.model.comment.bngl", "patterns": [{"include": "#comments"}]}
 				},
 				"patterns": [{
 					"include": "#comments"
@@ -144,15 +156,17 @@
 			},
 			{
 				"name": "entity.name.section.species.bngl",
-				"begin": "(begin)(\\s+)(species)(\\s*)\\n",
+				"begin": "(begin)(\\s+)(species)(\\s*.*)\\n",
 				"beginCaptures": {
 					"1": { "name": "entity.name.section.model.begin.bngl", "patterns": [{"include": "#block_tag_mod"}] },
-					"3": { "name": "entity.name.section.model.name.bngl", "patterns": [{"include": "#block_tag_name"}]}
+					"3": { "name": "entity.name.section.model.name.bngl", "patterns": [{"include": "#block_tag_name"}]},
+					"4": { "name": "entity.name.section.model.comment.bngl", "patterns": [{"include": "#comments"}]}
 				},
-				"end": "(end)(\\s+)(species)(\\s*)\\n",
+				"end": "(end)(\\s+)(species)(\\s*.*)\\n",
 				"endCaptures": {
 					"1": { "name": "entity.name.section.model.end.bngl", "patterns": [{"include": "#block_tag_mod"}] },
-					"3": { "name": "entity.name.section.model.name.bngl", "patterns": [{"include": "#block_tag_name"}]}
+					"3": { "name": "entity.name.section.model.name.bngl", "patterns": [{"include": "#block_tag_name"}]},
+					"4": { "name": "entity.name.section.model.comment.bngl", "patterns": [{"include": "#comments"}]}
 				},
 				"patterns": [{
 					"include": "#comments"
@@ -163,15 +177,17 @@
 			},
 			{
 				"name": "entity.name.section.species.bngl",
-				"begin": "(begin)(\\s+)(seed\\s+species)(\\s*)\\n",
+				"begin": "(begin)(\\s+)(seed\\s+species)(\\s*.*)\\n",
 				"beginCaptures": {
 					"1": { "name": "entity.name.section.model.begin.bngl", "patterns": [{"include": "#block_tag_mod"}] },
-					"3": { "name": "entity.name.section.model.name.bngl", "patterns": [{"include": "#block_tag_name"}]}
+					"3": { "name": "entity.name.section.model.name.bngl", "patterns": [{"include": "#block_tag_name"}]},
+					"4": { "name": "entity.name.section.model.comment.bngl", "patterns": [{"include": "#comments"}]}
 				},
-				"end": "(end)(\\s+)(seed\\s+species)(\\s*)\\n",
+				"end": "(end)(\\s+)(seed\\s+species)(\\s*.*)\\n",
 				"endCaptures": {
 					"1": { "name": "entity.name.section.model.end.bngl", "patterns": [{"include": "#block_tag_mod"}] },
-					"3": { "name": "entity.name.section.model.name.bngl", "patterns": [{"include": "#block_tag_name"}]}
+					"3": { "name": "entity.name.section.model.name.bngl", "patterns": [{"include": "#block_tag_name"}]},
+					"4": { "name": "entity.name.section.model.comment.bngl", "patterns": [{"include": "#comments"}]}
 				},
 				"patterns": [{
 					"include": "#comments"
@@ -182,15 +198,17 @@
 			},
 			{
 				"name": "entity.name.section.observables.bngl",
-				"begin": "(begin)(\\s+)(observables)(\\s*)\\n",
+				"begin": "(begin)(\\s+)(observables)(\\s*.*)\\n",
 				"beginCaptures": {
 					"1": { "name": "entity.name.section.model.begin.bngl", "patterns": [{"include": "#block_tag_mod"}] },
-					"3": { "name": "entity.name.section.model.name.bngl", "patterns": [{"include": "#block_tag_name"}]}
+					"3": { "name": "entity.name.section.model.name.bngl", "patterns": [{"include": "#block_tag_name"}]},
+					"4": { "name": "entity.name.section.model.comment.bngl", "patterns": [{"include": "#comments"}]}
 				},
-				"end": "(end)(\\s+)(observables)(\\s*)\\n",
+				"end": "(end)(\\s+)(observables)(\\s*.*)\\n",
 				"endCaptures": {
 					"1": { "name": "entity.name.section.model.end.bngl", "patterns": [{"include": "#block_tag_mod"}] },
-					"3": { "name": "entity.name.section.model.name.bngl", "patterns": [{"include": "#block_tag_name"}]}
+					"3": { "name": "entity.name.section.model.name.bngl", "patterns": [{"include": "#block_tag_name"}]},
+					"4": { "name": "entity.name.section.model.comment.bngl", "patterns": [{"include": "#comments"}]}
 				},
 				"patterns": [{
 					"include": "#comments"
@@ -201,15 +219,17 @@
 			},
 			{
 				"name": "entity.name.section.reactions.bngl",
-				"begin": "(begin)(\\s+)(reactions)(\\s*)\\n",
+				"begin": "(begin)(\\s+)(reactions)(\\s*.*)\\n",
 				"beginCaptures": {
 					"1": { "name": "entity.name.section.model.begin.bngl", "patterns": [{"include": "#block_tag_mod"}] },
-					"3": { "name": "entity.name.section.model.name.bngl", "patterns": [{"include": "#block_tag_name"}]}
+					"3": { "name": "entity.name.section.model.name.bngl", "patterns": [{"include": "#block_tag_name"}]},
+					"4": { "name": "entity.name.section.model.comment.bngl", "patterns": [{"include": "#comments"}]}
 				},
-				"end": "(end)(\\s+)(reactions)(\\s*)\\n",
+				"end": "(end)(\\s+)(reactions)(\\s*.*)\\n",
 				"endCaptures": {
 					"1": { "name": "entity.name.section.model.end.bngl", "patterns": [{"include": "#block_tag_mod"}] },
-					"3": { "name": "entity.name.section.model.name.bngl", "patterns": [{"include": "#block_tag_name"}]}
+					"3": { "name": "entity.name.section.model.name.bngl", "patterns": [{"include": "#block_tag_name"}]},
+					"4": { "name": "entity.name.section.model.comment.bngl", "patterns": [{"include": "#comments"}]}
 				},
 				"patterns": [{
 					"include": "#comments"
@@ -220,15 +240,17 @@
 			},
 			{
 				"name": "entity.name.section.groups.bngl",
-				"begin": "(begin)(\\s+)(groups)(\\s*)\\n",
+				"begin": "(begin)(\\s+)(groups)(\\s*.*)\\n",
 				"beginCaptures": {
 					"1": { "name": "entity.name.section.model.begin.bngl", "patterns": [{"include": "#block_tag_mod"}] },
-					"3": { "name": "entity.name.section.model.name.bngl", "patterns": [{"include": "#block_tag_name"}]}
+					"3": { "name": "entity.name.section.model.name.bngl", "patterns": [{"include": "#block_tag_name"}]},
+					"4": { "name": "entity.name.section.model.comment.bngl", "patterns": [{"include": "#comments"}]}
 				},
-				"end": "(end)(\\s+)(groups)(\\s*)\\n",
+				"end": "(end)(\\s+)(groups)(\\s*.*)\\n",
 				"endCaptures": {
 					"1": { "name": "entity.name.section.model.end.bngl", "patterns": [{"include": "#block_tag_mod"}] },
-					"3": { "name": "entity.name.section.model.name.bngl", "patterns": [{"include": "#block_tag_name"}]}
+					"3": { "name": "entity.name.section.model.name.bngl", "patterns": [{"include": "#block_tag_name"}]},
+					"4": { "name": "entity.name.section.model.comment.bngl", "patterns": [{"include": "#comments"}]}
 				},
 				"patterns": [{
 					"include": "#comments"
