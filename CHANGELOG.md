@@ -47,3 +47,7 @@ Further bugfixes to syntax highlighting. Separated "species" and "pattern" objec
 
 - 0.4.0
 Fixed some incorrect snippets
+
+- 0.4.1
+Adding documentation and small syntax highlighting issue where a comment after begin/end block
+would break highlighting. 
