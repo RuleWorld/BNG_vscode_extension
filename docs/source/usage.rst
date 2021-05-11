@@ -25,7 +25,7 @@ that can help you write your model. For a full list, see
 `here <https://github.com/RuleWorld/BNG_vscode_extension/blob/main/snippets/bngl-snippets.json>`_, 
 we will update this with a snippet guide in the future. 
 
-.. image:: ../assets/snippets.gif
+.. image:: ../../assets/snippets.gif
 
 Using the correct theme
 =======================
@@ -41,7 +41,7 @@ Running a model
 ===============
 
 Once you finished writing the model, you can try running it. For the run button to work, the 
-default terminal window VS Code opens should have access to [Perl](https://www.perl.org/), 
+default terminal window VS Code opens should have access to `Perl <https://www.perl.org/>`_, 
 `Python3 <https://www.python.org/>`_ (preferably 
 `anaconda python <https://docs.anaconda.com/anaconda/>`_) and the 
 `PyBioNetGen library <https://pypi.org/project/bionetgen/>`_. See 
@@ -56,7 +56,7 @@ and the current model will be copied under there and the extension will use the 
 `PyBioNetGen library <https://pypi.org/project/bionetgen/>`_ to run the model. Once the run 
 completes, if the run created a ```.gdat``` file, it should open automatically.
 
-.. image:: ../assets/runner.gif
+.. image:: ../../assets/runner.gif
 
 Plotting results
 ================
@@ -66,7 +66,7 @@ new buttons instead of the run button. The white and red button on the right sho
 file into a png with some basic defaults (options to change these options will be provided in 
 future releases).
 
-.. image:: ../assets/plotting_cli.gif
+.. image:: ../../assets/plotting_cli.gif
 
 The blue button on the left should open a new window with an interactive plot (thanks to 
 `plotly.js <https://plotly.com/javascript/>`_). You can also use the ```CTRL/CMD+SHIFT+F1``` 
@@ -76,4 +76,4 @@ to markers or lines+markers and use one of the selection tools to sub-select tim
 select a region on the plot with no data points, every time series in the original dataset will 
 be shown again.
 
-.. image:: ../assets/plotting.gif
+.. image:: ../../assets/plotting.gif
