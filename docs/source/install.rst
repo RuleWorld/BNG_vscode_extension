@@ -7,10 +7,8 @@ Installation
 There are three ways to use this VS Code extension
 
 * Using the `marketplace <https://marketplace.visualstudio.com/items?itemName=als251.bngl>`_
-* Cloning the `repository <https://github.com/RuleWorld/BNG_vscode_extension>`_ and placing it 
-under `your VSCode extensions folder <https://code.visualstudio.com/docs/editor/extension-gallery#_where-are-extensions-installed>`_
-* Cloning the `repository <https://github.com/RuleWorld/BNG_vscode_extension>`_ and using the 
-extension in debug mode
+* Cloning the `repository <https://github.com/RuleWorld/BNG_vscode_extension>`_ and placing it under `your VSCode extensions folder <https://code.visualstudio.com/docs/editor/extension-gallery#_where-are-extensions-installed>`_
+* Cloning the `repository <https://github.com/RuleWorld/BNG_vscode_extension>`_ and using the extension in debug mode
 
 To use the extension in debug mode:
 
