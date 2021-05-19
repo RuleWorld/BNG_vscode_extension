@@ -49,5 +49,7 @@ Further bugfixes to syntax highlighting. Separated "species" and "pattern" objec
 Fixed some incorrect snippets
 
 - 0.4.1
-Adding documentation and small syntax highlighting issue where a comment after begin/end block
-would break highlighting. 
+Adding documentation and small syntax highlighting issue where a comment after begin/end block would break highlighting. 
+
+- 0.4.2
+More highlighting fixes where "_" should be allowed in line labels and parameter names. ")" would break comment highlighting in molecule type block.
