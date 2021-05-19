@@ -320,7 +320,7 @@
 		"param_line": {
 			"name": "meta.parameter.line.bngl",
 			"patterns": [{
-				"begin": "^\\s*([0-9]+\\s+|[A-Za-z][A-Za-z0-9_]*\\s*\\:)?\\s*([A-Za-z][A-Za-z0-9_]*)\\s*(\\=)?\\s*",
+				"begin": "^\\s*([0-9]+\\s+|[A-Za-z_][A-Za-z0-9_]*\\s*\\:)?\\s*([A-Za-z_][A-Za-z0-9_]*)\\s*(\\=)?\\s*",
 				"beginCaptures": {
 					"1": { "name": "constant.language.line_label.bngl", "patterns": [{"name": "test.colon","match": "\\:"}] },
 					"2": { "name": "name", "patterns": [{ "include": "#names" }] },
@@ -341,7 +341,7 @@
 		"moltype_line": {
 			"patterns": [{
 				"contentName": "meta.moleculetype.line.bngl",
-				"begin": "^\\s*([0-9]+\\s+|[A-Za-z][A-Za-z0-9_]*\\s*\\:)?\\s*(?=[A-Za-z])",
+				"begin": "^\\s*([0-9]+\\s+|[A-Za-z_][A-Za-z0-9_]*\\s*\\:)?\\s*(?=[A-Za-z])",
 				"beginCaptures": {
 					"1": { "name": "constant.language.line_label.bngl", "patterns": [{"name": "test.colon","match": "\\:"}] }
 				},
@@ -356,7 +356,7 @@
 		"compartment_line": {
 			"name": "meta.compartment.line.bngl",
 			"patterns": [{
-				"begin": "^\\s*([0-9]+\\s+|[A-Za-z][A-Za-z0-9_]*\\s*\\:)?\\s*([A-Za-z][A-Za-z0-9_]*)\\s+([2|3])\\s+",
+				"begin": "^\\s*([0-9]+\\s+|[A-Za-z_][A-Za-z0-9_]*\\s*\\:)?\\s*([A-Za-z][A-Za-z0-9_]*)\\s+([2|3])\\s+",
 				"beginCaptures": {
 					"1": { "name": "constant.language.line_label.bngl", "patterns": [{"name": "test.colon","match": "\\:"}] },
 					"2": { "name": "meta.compartment.name.bngl", "patterns": [{ "include": "#names"}] },
@@ -374,7 +374,7 @@
 		"func_line": {
 			"name": "meta.function.line.bngl",
 			"patterns": [{
-				"begin": "^\\s*([0-9]+\\s+|[A-Za-z][A-Za-z0-9_]*\\s*\\:)?\\s*([A-Za-z][A-Za-z0-9_]*)(\\([^\\n|\\#|\\)]*\\))?\\s*(\\s+|\\=)\\s*",
+				"begin": "^\\s*([0-9]+\\s+|[A-Za-z_][A-Za-z0-9_]*\\s*\\:)?\\s*([A-Za-z][A-Za-z0-9_]*)(\\([^\\n|\\#|\\)]*\\))?\\s*(\\s+|\\=)\\s*",
 				"beginCaptures": {
 					"1": { "name": "constant.language.line_label.bngl", "patterns": [{"name": "test.colon","match": "\\:"}] },
 					"2": { "name": "meta.function.name.bngl", "patterns": [{ "include": "#names"}] },
@@ -403,7 +403,7 @@
 		"species_line": {
 			"name": "meta.species.line.bngl",
 			"patterns": [{
-				"match": "^\\s*([0-9]+\\s+|[A-Za-z][A-Za-z0-9_]*\\s*\\:)?\\s*(?=[A-Za-z]|\\%|\\@|\\$|\\{MatchOnce\\})([^\\n|\\#]+)(?<=\\)|\\@[A-Za-z][A-Za-z0-9_]*|\\%[A-Za-z0-9][A-Za-z0-9_]*)\\s+([^\\n|\\#]+)\\s*(?=\\n|\\#)",
+				"match": "^\\s*([0-9]+\\s+|[A-Za-z_][A-Za-z0-9_]*\\s*\\:)?\\s*(?=[A-Za-z]|\\%|\\@|\\$|\\{MatchOnce\\})([^\\n|\\#]+)(?<=\\)|\\@[A-Za-z][A-Za-z0-9_]*|\\%[A-Za-z0-9][A-Za-z0-9_]*)\\s+([^\\n|\\#]+)\\s*(?=\\n|\\#)",
 				"captures": {
 					"1": { "name": "constant.language.line_label.bngl", "patterns": [{"name": "test.colon","match": "\\:"}] },
 					"2": { "name": "meta.species.pattern.bngl", "patterns": [{ "include": "#species_base" }] },
@@ -416,7 +416,7 @@
 		},
 		"obs_line": {
 			"patterns": [{
-				"begin": "^\\s*([0-9]+\\s+|[A-Za-z][A-Za-z0-9_]*\\s*\\:)?\\s*(Molecules|Species)\\s+([A-Za-z][A-Za-z0-9_]*)\\s+",
+				"begin": "^\\s*([0-9]+\\s+|[A-Za-z_][A-Za-z0-9_]*\\s*\\:)?\\s*(Molecules|Species)\\s+([A-Za-z][A-Za-z0-9_]*)\\s+",
 				"beginCaptures": {
 					"1": { "name": "constant.language.line_label.bngl", "patterns": [{"name": "test.colon","match": "\\:"}] },
 					"2": { "name": "meta.observable.type.bngl", "patterns": [{ "include": "#obs_kwords"}] },
@@ -560,7 +560,7 @@
 				"beginCaptures": {
 					"1": { "name": "meta.moleculetype.name.bngl" }
 				},
-				"end": "(.*)\\)",
+				"end": "([^\\#]*)\\)",
 				"endCaptures": {
 					"1": { "name": "meta.moleculetype.specification.bngl", "patterns": [{ "include": "#component_type" }] }
 				}
@@ -582,7 +582,7 @@
 		"rule_line": {
 			"name": "meta.rule.line.bngl",
 			"patterns": [{
-				"begin": "^\\s*([0-9]+\\s+|[A-Za-z][A-Za-z0-9_]*\\s*\\:)?\\s*(?=[A-Za-z0]|\\@|\\%)([^\\n|\\#|\\<|\\-]+)\\s*(?=\\<|\\-)",
+				"begin": "^\\s*([0-9]+\\s+|[A-Za-z_][A-Za-z0-9_]*\\s*\\:)?\\s*(?=[A-Za-z0]|\\@|\\%)([^\\n|\\#|\\<|\\-]+)\\s*(?=\\<|\\-)",
 				"beginCaptures": {
 					"1": { "name": "constant.language.line_label.bngl", "patterns": [{"name": "test.colon","match": "\\:"}] },
 					"2": { "name": "meta.rule.reactants.bngl", "patterns": [{ "include": "#reactants"}] }
@@ -656,7 +656,7 @@
 		},
 		"line-label": {
 			"patterns": [{
-				"match": "^\\s*([0-9]+\\s+|[A-Za-z][A-Za-z0-9_]*\\s*\\:)?\\s*",
+				"match": "^\\s*([0-9]+\\s+|[A-Za-z_][A-Za-z0-9_]*\\s*\\:)?\\s*",
 				"captures": {
 					"1": { "name": "constant.language.line_label.bngl", "patterns": [{"name": "test.colon","match": "\\:"}] } 
 				}
@@ -664,7 +664,7 @@
 		},
 		"names": {
 			"name": "variable.name.bngl",
-			"match": "[A-Za-z][A-Za-z0-9_]*"
+			"match": "[A-Za-z_][A-Za-z0-9_]*"
 		},
 		"state": {
 			"patterns": [{
