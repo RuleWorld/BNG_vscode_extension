@@ -280,6 +280,28 @@
 					{
 						"include": "#populationmap_line"
 					}]
+			},
+			{
+				"name": "entity.name.section.energy_patterns.bngl",
+				"begin": "(begin)(\\s+)(energy\\s+patterns)(\\s*.*)\\n",
+				"beginCaptures": {
+					"1": { "name": "entity.name.section.model.begin.bngl", "patterns": [{"include": "#block_tag_mod"}] },
+					"3": { "name": "entity.name.section.model.name.bngl", "patterns": [{"include": "#block_tag_name"}]},
+					"4": { "name": "entity.name.section.model.comment.bngl", "patterns": [{"include": "#comments"}]}
+				},
+				"end": "(end)(\\s+)(energy\\s+patterns)(\\s*.*)\\n",
+				"endCaptures": {
+					"1": { "name": "entity.name.section.model.end.bngl", "patterns": [{"include": "#block_tag_mod"}] },
+					"3": { "name": "entity.name.section.model.name.bngl", "patterns": [{"include": "#block_tag_name"}]},
+					"4": { "name": "entity.name.section.model.comment.bngl", "patterns": [{"include": "#comments"}]}
+				},
+				"patterns": [
+					{
+						"include": "#comments"
+					},
+					{
+						"include": "#energypattern_line"
+					}]
 			}]
 		},
 		"actions": {
@@ -452,6 +474,22 @@
 					},
 					"end": "(?=\\#|\\n)"
 				}]
+			}]
+		},
+		"energypattern_line": {
+			"patterns": [{
+				"begin": "^\\s*([0-9]+\\s+|[A-Za-z_][A-Za-z0-9_]*\\s*\\:)?\\s*(?=[A-Za-z]|\\%|\\@)([^\\n|\\#|\\s]+)\\s+",
+				"beginCaptures": {
+					"1": { "name": "constant.language.line_label.bngl", "patterns": [{"name": "test.colon","match": "\\:"}] },
+					"2": { "name": "meta.species.pattern.bngl", "patterns": [{ "include": "#species_base" }] }
+				},
+				"end": "(?=\\#|\\n)",
+				"patterns": [{
+					"include": "#expressions"
+				}]
+			},
+			{
+				"include": "#comments"
 			}]
 		},
 		"populationmap_line": {
