@@ -46,12 +46,12 @@
     },
     "EnergyPatternLine": {
         "scope": "bngl",
-        "prefix": "FunctionLine",
+        "prefix": "EnergyPatternLine",
         "body": ["${1:Pattern}($2) ${3:EnergyExpression}$0"]
     },
     "PopulationMapLine": {
         "scope": "bngl",
-        "prefix": "FunctionLine",
+        "prefix": "PopulationMapLine",
         "body": ["${1:RuleName}: ${2:Species} -> ${3:SimpleSpecies} ${6:RateLaw} ${7:|DeleteMolecules,MoveConnected,TotalRate,exclude_reactants(),include_reactants(),exclude_products(),include_products()|}$0"]
     },
     "model": {
