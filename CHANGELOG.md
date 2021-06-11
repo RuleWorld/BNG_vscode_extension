@@ -53,3 +53,9 @@ Adding documentation and small syntax highlighting issue where a comment after b
 
 - 0.4.2
 More highlighting fixes where "_" should be allowed in line labels and parameter names. ")" would break comment highlighting in molecule type block.
+
+- 0.4.3
+Added highlighing for population maps block
+
+- 0.4.4
+Added highlighing for energy patterns block
