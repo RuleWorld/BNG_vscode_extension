@@ -38,7 +38,7 @@ end parameters
 begin observables
 Molecules nNFKB nfkb(loc~n,ikba)>=10 #nuclear free nfkb
 Molecules cNFKB nfkb(loc~c,ikba) #cytoplasmic free nfkb
-Molecules cikba ikba(loc~c,nfkb) #cytoplasmic free ikba
+Molecules cikba {MatchOnce}ikba(loc~c,nfkb) #cytoplasmic free ikba
 Species Ccomplex nfkb(loc~c,ikba!1).ikba(loc~c,nfkb!1) #cytoplasmic ikba-nfkb complex
 Molecules nikba ikba(loc~n,nfkb) #nuclear free ikba
 Species ncomplex nfkb(loc~n,ikba!1).ikba(loc~n,nfkb!1) #nuclear ikba-nfkb complex
@@ -57,7 +57,7 @@ label: @C:$nfkb(loc~c,ikba!1).ikba(loc~c,nfkb!1) 10^Tot_NFKB  #cytoplasmic ikba-
 $ikba(loc~n,nfkb) 0     #nuclear free ikba
 nfkb(loc~n,ikba!1).ikba(loc~n,nfkb!1) 0 #nuclear ikba-nfkb complex
 ikk(s~N)@comp 10^IKK_N #neutral ikk
-{matchOnce}ikk(s~A)%tag 0 #activated ikk
+_test: ikk(s~A)%tag 0 #activated ikk
 TNFR(st~a)           0 #active TNFR
 TNFR(st~i)           10^R #inactive TNFR
 TNF() 			0 #TNF
@@ -65,7 +65,7 @@ end seed species
 
 begin reaction rules
 R1_TNF_degradation: TNF()               ->  0                 0
-R2_TNFR_activation: TNFR(st~i) + TNF()  ->  TNFR(st~a)  + TNF() (10^k_b)
+R2_TNFR_activation: TNFR(st~i) + TNF()  ->  {MatchOnce}TNFR(st~a)  + TNF() (10^k_b)
 R3_TNFR_inactivation: TNFR(st~a)               ->  TNFR(st~i)               (10^k_f) 
 R4_ikk_activation: ikk(s~N)  +TNFR(st~a)              ->  ikk(s~A)+TNFR(st~a)     (10^k_a)
 R5_ikk_inactivation: ikk(s~A)                ->  ikk(s~N)              10^k_4    

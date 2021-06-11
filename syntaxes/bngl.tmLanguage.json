@@ -258,6 +258,28 @@
 				{
 					"include": "#net_group_line"
 				}]
+			},
+			{
+				"name": "entity.name.section.population_maps.bngl",
+				"begin": "(begin)(\\s+)(population\\s+maps)(\\s*.*)\\n",
+				"beginCaptures": {
+					"1": { "name": "entity.name.section.model.begin.bngl", "patterns": [{"include": "#block_tag_mod"}] },
+					"3": { "name": "entity.name.section.model.name.bngl", "patterns": [{"include": "#block_tag_name"}]},
+					"4": { "name": "entity.name.section.model.comment.bngl", "patterns": [{"include": "#comments"}]}
+				},
+				"end": "(end)(\\s+)(population\\s+maps)(\\s*.*)\\n",
+				"endCaptures": {
+					"1": { "name": "entity.name.section.model.end.bngl", "patterns": [{"include": "#block_tag_mod"}] },
+					"3": { "name": "entity.name.section.model.name.bngl", "patterns": [{"include": "#block_tag_name"}]},
+					"4": { "name": "entity.name.section.model.comment.bngl", "patterns": [{"include": "#comments"}]}
+				},
+				"patterns": [
+					{
+						"include": "#comments"
+					},
+					{
+						"include": "#populationmap_line"
+					}]
 			}]
 		},
 		"actions": {
@@ -430,6 +452,60 @@
 					},
 					"end": "(?=\\#|\\n)"
 				}]
+			}]
+		},
+		"populationmap_line": {
+			"patterns": [{
+				"begin": "^\\s*([0-9]+\\s+|[A-Za-z_][A-Za-z0-9_]*\\s*\\:)?\\s*(?=[A-Za-z]|\\%|\\@)([^\\n|\\#]+)\\s*(\\-\\>)\\s*([^\\n|\\#|\\s]+)\\s+",
+				"beginCaptures": {
+					"1": { "name": "constant.language.line_label.bngl", "patterns": [{"name": "test.colon","match": "\\:"}] },
+					"2": { "name": "meta.species.pattern.bngl", "patterns": [{ "include": "#species_base" }] },
+					"3": { "name": "keyword.control.popmap.dir.bngl" },
+					"4": { "name": "simple_molecule", "patterns": [{ "include": "#species_base" }] }
+				},
+				"end": "\\s*(\\s(DeleteMolecules|MoveConnected|TotalRate|exclude_rectants\\(.*\\)|include_reactants\\(.*\\)|exclude_products\\(.*\\)|include_products\\(.*\\)))?\\s*(?=\\#|\\n)",
+				"endCaptures": {
+					"1": { "name": "rule_modifier", "patterns": [{ "include": "#rule_modifier"}] }
+				},
+				"patterns": [{
+						"include": "#rate_laws"
+					}]
+			},
+			{
+				"include": "#comments"
+			}]
+		},
+		"rule_modifier": {
+			"patterns": [{
+				"match": "(DeleteMolecules|MoveConnected|TotalRate|exclude_rectants|include_reactants|exclude_products|include_products)",
+				"captures": {
+					"1": { "name": "keyword.control.rule_mod.bngl" }
+				}
+			},
+			{
+				"match": "\\((.*)\\)",
+				"captures": {
+					"1": { "name": "meta.rule_mods.arguments.bngl", "patterns": [{ "include": "#expressions" }]}
+				}
+			}]
+		},
+		"rate_laws": {
+			"patterns": [{
+				"match": "(Sat|MM|Hill|Arrhenius)",
+				"captures": {
+					"1": { "name": "keyword.control.special_rate_law.bngl" }
+				}
+			},
+			{
+				"include": "#expressions"
+			}]
+		},
+		"simple_molecule": {
+			"patterns": [{
+				"match": "[A-Za-z][A-Za-z0-9_]*(\\(\\))?(\\@[A-Za-z][A-Za-z0-9_]*)?(\\%[A-Za-z0-9][A-Za-z0-9_]*)?(\\(\\))?",
+				"captures": {
+					"1": { "name": "simple_molecule", "patterns": [{"include": "#species_base"}]}
+				}
 			}]
 		},
 		"multi_species": {
@@ -771,7 +847,7 @@
 		"block_tag_name": {
 			"patterns": [{
 				"name": "meta.block_tag.name.bngl",
-				"match": "(model|parameters|molecule\\s+types|compartments|seed\\s+species|species|observables|groups|energy\\s+patterns|functions|reactions|reaction\\s+rules|population\\s+maps|actions)"
+				"match": "(model|parameters|molecule\\s+types|compartments|seed\\s+species|species|observables|groups|energy\\s+patterns|population\\s+maps|functions|reactions|reaction\\s+rules|population\\s+maps|actions)"
 			}]
 		},
 		"comments": {
