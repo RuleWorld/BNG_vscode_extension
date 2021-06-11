@@ -18,7 +18,7 @@ This is a [VS Code](https://code.visualstudio.com/) language extension for [BioN
 To use the run and plot buttons the default VS Code terminal you are using needs to have access to
 * [Perl](https://www.perl.org/)
 * [Python3](https://www.python.org/), preferably [anaconda python](https://docs.anaconda.com/anaconda/)
-* [BioNetGen commmand line interface](https://github.com/ASinanSaglam/BNG_cli)
+* [BioNetGen commmand line interface](https://github.com/RuleWorld/PyBioNetGen)
 
 Please note that this tool is in active early development and is subject to sweeping changes.
 
