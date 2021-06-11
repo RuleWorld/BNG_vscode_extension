@@ -59,3 +59,6 @@ Added highlighing for population maps block
 
 - 0.4.4
 Added highlighing for energy patterns block
+
+- 0.4.5
+Fixed a small highlighting issue, snippets for population maps and energy patterns.
