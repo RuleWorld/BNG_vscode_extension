@@ -4,9 +4,11 @@
 Installation
 ############
 
-There are three ways to use this VS Code extension
+The suggested way to install this VS Code extension is from the VS Code marketplace. Simply open the Extensions tab (or press CTRL/CMD + SHIFT + X) 
+and search for Bionetgen. `This package <https://marketplace.visualstudio.com/items?itemName=als251.bngl>`_ will show up, click install. 
 
-* Using the `marketplace <https://marketplace.visualstudio.com/items?itemName=als251.bngl>`_
+There are two other ways to install this VS Code extension
+
 * Cloning the `repository <https://github.com/RuleWorld/BNG_vscode_extension>`_ and placing it under `your VSCode extensions folder <https://code.visualstudio.com/docs/editor/extension-gallery#_where-are-extensions-installed>`_
 * Cloning the `repository <https://github.com/RuleWorld/BNG_vscode_extension>`_ and using the extension in debug mode
 
