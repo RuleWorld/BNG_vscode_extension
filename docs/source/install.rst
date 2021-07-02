@@ -33,8 +33,7 @@ Please note that this section is only if you can't use the method above or are a
 are two other ways to use the extension:
 
 * Cloning the `repository <https://github.com/RuleWorld/BNG_vscode_extension>`_ and placing it under `your VSCode extensions folder <https://code.visualstudio.com/docs/editor/extension-gallery#_where-are-extensions-installed>`_
-* Cloning the `repository <https://github.com/RuleWorld/BNG_vscode_extension>`_ and using the extension in debug mode. This is only really 
-useful for development purposes, most users won't need this. 
+* Cloning the `repository <https://github.com/RuleWorld/BNG_vscode_extension>`_ and using the extension in debug mode. This is only really useful for development purposes, most users won't need this. 
 
 To use the extension in debug mode:
 
