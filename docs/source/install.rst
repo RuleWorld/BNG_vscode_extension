@@ -15,13 +15,15 @@ You will need three things for this extension
 
 First, `download and install VS Code <https://code.visualstudio.com>`_. The suggested way to install this VS Code extension is
 from the VS Code marketplace. Simply open the Extensions tab (or press ``CTRL/CMD + SHIFT + X``) after openinng VS Code and search 
-for Bionetgen. `This package <https://marketplace.visualstudio.com/items?itemName=als251.bngl>`_ will show up, click install. 
+for Bionetgen. `This package <https://marketplace.visualstudio.com/items?itemName=als251.bngl>`_ will show up, click install. If 
+this step doesn't work, please make sure you have the `latest version <https://vscode-docs.readthedocs.io/en/stable/supporting/howtoupdate/>`_.
 
-Next you will need an anaconda python installation and you need to have your terminal environment set correctly. 
-`Download and install anaconda python <https://docs.anaconda.com/anaconda/install/index.html>`_. In VS Code, open a new terminal
-(``CTRL/CMD + ``` or under ``Terminal -> New Terminal``) and test if you have access to Python package manager `pip`. If you don't, 
-you need to setup your environment so that the terminal has access to ``pip``, this is OS dependent and there are various guides 
-you can find online.
+Next you will need Python installed and you need to have your terminal environment set correctly. We recommend 
+`anaconda python <https://www.anaconda.com/products/individual>`_ since the rest of the workshop will make use of libraries that 
+come with this distribution. `Download and install anaconda python <https://docs.anaconda.com/anaconda/install/index.html>`_. In VS Code, 
+open a new terminal (``CTRL/CMD + ``` or under ``Terminal -> New Terminal``) and test if you have access to Python package manager `pip`. 
+If you don't, you need to setup your environment so that the terminal has access to ``pip``, this is OS dependent and there are various 
+guides you can find online.
 
 Finally once you have access to ``pip``, run ``pip install bionetgen``. Once complete, make sure it's installed correctly by
 running ``bionetgen -h``. You can find more information on installation `here <https://pybionetgen.readthedocs.io/en/latest/>`_.
