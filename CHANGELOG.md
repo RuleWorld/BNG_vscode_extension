@@ -65,3 +65,6 @@ Fixed a small highlighting issue, snippets for population maps and energy patter
 
 - 0.4.6
 Small snippet bugfix
+
+- 0.4.7
+Action argument highlighting now expects curly braces and breaks if they are missing
