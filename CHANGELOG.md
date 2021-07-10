@@ -68,3 +68,6 @@ Small snippet bugfix
 
 - 0.4.7
 Action argument highlighting now expects curly braces and breaks if they are missing
+
+- 0.4.8
+Action argument highlighting that doesn't require curly braces correctly identified
