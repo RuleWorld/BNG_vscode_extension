@@ -169,18 +169,18 @@ function activate(context) {
 	context.subscriptions.push(disposable3);
 	// TODO make this work
 	// resurrect webview 
-	if (vscode.window.registerWebviewPanelSerializer) {
-		// Make sure we register a serializer in activation event
-		vscode.window.registerWebviewPanelSerializer(PlotPanel.viewType, {
-			async deserializeWebviewPanel(webviewPanel, state) {
-				// Reset the webview options so we use latest uri for `localResourceRoots`.
-				webviewPanel.webview.options = { enableScripts: true, localResourceRoots: [vscode.Uri.joinPath(context.extensionUri, 'media')] };
-				let fname = vscode.window.activeTextEditor.document.fileName;
-				let extension = fname.split(".").pop();
-				PlotPanel.revive(webviewPanel, extension);
-			}
-		});
-	}
+	// if (vscode.window.registerWebviewPanelSerializer) {
+	// 	// Make sure we register a serializer in activation event
+	// 	vscode.window.registerWebviewPanelSerializer(PlotPanel.viewType, {
+	// 		async deserializeWebviewPanel(webviewPanel, state) {
+	// 			// Reset the webview options so we use latest uri for `localResourceRoots`.
+	// 			webviewPanel.webview.options = { enableScripts: true, localResourceRoots: [vscode.Uri.joinPath(context.extensionUri, 'media')] };
+	// 			let fname = vscode.window.activeTextEditor.document.fileName;
+	// 			let extension = fname.split(".").pop();
+	// 			PlotPanel.revive(webviewPanel, extension);
+	// 		}
+	// 	});
+	// }
 }
 
 /**
@@ -321,7 +321,7 @@ class PlotPanel {
 			e => {
 				if (this._panel.visible && !this._visible) {
 					this._visible = true;
-					// this._show();
+					this._show();
 				} else if (!this._panel.visible && this._visible) {
 					this._visible = false;
 				}
@@ -390,16 +390,16 @@ class PlotPanel {
 		);
 	} 
 
-	/**
-	 * @param {vscode.WebviewPanel} panel 
-	 * @param {String} extension 
-	 */
-	static revive(panel, extension) {
-		// TODO this needs to actually revive the panel at some point
-		// get current text
-		let text = vscode.window.activeTextEditor.document.getText();
-		PlotPanel.panels.push(new PlotPanel(panel, extension, text))
-	}
+	// /**
+	//  * @param {vscode.WebviewPanel} panel 
+	//  * @param {String} extension 
+	//  */
+	// static revive(panel, extension) {
+	// 	// TODO this needs to actually revive the panel at some point
+	// 	// get current text
+	// 	let text = vscode.window.activeTextEditor.document.getText();
+	// 	PlotPanel.panels.push(new PlotPanel(panel, extension, text))
+	// }
 
 	_setup() {
 		// set nonce 
