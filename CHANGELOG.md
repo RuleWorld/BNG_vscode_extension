@@ -77,3 +77,6 @@ Improved plotting stability by removing dependencies to older packages.
 
 - 0.5.0
 Interactive plotting stability improvement by adding show command. 
+
+- 0.5.1
+Further plotting stability improvements by delaying the show call

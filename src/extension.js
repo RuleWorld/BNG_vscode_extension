@@ -388,6 +388,7 @@ class PlotPanel {
 			null,
 			this._disposables
 		);
+		this._show()
 	} 
 
 	// /**
@@ -428,11 +429,12 @@ class PlotPanel {
 		const stylesPathMainPath = vscode.Uri.joinPath(PlotPanel._extensionUri, 'media', 'main.css');
 		// Uri to load styles into webview
 		this.stylesMainUri = webview.asWebviewUri(stylesPathMainPath);
-		// set visibility to figure out updates
-		this._visible = true;
 		// content depends on the extension
 		this._panel.title = `${this._ext}/${this._name}`;
-		this._show();
+		// first show
+		// this._show();
+		// set visibility to figure out updates
+		this._visible = true;
 	}
 
 	_show() {

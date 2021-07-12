@@ -182,6 +182,12 @@
                         });
                     }
                 });
+                // $(document).ready(function(){
+                //     vscode.postMessage({
+                //         command: 'refresh',
+                //         context: 'view'
+                //     })
+                // });
                 break;
             case 'network':
                 // render a network in plot
