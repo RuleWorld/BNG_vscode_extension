@@ -71,3 +71,6 @@ Action argument highlighting now expects curly braces and breaks if they are mis
 
 - 0.4.8
 Action argument highlighting that doesn't require curly braces correctly identified
+
+- 0.4.9
+Improved plotting stability by removing dependencies to older packages. 
