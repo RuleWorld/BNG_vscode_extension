@@ -163,7 +163,11 @@
                     modeBarButtonsToRemove: ['toImage']
                 };
                 var plot = document.getElementById('plot');
-                Plotly.newPlot(plot, plot_data, plot_options, config);
+                Plotly.newPlot(plot, plot_data, plot_options, config).then(
+                    vscode.postMessage({
+                        command: 'ready',
+                    })
+                );
                 plot.on('plotly_selected', function(eventData) {
                     var curve_set = new Set();
                     eventData.points.forEach(function(pt) {
@@ -182,13 +186,6 @@
                         });
                     }
                 });
-                // $(document).ready(function(){
-                //     vscode.postMessage({
-                //         command: 'refresh',
-                //         context: 'view'
-                //     })
-                // });
-                break;
             case 'network':
                 // render a network in plot
                 let elements = {

@@ -345,6 +345,8 @@ class PlotPanel {
 								return;
 						}
 						return;
+					case 'ready':
+						this._visible = true;
 					// this is an image to save, the webview can't do this directly
 					case 'image':
 						switch (message.type) {
@@ -379,16 +381,13 @@ class PlotPanel {
 								vscode.window.showInformationMessage(
 									`image saved to ${siu.fsPath}`
 								);
-								return;
-							
+								return;	
 						}
-
 				}
 			},
 			null,
 			this._disposables
 		);
-		this._show()
 	} 
 
 	// /**
@@ -431,10 +430,8 @@ class PlotPanel {
 		this.stylesMainUri = webview.asWebviewUri(stylesPathMainPath);
 		// content depends on the extension
 		this._panel.title = `${this._ext}/${this._name}`;
-		// first show
-		// this._show();
-		// set visibility to figure out updates
-		this._visible = true;
+		// show
+		this._show();
 	}
 
 	_show() {

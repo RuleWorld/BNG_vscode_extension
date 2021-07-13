@@ -80,3 +80,6 @@ Interactive plotting stability improvement by adding show command.
 
 - 0.5.1
 Further plotting stability improvements by delaying the show call
+
+- 0.5.2 
+Much improved plotting stability by using plotly promises
