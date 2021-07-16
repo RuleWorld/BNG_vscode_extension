@@ -362,12 +362,16 @@
 		},
 		"net_reaction_line": {
 			"patterns": [{
-				"match": "\\s*([0-9]+)\\s+([0-9,]+)\\s+([0-9,]+)\\s+([^\\n|\\#])",
-				"captures": {
-					"1": { "name": "meta.reaction.name.bngl" },
-					"2": { "name": "storage.type.reaction.reactants.bngl" },
+				"begin": "\\s*([0-9]+)\\s+([0-9,]+)\\s+([0-9,]+)\\s+",
+				"beginCaptures": {
+					"1": { "name": "constant.language.line_label.bngl" },
+					"2": { "name": "variable.parameter.reaction.reactants.bngl" },
 					"3": { "name": "variable.parameter.reaction.products.bngl" }
-				}
+				},
+				"end": "(?=\\#|\\n)",
+				"patterns": [{
+					"include": "#expressions"
+				}]
 			},
 			{
 				"include": "#comments"

@@ -312,8 +312,6 @@ class PlotPanel {
 		this._ext = extension;
 		this._text = text;
 		this._name = PlotPanel.get_current_name();
-		// initial html
-		this._setup();
 		// listen to dispose
 		this._panel.onDidDispose(() => this.dispose(), null, this._disposables);
 		// // Update the content based on view changes
@@ -321,7 +319,7 @@ class PlotPanel {
 			e => {
 				if (this._panel.visible && !this._visible) {
 					this._visible = true;
-					this._show();
+					this._set_html();
 				} else if (!this._panel.visible && this._visible) {
 					this._visible = false;
 				}
@@ -341,7 +339,7 @@ class PlotPanel {
 					case 'refresh':
 						switch (message.context) {
 							case 'view':
-								this._show();
+								this._set_html();
 								return;
 						}
 						return;
@@ -388,6 +386,8 @@ class PlotPanel {
 			null,
 			this._disposables
 		);
+		// initial html	
+		this._setup();
 	} 
 
 	// /**
@@ -431,10 +431,10 @@ class PlotPanel {
 		// content depends on the extension
 		this._panel.title = `${this._ext}/${this._name}`;
 		// show
-		this._show();
+		this._set_html();
 	}
 
-	_show() {
+	_set_html() {
 		// get webview to pass to set_html functions
 		const webview = this._panel.webview;
 		// content depends on the extension
@@ -500,6 +500,11 @@ class PlotPanel {
 		});
 	}
 	
+	/**
+	 * 
+	 * @param {String} text 
+	 *
+	 */
 	_load_gml(text) {
 		return JSON.parse(text)
 	}

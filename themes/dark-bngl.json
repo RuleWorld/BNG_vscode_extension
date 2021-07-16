@@ -725,6 +725,20 @@
 			"settings": {
 				"foreground": "#dadada",
 			}
+		},
+		{
+			"scope": "variable.parameter.reaction.reactants.bngl",
+			"settings": {
+				"foreground": "#3abb45",
+				"fontStyle": "bold"
+			}
+		},
+		{
+			"scope": "variable.parameter.reaction.products.bngl",
+			"settings": {
+				"foreground": "#a6b338",
+				"fontStyle": "bold"
+			}
 		}
 	]
 }

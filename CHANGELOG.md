@@ -83,3 +83,6 @@ Further plotting stability improvements by delaying the show call
 
 - 0.5.2 
 Much improved plotting stability by using plotly promises
+
+- 0.5.3
+Net file reaction block highlighing fixes
