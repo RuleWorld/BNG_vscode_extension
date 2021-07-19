@@ -319,7 +319,7 @@ class PlotPanel {
 			e => {
 				if (this._panel.visible && !this._visible) {
 					this._visible = true;
-					this._set_html();
+					// this._set_html();
 				} else if (!this._panel.visible && this._visible) {
 					this._visible = false;
 				}
@@ -543,12 +543,14 @@ class PlotPanel {
 			this._data =  this.parse_dat(this._text);
 		} 
 
-		webview.postMessage({
-			command: 'plot',
-			context: 'data',
-			names: this._data[0],
-			data: this._data[1]
-		});
+		setTimeout(() => {
+			webview.postMessage({
+				command: 'plot',
+				context: 'data',
+				names: this._data[0],
+				data: this._data[1]
+			});
+		}, 1000);
 	}
 
 	/**

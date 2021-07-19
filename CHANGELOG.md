@@ -86,3 +86,6 @@ Much improved plotting stability by using plotly promises
 
 - 0.5.3
 Net file reaction block highlighing fixes
+
+- 0.5.4
+Making sure plot stays consistent when tabs are switched while sending plotting message after a timeout to ensure plotting happens. 
