@@ -344,7 +344,7 @@ class PlotPanel {
 						}
 						return;
 					case 'ready':
-						this._visible = true;
+						this._send_figure_data();
 					// this is an image to save, the webview can't do this directly
 					case 'image':
 						switch (message.type) {
@@ -440,12 +440,28 @@ class PlotPanel {
 		// content depends on the extension
 		switch (this._ext) {
 			case "gml":
-				this._set_gml(webview);
+				this._set_gml_html(webview);
 				return;
 			case "gdat":
 			case "cdat":
 			case "scan":
-				this._set_plot(webview);
+				this._set_plot_html(webview);
+				return;
+		}
+	}
+
+	_send_figure_data() {
+		// get webview to pass to set_html functions
+		const webview = this._panel.webview;
+		// content depends on the extension
+		switch (this._ext) {
+			case "gml":
+				this._send_gml_data(webview);
+				return;
+			case "gdat":
+			case "cdat":
+			case "scan":
+				this._send_plot_data(webview);
 				return;
 		}
 	}
@@ -454,7 +470,7 @@ class PlotPanel {
 	 * 
 	 * @param {vscode.Webview} webview 
 	 */
-	_set_gml(webview) {
+	_set_gml_html(webview) {
 		
 		// Local path to css styles
 		// const styleResetPath = vscode.Uri.joinPath(this._extensionUri, 'media', 'reset.css');
@@ -490,7 +506,13 @@ class PlotPanel {
 				<script nonce="${this._nonce}" src="${this.scriptUri}" type="text/javascript"></script>
 			</body>
 			</html>`;
+	}
 
+	/**
+	 * 
+	 * 
+	 */
+	_send_gml_data(webview) {
 		// now we'll parse the editor text and turn it into a 
 		// data format we can pass along to the webview that's open
 		webview.postMessage({
@@ -498,7 +520,23 @@ class PlotPanel {
 			context: 'data',
 			data: this._load_gml(this._text)
 		});
+	 }
+	
+	/**
+	 * 
+	 * 
+	 */
+	_send_plot_data(webview) {
+		// now we'll parse the editor text and turn it into a 
+		// data format we can pass along to the webview that's open
+		webview.postMessage({
+			command: 'plot',
+			context: 'data',
+			names: this._data[0],
+			data: this._data[1]
+		});
 	}
+
 	
 	/**
 	 * 
@@ -513,7 +551,7 @@ class PlotPanel {
 	 * 
 	 * @param {vscode.Webview} webview 
 	 */
-	_set_plot(webview) {		
+	_set_plot_html(webview) {		
 		// Finally set the HTML
 		webview.html = `<!DOCTYPE html>
 			<html lang="en">
@@ -543,14 +581,14 @@ class PlotPanel {
 			this._data =  this.parse_dat(this._text);
 		} 
 
-		setTimeout(() => {
-			webview.postMessage({
-				command: 'plot',
-				context: 'data',
-				names: this._data[0],
-				data: this._data[1]
-			});
-		}, 1000);
+		// setTimeout(() => {
+		// 	webview.postMessage({
+		// 		command: 'plot',
+		// 		context: 'data',
+		// 		names: this._data[0],
+		// 		data: this._data[1]
+		// 	});
+		// }, 1000);
 	}
 
 	/**

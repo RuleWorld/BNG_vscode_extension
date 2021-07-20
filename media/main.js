@@ -163,11 +163,7 @@
                     modeBarButtonsToRemove: ['toImage']
                 };
                 var plot = document.getElementById('plot');
-                Plotly.newPlot(plot, plot_data, plot_options, config).then(
-                    vscode.postMessage({
-                        command: 'ready',
-                    })
-                );
+                Plotly.newPlot(plot, plot_data, plot_options, config)
                 plot.on('plotly_selected', function(eventData) {
                     var curve_set = new Set();
                     eventData.points.forEach(function(pt) {
@@ -247,4 +243,7 @@
                 break;
         }
     });
+    vscode.postMessage({
+        command: 'ready',
+    })
 }());

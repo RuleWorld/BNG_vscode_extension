@@ -89,3 +89,6 @@ Net file reaction block highlighing fixes
 
 - 0.5.4
 Making sure plot stays consistent when tabs are switched while sending plotting message after a timeout to ensure plotting happens. 
+
+- 0.5.5
+Changed plotting so that webview sends a message to VS Code when ready and VS Code sends the data into the webview once the ready call is made. This should vastly improve interactive plotting stability.
