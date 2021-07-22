@@ -92,3 +92,6 @@ Making sure plot stays consistent when tabs are switched while sending plotting 
 
 - 0.5.5
 Changed plotting so that webview sends a message to VS Code when ready and VS Code sends the data into the webview once the ready call is made. This should vastly improve interactive plotting stability.
+
+- 0.5.6
+LICENSE added, minor plotly plot changes and minor snippet changes.

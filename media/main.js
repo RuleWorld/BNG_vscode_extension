@@ -17,7 +17,7 @@
                 // message.data will contain the data
                 // message.names will contain the names of time series
                 let plot_data = [];
-                for (let i=0;i<message.names.length;i++) {
+                for (let i = 0; i < message.names.length; i++) {
                     if (i == 0) {
                         continue;
                     }
@@ -28,30 +28,48 @@
                     }
                     plot_data.push(this_data);
                 }
-                let legend_status = false;
-                if ( plot_data.length < 21) {
-                    legend_status = true
-                }
-                let plot_options = { 
+                let legend_status = true;
+                // if (plot_data.length < 21) {
+                //     legend_status = true
+                // }
+                let plot_options = {
                     showlegend: legend_status,
                     hovermode: 'closest',
-                    margin: { t:0 },
+                    margin: { t: 0 },
                     autosize: true,
                     xaxis: { title: message.names[0] },
                     yaxis: { title: 'concentration' },
                     legend: {
                         y: 0.1,
                         font: {
-                          size: 12
+                            size: 12
                         }
                     },
                     updatemenus: [{
-                        pad: {'r': 10, 't': 10},
+                        pad: { 'r': 10, 't': 10 },
                         showactive: true,
                         yanchor: 'top',
                         xanchor: "left",
                         y: 1.18,
-                        x: 0,
+                        x: 0.1,
+                        buttons: [{
+                            method: 'relayout',
+                            args: ['showlegend', true],
+                            label: 'legend on'
+                        },
+                        {
+                            method: 'relayout',
+                            args: ['showlegend', false],
+                            label: 'legend off'
+                        }]
+                    },
+                    {
+                        pad: { 'r': 10, 't': 10 },
+                        showactive: true,
+                        yanchor: 'top',
+                        xanchor: "left",
+                        y: 1.18,
+                        x: -0.1,
                         buttons: [{
                             method: 'restyle',
                             args: ['mode', 'lines'],
@@ -66,44 +84,34 @@
                             method: 'restyle',
                             args: ['mode', 'lines+markers'],
                             label: 'lines+markers'
-                        }] 
+                        }]
                     },
                     {
-                        pad: {'r': 10, 't': 10},
+                        pad: { 'r': 10, 't': 10 },
                         showactive: true,
                         yanchor: 'top',
                         xanchor: "left",
                         y: 1.18,
-                        x: 0.2,
-                        buttons: [{
-                            method: 'relayout',
-                            args: ['showlegend', false],
-                            label: 'legend off'
-                        },
-                        {
-                            method: 'relayout',
-                            args: ['showlegend', true],
-                            label: 'legend on'
-                        }] 
-                    },
-                    {
-                        pad: {'r': 10, 't': 10},
-                        showactive: true,
-                        yanchor: 'top',
-                        xanchor: "left",
-                        y: 1.18,
-                        x: 0.37,
+                        x: 0.265,
                         buttons: [{
                             method: 'relayout',
                             args: ['xaxis.type', 'linear'],
                             label: 'linear x'
                         },
-                            {
+                        {
                             method: 'relayout',
                             args: ['xaxis.type', 'log'],
                             label: 'logx'
-                        },
-                        {
+                        }]
+                    },
+                    {
+                        pad: { 'r': 10, 't': 10 },
+                        showactive: true,
+                        yanchor: 'top',
+                        xanchor: "left",
+                        y: 1.18,
+                        x: 0.41,
+                        buttons: [{
                             method: 'relayout',
                             args: ['yaxis.type', 'linear'],
                             label: 'linear y'
@@ -112,7 +120,7 @@
                             method: 'relayout',
                             args: ['yaxis.type', 'log'],
                             label: 'logy'
-                        }] 
+                        }]
                     }],
                 };
                 let config = {
@@ -121,21 +129,21 @@
                             name: 'png',
                             icon: Plotly.Icons.camera,
                             click: function (gd) {
-                              let img = Plotly.toImage(gd, {
-                                format:'png',
-                                width: gd._fullLayout.width,
-                                height: gd._fullLayout.height
-                              }).then(
-                                  function(url) {
-                                    vscode.postMessage({
-                                        command: 'image',
-                                        type: 'png',
-                                        title: page_title,
-                                        folder: page_folder,
-                                        text: url
-                                    })
-                                  }
-                              );
+                                let img = Plotly.toImage(gd, {
+                                    format: 'png',
+                                    width: gd._fullLayout.width,
+                                    height: gd._fullLayout.height
+                                }).then(
+                                    function (url) {
+                                        vscode.postMessage({
+                                            command: 'image',
+                                            type: 'png',
+                                            title: page_title,
+                                            folder: page_folder,
+                                            text: url
+                                        })
+                                    }
+                                );
                             }
                         },
                         {
@@ -143,11 +151,11 @@
                             icon: Plotly.Icons.camera,
                             click: function (gd) {
                                 let img = Plotly.toImage(gd, {
-                                    format:'svg',
+                                    format: 'svg',
                                     width: gd._fullLayout.width,
                                     height: gd._fullLayout.height
-                                  }).then(
-                                      function(url) {
+                                }).then(
+                                    function (url) {
                                         vscode.postMessage({
                                             command: 'image',
                                             type: 'svg',
@@ -164,9 +172,9 @@
                 };
                 var plot = document.getElementById('plot');
                 Plotly.newPlot(plot, plot_data, plot_options, config)
-                plot.on('plotly_selected', function(eventData) {
+                plot.on('plotly_selected', function (eventData) {
                     var curve_set = new Set();
-                    eventData.points.forEach(function(pt) {
+                    eventData.points.forEach(function (pt) {
                         curve_set.add(pt.curveNumber);
                     });
                     if (curve_set.size > 0) {
@@ -195,34 +203,36 @@
                         { data: { id: 'g' } }
                     ],
                     edges: [
-                        { data: { id: 'ab', source: 'a', target: 'b' }},
-                        { data: { id: 'eb', source: 'e', target: 'b' }},
-                        { data: { id: 'ag', source: 'a', target: 'g' }},
-                        { data: { id: 'fd', source: 'f', target: 'd' }},
-                        { data: { id: 'fe', source: 'f', target: 'e' }},
-                        { data: { id: 'bc', source: 'b', target: 'c' }},
-                        { data: { id: 'ce', source: 'c', target: 'e' }}
+                        { data: { id: 'ab', source: 'a', target: 'b' } },
+                        { data: { id: 'eb', source: 'e', target: 'b' } },
+                        { data: { id: 'ag', source: 'a', target: 'g' } },
+                        { data: { id: 'fd', source: 'f', target: 'd' } },
+                        { data: { id: 'fe', source: 'f', target: 'e' } },
+                        { data: { id: 'bc', source: 'b', target: 'c' } },
+                        { data: { id: 'ce', source: 'c', target: 'e' } }
                     ]
                 };
                 let style = [ // the stylesheet for the graph
-                    { selector: 'node',
+                    {
+                        selector: 'node',
                         style: {
-                        'background-color': '#999',
-                        'label': 'data(id)',
-                        'color': '#999',
-                        'min-zoomed-font-size': '12'
+                            'background-color': '#999',
+                            'label': 'data(id)',
+                            'color': '#999',
+                            'min-zoomed-font-size': '12'
                         }
                     },
-                    { selector: 'edge',
+                    {
+                        selector: 'edge',
                         style: {
-                        'width': 3,
-                        'line-color': '#ccc',
-                        'target-arrow-color': '#ccc',
-                        'target-arrow-shape': 'triangle',
-                        'curve-style': 'bezier'
+                            'width': 3,
+                            'line-color': '#ccc',
+                            'target-arrow-color': '#ccc',
+                            'target-arrow-shape': 'triangle',
+                            'curve-style': 'bezier'
                         }
                     }
-                ];  
+                ];
                 let layout_opts = {
                     name: 'cose',
                     fit: true,
@@ -234,9 +244,9 @@
                     style: style,
                     layout: layout_opts
                 });
-                var layout = cy.layout( layout_opts );
+                var layout = cy.layout(layout_opts);
                 layout.run();
-                $("#layout_button").click(function(){
+                $("#layout_button").click(function () {
                     layout.run();
                 });
                 cy.mount(network);

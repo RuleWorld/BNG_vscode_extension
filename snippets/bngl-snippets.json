@@ -2,57 +2,79 @@
     "Molecule": {
         "scope": "bngl",
         "prefix": "Molecule",
-        "body": ["${1:Molecule}(${2:component}~${3:state}$0)"]
+        "body": [
+            "${1:Molecule}(${2:component}~${3:state}$0)"
+        ]
     },
     "MoleculeType": {
         "scope": "bngl",
         "prefix": "MoleculeType",
-        "body": ["${1:Molecule}(${2:component}~${3:state1}~${4:state2}$0)"]
+        "body": [
+            "${1:Molecule}(${2:component}~${3:state1}~${4:state2}$0)"
+        ]
     },
     "Species": {
         "scope": "bngl",
         "prefix": "Species",
-        "body": ["${1:Species1}(${2:component}~${3:state},${4:component}!${5:bond_number}$0).${6:Species2}(${7:component}!${5:bond_number})"]
+        "body": [
+            "${1:Species1}(${2:component}~${3:state},${4:component}!${5:bond_number}$0).${6:Species2}(${7:component}!${5:bond_number})"
+        ]
     },
     "CompartmentLine": {
         "scope": "bngl",
         "prefix": "CompartmentLine",
-        "body": ["${1:CompartmentName} ${2|2,3|} ${3:volume} ${4:ParentCompartment}$0"]
+        "body": [
+            "${1:CompartmentName} ${2|2,3|} ${3:volume} ${4:ParentCompartment}$0"
+        ]
     },
     "ParameterLine": {
         "scope": "bngl",
         "prefix": "ParameterLine",
-        "body": ["${1:ParameterName} ${2:ParameterValue}$0"]
+        "body": [
+            "${1:ParameterName} ${2:ParameterValue}$0"
+        ]
     },
     "SpeciesLine": {
         "scope": "bngl",
         "prefix": "SpeciesLine",
-        "body": ["${1:SpeciesPattern} ${2:SpeciesAmount}"]
+        "body": [
+            "${1:SpeciesPattern} ${2:SpeciesAmount}"
+        ]
     },
     "ObservableLine": {
         "scope": "bngl",
         "prefix": "ObservableLine",
-        "body": ["${1|Molecules,Species|} ${2:ObservableName} ${3:ObservablePattern}"]
+        "body": [
+            "${1|Molecules,Species|} ${2:ObservableName} ${3:ObservablePattern}"
+        ]
     },
     "FunctionLine": {
         "scope": "bngl",
         "prefix": "FunctionLine",
-        "body": ["${1:FunctionName}($2) ${3:FunctionExpression}$0"]
+        "body": [
+            "${1:FunctionName}($2) ${3:FunctionExpression}$0"
+        ]
     },
     "RuleLine": {
         "scope": "bngl",
         "prefix": "RuleLine",
-        "body": ["${1:RuleName}: ${2:Reactant1} + ${3:Reactant2} ${4|->,<->|} ${5:Product1} + ${6:Product2} ${7:RateConstant}$0"]
+        "body": [
+            "${1:RuleName}: ${2:Reactant1} + ${3:Reactant2} ${4|->,<->|} ${5:Product1} + ${6:Product2} ${7:RateConstant}$0"
+        ]
     },
     "EnergyPatternLine": {
         "scope": "bngl",
         "prefix": "EnergyPatternLine",
-        "body": ["${1:Pattern}($2) ${3:EnergyExpression}$0"]
+        "body": [
+            "${1:Pattern}($2) ${3:EnergyExpression}$0"
+        ]
     },
     "PopulationMapLine": {
         "scope": "bngl",
         "prefix": "PopulationMapLine",
-        "body": ["${1:RuleName}: ${2:Species} -> ${3:SimpleSpecies} ${6:RateLaw} ${7:|DeleteMolecules,MoveConnected,TotalRate,exclude_reactants(),include_reactants(),exclude_products(),include_products()|}$0"]
+        "body": [
+            "${1:RuleName}: ${2:Species} -> ${3:SimpleSpecies} ${6:RateLaw} ${7:|DeleteMolecules,MoveConnected,TotalRate,exclude_reactants(),include_reactants(),exclude_products(),include_products()|}$0"
+        ]
     },
     "model": {
         "scope": "bngl",
@@ -112,231 +134,323 @@
     "generate_network": {
         "scope": "bngl",
         "prefix": "generate_network",
-        "body": ["generate_network({overwrite=>${1|0,1|}$0})" ]
+        "body": [
+            "generate_network({overwrite=>${1|0,1|}$0})"
+        ]
     },
     "generate_hybrid_model": {
         "scope": "bngl",
         "prefix": "generate_hyrid_model",
-        "body": ["generate_hybrid_model({overwrite=>${1|0,1|}$0})"]
+        "body": [
+            "generate_hybrid_model({overwrite=>${1|0,1|}$0})"
+        ]
     },
     "simulate": {
         "scope": "bngl",
         "prefix": "simulate",
-        "body": ["simulate({method=>\"${1|ode,ssa,nf,pla|}\",t_end=>$2,n_steps=>$3$0})"]
+        "body": [
+            "simulate({method=>\"${1|ode,ssa,nf,pla|}\",t_end=>$2,n_steps=>$3$0})"
+        ]
     },
     "parameter_scan": {
         "scope": "bngl",
         "prefix": "parameter_scan",
-        "body": ["parameter_scan({method=>\"${1|ode,ssa,nf,pla|}\",t_start=>$2,t_end=>$3,n_steps=>$4,parameter=>\"$5\",par_min=>$6,par_max=>$7,n_scan_pts=>$8,log_scale=>${9|0,1|}$0})"]
+        "body": [
+            "parameter_scan({method=>\"${1|ode,ssa,nf,pla|}\",t_start=>$2,t_end=>$3,n_steps=>$4,parameter=>\"$5\",par_min=>$6,par_max=>$7,n_scan_pts=>$8,log_scale=>${9|0,1|}$0})"
+        ]
     },
     "bifurcate": {
         "scope": "bngl",
         "prefix": "bifurcate",
-        "body": ["bifurcate({t_start=>$1,t_end=>$2,n_steps=>$3,parameter=>\"$4\",par_min=>$5,par_max=>$6,n_scan_pts=>$7,log_scale=>${8:0}$0})"]
+        "body": [
+            "bifurcate({method=>\"${1|ode,ssa,nf,pla|}\",t_start=>$2,t_end=>$3,n_steps=>$4,parameter=>\"$5\",par_min=>$6,par_max=>$7,n_scan_pts=>$8,log_scale=>${9:0}$0})"
+        ]
     },
     "readFile": {
         "scope": "bngl",
         "prefix": "readFile",
-        "body": ["readFile({file=>\"$1\",atomize=>${2:0}})"]
+        "body": [
+            "readFile({file=>\"$1\",atomize=>${2|0,1|}$0})"
+        ]
     },
     "writeFile": {
         "scope": "bngl",
         "prefix": "writeFile",
-        "body": ["writeFile({format=>\"${1|bngl,net,xml|}\",overwrite=>${2:0}$0})"]
+        "body": [
+            "writeFile({format=>\"${1|bngl,net,xml|}\",overwrite=>${2|0,1|}$0})"
+        ]
     },
     "writeModel": {
         "scope": "bngl",
         "prefix": "writeModel",
-        "body": ["writeModel()"]
+        "body": [
+            "writeModel()"
+        ]
     },
     "writeNetwork": {
         "scope": "bngl",
         "prefix": "writeNetwork",
-        "body": ["writeNetwork()"]
+        "body": [
+            "writeNetwork()"
+        ]
     },
     "writeXML": {
         "scope": "bngl",
         "prefix": "writeXML",
-        "body": ["writeXML()"]
+        "body": [
+            "writeXML()"
+        ]
     },
     "writeSBML": {
         "scope": "bngl",
         "prefix": "writeSBML",
-        "body": ["writeSBML()"]
+        "body": [
+            "writeSBML()"
+        ]
     },
     "writeMfile": {
         "scope": "bngl",
         "prefix": "writeMfile",
-        "body": ["writeMfile({t_start=>$1,t_end=>$2,n_steps=>$3$0})"]
+        "body": [
+            "writeMfile({t_start=>$1,t_end=>$2,n_steps=>$3$0})"
+        ]
     },
     "writeMexfile": {
         "scope": "bngl",
         "prefix": "writeMexfile",
-        "body": ["writeMfile({t_start=>$1,t_end=>$2,n_steps=>$3$0})"]
+        "body": [
+            "writeMfile({t_start=>$1,t_end=>$2,n_steps=>$3$0})"
+        ]
     },
     "writeMDL": {
         "scope": "bngl",
         "prefix": "writeMDL",
-        "body": ["writeMDL()"]
+        "body": [
+            "writeMDL()"
+        ]
     },
     "visualize": {
         "scope": "bngl",
         "prefix": "visualize",
-        "body": ["visualize({type=>\"${1|ruleviz_pattern,ruleviz_operation,contactmap,regulatory|}\"$0})"]
+        "body": [
+            "visualize({type=>\"${1|ruleviz_pattern,ruleviz_operation,contactmap,regulatory|}\"$0})"
+        ]
     },
     "setConcentration": {
         "scope": "bngl",
         "prefix": "setConcentrations",
-        "body": ["setConcentration(\"$1\",$2)"]
+        "body": [
+            "setConcentration(\"$1\",$2)"
+        ]
     },
     "addConcentration": {
         "scope": "bngl",
         "prefix": "addConcentration",
-        "body": ["addConcentration(\"$1\",$2)"]
+        "body": [
+            "addConcentration(\"$1\",$2)"
+        ]
     },
     "saveConcentrations": {
         "scope": "bngl",
         "prefix": "saveConcentrations",
-        "body": ["saveConcentrations([\"$1\"$0])"]
+        "body": [
+            "saveConcentrations([\"$1\"$0])"
+        ]
     },
     "resetConcentrations": {
         "scope": "bngl",
         "prefix": "resetConcentrations",
-        "body": ["resetConcentration([\"$1\"$0])"]
+        "body": [
+            "resetConcentrations([\"$1\"$0])"
+        ]
     },
     "setParameter": {
         "scope": "bngl",
         "prefix": "setParameter",
-        "body": ["setParameter(\"$1\",$2)"]
+        "body": [
+            "setParameter(\"$1\",$2)"
+        ]
     },
     "saveParameters": {
         "scope": "bngl",
         "prefix": "saveParameters",
-        "body": ["saveParameters([\"$1\"$0])"]
+        "body": [
+            "saveParameters([\"$1\"$0])"
+        ]
     },
     "resetParameters": {
         "scope": "bngl",
         "prefix": "resetParameters",
-        "body": ["resetParameters([\"$1\"$0])"]
+        "body": [
+            "resetParameters([\"$1\"$0])"
+        ]
     },
     "quit": {
         "scope": "bngl",
         "prefix": "quit",
-        "body": ["quit()"]
+        "body": [
+            "quit()"
+        ]
     },
     "setModelName": {
         "scope": "bngl",
         "prefix": "setModelName",
-        "body": ["setModelName(\"$1\")$0"]
+        "body": [
+            "setModelName(\"$1\")$0"
+        ]
     },
     "substanceUnits": {
         "scope": "bngl",
         "prefix": "substanceUnits",
-        "body": ["substanceUnits(\"$1\")$0"]
+        "body": [
+            "substanceUnits(\"$1\")$0"
+        ]
     },
     "version": {
         "scope": "bngl",
         "prefix": "version",
-        "body": ["version(\"$1\")$0"]
+        "body": [
+            "version(\"$1\")$0"
+        ]
     },
     "setOption": {
         "scope": "bngl",
         "prefix": "setOption",
-        "body": ["setOption(\"$1\",\"$2\"$0)"]
+        "body": [
+            "setOption(\"$1\",$2)"
+        ]
     },
     "abs": {
         "scope": "bngl",
         "prefix": "abs",
-        "body": ["abs($1)$0"]
+        "body": [
+            "abs($1)$0"
+        ]
     },
     "sin": {
         "scope": "bngl",
         "prefix": "sin",
-        "body": ["sin($1)$0"]
+        "body": [
+            "sin($1)$0"
+        ]
     },
     "cos": {
         "scope": "bngl",
         "prefix": "cos",
-        "body": ["cos($1)$0"]
+        "body": [
+            "cos($1)$0"
+        ]
     },
     "tan": {
         "scope": "bngl",
         "prefix": "tan",
-        "body": ["tan($1)$0"]
+        "body": [
+            "tan($1)$0"
+        ]
     },
     "exp": {
         "scope": "bngl",
         "prefix": "exp",
-        "body": ["exp($1)$0"]
+        "body": [
+            "exp($1)$0"
+        ]
     },
     "ln": {
         "scope": "bngl",
         "prefix": "ln",
-        "body": ["ln($1)$0"]
+        "body": [
+            "ln($1)$0"
+        ]
     },
     "log10": {
         "scope": "bngl",
         "prefix": "log10",
-        "body": ["log10($1)$0"]
+        "body": [
+            "log10($1)$0"
+        ]
     },
     "floor": {
         "scope": "bngl",
         "prefix": "floor",
-        "body": ["floor($1)$0"]
+        "body": [
+            "floor($1)$0"
+        ]
     },
     "ceil": {
         "scope": "bngl",
         "prefix": "ceil",
-        "body": ["ceil($1)$0"]
+        "body": [
+            "ceil($1)$0"
+        ]
     },
     "sqrt": {
         "scope": "bngl",
         "prefix": "sqrt",
-        "body": ["sqrt($1)$0"]
+        "body": [
+            "sqrt($1)$0"
+        ]
     },
     "asin": {
         "scope": "bngl",
         "prefix": "asin",
-        "body": ["asin($1)$0"]
+        "body": [
+            "asin($1)$0"
+        ]
     },
     "acos": {
         "scope": "bngl",
         "prefix": "acos",
-        "body": ["acos($1)$0"]
+        "body": [
+            "acos($1)$0"
+        ]
     },
     "atan": {
         "scope": "bngl",
         "prefix": "atan",
-        "body": ["atan($1)$0"]
+        "body": [
+            "atan($1)$0"
+        ]
     },
     "sinh": {
         "scope": "bngl",
         "prefix": "sinh",
-        "body": ["sinh($1)$0"]
+        "body": [
+            "sinh($1)$0"
+        ]
     },
     "cosh": {
         "scope": "bngl",
         "prefix": "cosh",
-        "body": ["cosh($1)$0"]
+        "body": [
+            "cosh($1)$0"
+        ]
     },
     "tanh": {
         "scope": "bngl",
         "prefix": "tanh",
-        "body": ["tanh($1)$0"]
+        "body": [
+            "tanh($1)$0"
+        ]
     },
     "asinh": {
         "scope": "bngl",
         "prefix": "asinh",
-        "body": ["asinh($1)$0"]
+        "body": [
+            "asinh($1)$0"
+        ]
     },
     "acosh": {
         "scope": "bngl",
         "prefix": "acosh",
-        "body": ["acosh($1)$0"]
+        "body": [
+            "acosh($1)$0"
+        ]
     },
     "atanh": {
         "scope": "bngl",
         "prefix": "atanh",
-        "body": ["atanh($1)$0"]
+        "body": [
+            "atanh($1)$0"
+        ]
     }
 }
