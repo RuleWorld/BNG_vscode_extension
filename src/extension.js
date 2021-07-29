@@ -10,9 +10,9 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 const vscode = require('vscode');
-const fs     = require('fs');
-const path   = require('path');
-const os     = require('os');
+const fs = require('fs');
+const path = require('path');
+const os = require('os');
 
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
@@ -23,7 +23,7 @@ const os     = require('os');
 function activate(context) {
 	// TODO: Re-write this as TypeScript and use the compiler instead
 	// This line of code will only be executed once when your extension is activated
-	
+
 	// leaving this here in case we need to do something to the terminal
 	// that is  OS specific in the future
 	// let term = vscode.window.terminals.find(i => i.name == "bngl_term");
@@ -54,7 +54,7 @@ function activate(context) {
 		const date = new Date();
 		const year = date.getFullYear();
 		const month = `${date.getMonth() + 1}`.padStart(2, '0');
-		const day =`${date.getDate()}`.padStart(2, '0');
+		const day = `${date.getDate()}`.padStart(2, '0');
 		const seconds = `${date.getSeconds()}`.padStart(2, '0');
 		const fold_name = `${year}_${month}_${day}__${date.getHours()}_${date.getMinutes()}_${seconds}`
 		// Get workspace URI
@@ -82,9 +82,9 @@ function activate(context) {
 				let timeout_mili = 120000;
 				checkGdat(new_fold_uri.fsPath, timeout_mili).then(() => {
 					// we have a gdat in our folder, grab one and open
-					var files=fs.readdirSync(new_fold_uri.fsPath);
+					var files = fs.readdirSync(new_fold_uri.fsPath);
 					var outGdatPath;
-					for (var i=0;i<files.length;i++) {
+					for (var i = 0; i < files.length; i++) {
 						let ext = files[i].split(".").pop();
 						if (ext == "gdat") {
 							outGdatPath = path.join(new_fold_uri.fsPath, files[i]);
@@ -93,21 +93,21 @@ function activate(context) {
 					}
 					let outGdatUri = vscode.Uri.file(outGdatPath);
 					vscode.commands.executeCommand('vscode.open', outGdatUri);
-						// .then(() => {
-						// // FIXME: find a way to check for the main process and open
-						// // after because this opens too quickly/set delay won't work
-						// setTimeout(() => {
-						// 	PlotPanel.create(context.extensionUri);
-						// }, 3000);
-						// });
+					// .then(() => {
+					// // FIXME: find a way to check for the main process and open
+					// // after because this opens too quickly/set delay won't work
+					// setTimeout(() => {
+					// 	PlotPanel.create(context.extensionUri);
+					// }, 3000);
+					// });
 				}).catch(() => {
-					vscode.window.showInformationMessage(`Couldn't find a gdat in ${timeout_mili} miliseconds`); 			
-					}
+					vscode.window.showInformationMessage(`Couldn't find a gdat in ${timeout_mili} miliseconds`);
+				}
 				);
 			});
-		});	
+		});
 		// set the terminal command we want to run
-		let term_cmd = `bionetgen run -i "${copy_path.fsPath}" -o "${new_fold_uri.fsPath}"`;
+		let term_cmd = `bionetgen run -i "${copy_path.fsPath}" -o "${new_fold_uri.fsPath}" -l "${new_fold_uri.fsPath}"`;
 		// focus on the terminal and run the command
 		term.show();
 		term.sendText(term_cmd);
@@ -132,7 +132,7 @@ function activate(context) {
 		let outpath = fpath.replace(fname, `${fname_noext}_${ext}.png`);
 		// set the terminal command we want to run
 		let term_cmd;
-		if ( ext == "gdat" || ext == "scan") {
+		if (ext == "gdat" || ext == "scan") {
 			term_cmd = `bionetgen plot -i "${fpath}" -o "${outpath}" --legend`;
 		} else {
 			term_cmd = `bionetgen plot -i "${fpath}" -o "${outpath}"`;
@@ -145,15 +145,15 @@ function activate(context) {
 		// let's check to see if our image file is created within 10s
 		// if so, open it
 		checkImage(outpath, timeout_mili).then(() => {
-			vscode.window.showInformationMessage(`Done plotting ${fpath} to ${outpath}`); 		
+			vscode.window.showInformationMessage(`Done plotting ${fpath} to ${outpath}`);
 			vscode.commands.executeCommand('vscode.open', outUri);
 		}).catch(() => {
-			vscode.window.showInformationMessage(`Plotting didn't finish within ${timeout_mili} miliseconds`); 			
-			}
+			vscode.window.showInformationMessage(`Plotting didn't finish within ${timeout_mili} miliseconds`);
+		}
 		);
 	}
 	// names of the commands we want to register
-	const runCommandName      = 'bng.run_bngl';
+	const runCommandName = 'bng.run_bngl';
 	const plotDatCommandName = 'bng.plot_dat';
 	const webviewCommandName = 'bng.webview';
 	// The command has been defined in the package.json file
@@ -165,7 +165,7 @@ function activate(context) {
 	let disposable2 = vscode.commands.registerCommand(plotDatCommandName, plotDatCommandHandler);
 	context.subscriptions.push(disposable2);
 	// this one generates the webview panel for built-in plotting
-	let disposable3 = vscode.commands.registerCommand(webviewCommandName, () => {PlotPanel.create(context.extensionUri)});
+	let disposable3 = vscode.commands.registerCommand(webviewCommandName, () => { PlotPanel.create(context.extensionUri) });
 	context.subscriptions.push(disposable3);
 	// TODO make this work
 	// resurrect webview 
@@ -306,7 +306,7 @@ class PlotPanel {
 	 * @param {String} extension
 	 * @param {String} text
 	 */
-	constructor (panel, extension, text) {
+	constructor(panel, extension, text) {
 		// set our stuff
 		this._panel = panel;
 		this._ext = extension;
@@ -351,9 +351,9 @@ class PlotPanel {
 							case 'png':
 								let fu = vscode.Uri.file(message.folder);
 								// absolute path to the file we want to save
-								let iu = vscode.Uri.joinPath(fu,`${message.title}.png`);
+								let iu = vscode.Uri.joinPath(fu, `${message.title}.png`);
 								// extract png data in base64
-								let png_data = message.text.replace("data:image/png;base64,","");
+								let png_data = message.text.replace("data:image/png;base64,", "");
 								// decode base64 string and get a buffer/uint8arr
 								let buf = Buffer.from(png_data, 'base64');
 								// save the file
@@ -363,10 +363,10 @@ class PlotPanel {
 									`image saved to ${iu.fsPath}`
 								);
 								return;
-							case 'svg': 
+							case 'svg':
 								let sfu = vscode.Uri.file(message.folder);
 								// absolute path to the file we want to save
-								let siu = vscode.Uri.joinPath(sfu,`${message.title}.svg`);
+								let siu = vscode.Uri.joinPath(sfu, `${message.title}.svg`);
 								// extract svg data which is already decoded to a string
 								var svg_dec = decodeURIComponent(message.text);
 								// remove identifer?
@@ -379,7 +379,7 @@ class PlotPanel {
 								vscode.window.showInformationMessage(
 									`image saved to ${siu.fsPath}`
 								);
-								return;	
+								return;
 						}
 				}
 			},
@@ -388,7 +388,7 @@ class PlotPanel {
 		);
 		// initial html	
 		this._setup();
-	} 
+	}
 
 	// /**
 	//  * @param {vscode.WebviewPanel} panel 
@@ -407,7 +407,7 @@ class PlotPanel {
 
 		// get webview to pass to set_html functions
 		const webview = this._panel.webview;
-		
+
 		// Local path to main script run in the webview
 		const scriptPathOnDisk = vscode.Uri.joinPath(PlotPanel._extensionUri, 'media', 'main.js');
 		// And the uri we use to load this script in the webview
@@ -471,7 +471,7 @@ class PlotPanel {
 	 * @param {vscode.Webview} webview 
 	 */
 	_set_gml_html(webview) {
-		
+
 		// Local path to css styles
 		// const styleResetPath = vscode.Uri.joinPath(this._extensionUri, 'media', 'reset.css');
 		const stylesPathMainPath = vscode.Uri.joinPath(PlotPanel._extensionUri, 'media', 'main.css');
@@ -479,7 +479,7 @@ class PlotPanel {
 		// Uri to load styles into webview
 		//const stylesResetUri = webview.asWebviewUri(styleResetPath);
 		const stylesMainUri = webview.asWebviewUri(stylesPathMainPath);
-		
+
 		// Finally set the HTML
 		webview.html = `<!DOCTYPE html>
 			<html lang="en">
@@ -492,7 +492,6 @@ class PlotPanel {
 				<meta http-equiv="Content-Security-Policy" style-src ${webview.cspSource}; script-src 'nonce-${this._nonce}';>
 				<meta name="viewport" content="width=device-width, initial-scale=1.0">
 				<link href="${this.stylesMainUri}" rel="stylesheet">
-				<title>GML viewer</title>
 			</head>
 			<body>
 				<div id="page_title" style="display: none;">${this._name}_${this._ext}</div>
@@ -520,8 +519,8 @@ class PlotPanel {
 			context: 'data',
 			data: this._load_gml(this._text)
 		});
-	 }
-	
+	}
+
 	/**
 	 * 
 	 * 
@@ -537,7 +536,7 @@ class PlotPanel {
 		});
 	}
 
-	
+
 	/**
 	 * 
 	 * @param {String} text 
@@ -551,7 +550,7 @@ class PlotPanel {
 	 * 
 	 * @param {vscode.Webview} webview 
 	 */
-	_set_plot_html(webview) {		
+	_set_plot_html(webview) {
 		// Finally set the HTML
 		webview.html = `<!DOCTYPE html>
 			<html lang="en">
@@ -564,12 +563,11 @@ class PlotPanel {
 				<meta http-equiv="Content-Security-Policy" style-src ${webview.cspSource}; script-src 'nonce-${this._nonce}';>
 				<meta name="viewport" content="width=device-width, initial-scale=1.0">
 				<link href="${this.stylesMainUri}" rel="stylesheet">
-				<title>Plotly viewer</title>
 			</head>
 			<body>
 				<div id="page_title" style="display: none;">${this._name}_${this._ext}</div>
 				<div id="folder" style="display: none;">${PlotPanel.get_current_folder()}</div>
-				<div id="plot"></div>
+				<div id="plot"></div>	
 				<script nonce="${this._nonce}" src="${this.jqUri}" type="text/javascript"></script>
 				<script nonce="${this._nonce}" src="${this.plotlyUri}" type="text/javascript"></script>
 				<script nonce="${this._nonce}" src="${this.scriptUri}" type="text/javascript"></script>
@@ -578,17 +576,8 @@ class PlotPanel {
 		// now we'll parse the editor text and turn it into a 
 		// data format we can pass along to the webview that's open
 		if (this._data == undefined) {
-			this._data =  this.parse_dat(this._text);
-		} 
-
-		// setTimeout(() => {
-		// 	webview.postMessage({
-		// 		command: 'plot',
-		// 		context: 'data',
-		// 		names: this._data[0],
-		// 		data: this._data[1]
-		// 	});
-		// }, 1000);
+			this._data = this.parse_dat(this._text);
+		}
 	}
 
 	/**
@@ -597,7 +586,7 @@ class PlotPanel {
 	 */
 	parse_dat(text) {
 		// we want to split the newlines
-		let lines = text.split(/([\n\r])/).filter( e => e.trim().length > 0 );
+		let lines = text.split(/([\n\r])/).filter(e => e.trim().length > 0);
 		// and we want to split by the whitespace and remove 
 		// any element that's pure whitespace so we are left with 
 		// just the numbers
@@ -609,12 +598,12 @@ class PlotPanel {
 		// we now will take each column and return the data for each 
 		// name such that name[0] and data[0] is the name of the x
 		// axis and name[1:] and data[1:] are the rest 
-		let names = splt_lines[0].slice(1,splt_lines[0].length);
-		let data = splt_lines.slice(1,splt_lines.length);
-		data = 	data[0].map(
-			(_,colIndex) => data.map(row => row[colIndex])
+		let names = splt_lines[0].slice(1, splt_lines[0].length);
+		let data = splt_lines.slice(1, splt_lines.length);
+		data = data[0].map(
+			(_, colIndex) => data.map(row => row[colIndex])
 		);
-		return [names,data];
+		return [names, data];
 	}
 
 	dispose() {
@@ -677,12 +666,12 @@ class PlotPanel {
 		}
 		// TODO: this is a hack to find basename, find where
 		// the real basename function is that works with URIs
-		let li_u = fpath.lastIndexOf('/')+1;
-		let li_w = fpath.lastIndexOf('\\')+1;
-		let li_f = Math.max(li_u,li_w);
-		let folder = fpath.substring(0,li_f);
+		let li_u = fpath.lastIndexOf('/') + 1;
+		let li_w = fpath.lastIndexOf('\\') + 1;
+		let li_f = Math.max(li_u, li_w);
+		let folder = fpath.substring(0, li_f);
 		let name = fpath.substring(li_f);
-		let fname = name.replace("."+extension, "");
+		let fname = name.replace("." + extension, "");
 		// add to our lists
 		PlotPanel.extensions.push(extension);
 		PlotPanel.viewTitles.push(title);
@@ -694,9 +683,10 @@ class PlotPanel {
 			PlotPanel.viewType,
 			PlotPanel.get_current_title(),
 			column || vscode.ViewColumn.Active,
-			{ enableScripts: true, 
-			  localResourceRoots: [vscode.Uri.joinPath(extensionUri, 'media')],
-			  retainContextWhenHidden: true
+			{
+				enableScripts: true,
+				localResourceRoots: [vscode.Uri.joinPath(extensionUri, 'media')],
+				retainContextWhenHidden: true
 			}
 		);
 		// get current text
@@ -720,7 +710,7 @@ function get_nonce() {
 exports.activate = activate;
 
 // this method is called when your extension is deactivated
-function deactivate() {}
+function deactivate() { }
 
 module.exports = {
 	activate,

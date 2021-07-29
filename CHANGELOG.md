@@ -95,3 +95,6 @@ Changed plotting so that webview sends a message to VS Code when ready and VS Co
 
 - 0.5.6
 LICENSE added, minor plotly plot changes and minor snippet changes.
+
+- 0.5.7
+Minor changes to how bionetgen runs, by default it saves a log file under the run now. 
