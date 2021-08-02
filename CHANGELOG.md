@@ -98,3 +98,6 @@ LICENSE added, minor plotly plot changes and minor snippet changes.
 
 - 0.5.7
 Minor changes to how bionetgen runs, by default it saves a log file under the run now. 
+
+- 0.5.8
+Adding configuration options to BNGL plotting
