@@ -24,25 +24,6 @@ function activate(context) {
 	// TODO: Re-write this as TypeScript and use the compiler instead
 	// This line of code will only be executed once when your extension is activated
 
-	// leaving this here in case we need to do something to the terminal
-	// that is  OS specific in the future
-	// let term = vscode.window.terminals.find(i => i.name == "bngl_term");
-	// if (term == undefined) {
-	// 	// you can get the OS via os.platform(). Options are:
-	// 	// linux/win32/darwin
-	// 	let plt = os.platform();
-	// 	if (plt.toString() == "win32") {
-	// 		term = vscode.window.createTerminal("bngl_term");
-	// 	} else if (plt.toString() == "linux") {
-	// 		term = vscode.window.createTerminal("bngl_term");
-	// 	} else if (plt.toString() == "darwin") {
-	// 		term = vscode.window.createTerminal("bngl_term");
-	// 	} else {
-	// 		vscode.window.showInformationMessage(`OS ${plt} is not supported, using default terminal options`);
-	// 		term = vscode.window.createTerminal("bngl_term");
-	// 	}
-	// }
-
 	// function that deals with running bngl files
 	function runCommandHandler() {
 		// first we try to grab our terminal and create one if it doesn't exist
@@ -287,6 +268,8 @@ class PlotPanel {
 	_nonce;
 	/** @type {vscode.TextDocument} */
 	_document;
+	// /** @type {} */
+	_config
 	/** @type {vscode.Uri} */
 	scriptUri;
 	/** @type {vscode.Uri} */
@@ -300,6 +283,7 @@ class PlotPanel {
 	/** @type {vscode.Uri} */
 	stylesMainUri
 
+
 	/**
 	 * Tracks plot panel
 	 * @param {vscode.WebviewPanel} panel
@@ -307,6 +291,8 @@ class PlotPanel {
 	 * @param {String} text
 	 */
 	constructor(panel, extension, text) {
+		// get config
+		this._config = vscode.workspace.getConfiguration("bngl");
 		// set our stuff
 		this._panel = panel;
 		this._ext = extension;
@@ -532,7 +518,9 @@ class PlotPanel {
 			command: 'plot',
 			context: 'data',
 			names: this._data[0],
-			data: this._data[1]
+			data: this._data[1],
+			legend: this._config.plotting.legend,
+			max_series: this._config.plotting.max_series_count,
 		});
 	}
 

@@ -166,6 +166,22 @@
             "lint": "eslint .",
             "pretest": "npm run lint",
             "test": "node ./test/runTest.js"
+        },
+        "configuration": {
+            "title": "BioNetGen",
+            "properties": {
+                "bngl.plotting.legend": {
+                    "markdownDescription": "To plot the legend or not with built-in plotting",
+                    "type": "boolean",
+                    "default": true
+                },
+                "bngl.plotting.max_series_count": {
+                    "markdownDescription": "The number of maximum time series to plot.",
+                    "type": "number",
+                    "default": 10,
+                    "minimum": 1
+                }
+            }
         }
     }
 }

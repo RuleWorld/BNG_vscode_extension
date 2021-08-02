@@ -21,6 +21,9 @@
                     if (i == 0) {
                         continue;
                     }
+                    if (i > message.max_series) {
+                        break;
+                    }
                     let this_data = {
                         x: message.data[0],
                         y: message.data[i],
@@ -28,10 +31,7 @@
                     }
                     plot_data.push(this_data);
                 }
-                let legend_status = true;
-                // if (plot_data.length < 21) {
-                //     legend_status = true
-                // }
+                let legend_status = message.legend;
                 let plot_options = {
                     showlegend: legend_status,
                     hovermode: 'closest',
