@@ -33,32 +33,22 @@
                 }
                 let legend_status = message.legend;
                 let legend_buttons = [{
-                    method: 'relayout',
-                    args: ['showlegend', true],
-                    label: 'legend on'
-                },
-                {
-                    method: 'relayout',
-                    args: ['showlegend', false],
-                    label: 'legend off'
-                }]
+                        method: 'relayout',
+                        args: ['showlegend', true],
+                        label: 'legend on'
+                    },
+                    {
+                        method: 'relayout',
+                        args: ['showlegend', false],
+                        label: 'legend off'
+                    }
+                ]
                 if (!legend_status) {
                     legend_buttons.reverse()
                 }
-                let plot_options = {
-                    showlegend: legend_status,
-                    hovermode: 'closest',
-                    margin: { t: 0 },
-                    autosize: true,
-                    xaxis: { title: message.names[0] },
-                    yaxis: { title: 'concentration' },
-                    legend: {
-                        y: 0.1,
-                        font: {
-                            size: 12
-                        }
-                    },
-                    updatemenus: [{
+                let updatemenus_list = [];
+                if (message.menus) {
+                    updatemenus_list = [{
                         pad: { 'r': 10, 't': 10 },
                         showactive: true,
                         yanchor: 'top',
@@ -125,12 +115,27 @@
                             args: ['yaxis.type', 'log'],
                             label: 'logy'
                         }]
-                    }],
+                    }]
+                }
+                let plot_options = {
+                    showlegend: legend_status,
+                    hovermode: 'closest',
+                    margin: { t: 0 },
+                    autosize: true,
+                    xaxis: { title: message.names[0] },
+                    yaxis: { title: 'concentration' },
+                    legend: {
+                        y: 0.1,
+                        font: {
+                            size: 12
+                        }
+                    },
+                    updatemenus: updatemenus_list,
                 };
                 let config = {
                     modeBarButtonsToAdd: [
                         {
-                            name: 'png',
+                            name: 'save png',
                             icon: Plotly.Icons.camera,
                             click: function (gd) {
                                 let img = Plotly.toImage(gd, {
@@ -151,7 +156,7 @@
                             }
                         },
                         {
-                            name: 'svg',
+                            name: 'save svg',
                             icon: Plotly.Icons.camera,
                             click: function (gd) {
                                 let img = Plotly.toImage(gd, {

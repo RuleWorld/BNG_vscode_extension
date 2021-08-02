@@ -521,6 +521,7 @@ class PlotPanel {
 			data: this._data[1],
 			legend: this._config.plotting.legend,
 			max_series: this._config.plotting.max_series_count,
+			menus: this._config.plotting.menus,
 		});
 	}
 

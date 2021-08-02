@@ -180,6 +180,11 @@
                     "type": "number",
                     "default": 10,
                     "minimum": 1
+                },
+                "bngl.plotting.menus": {
+                    "markdownDescription": "Enable or disable menus",
+                    "type": "boolean",
+                    "default": true
                 }
             }
         }
