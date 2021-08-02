@@ -101,3 +101,6 @@ Minor changes to how bionetgen runs, by default it saves a log file under the ru
 
 - 0.5.8
 Adding configuration options to BNGL plotting
+
+- 0.5.9
+Additional plotting settings for configurations. Plot line series selection now preserves color ordering. 
