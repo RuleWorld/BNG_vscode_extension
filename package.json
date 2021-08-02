@@ -182,7 +182,7 @@
                     "minimum": 1
                 },
                 "bngl.plotting.menus": {
-                    "markdownDescription": "Enable or disable menus",
+                    "markdownDescription": "Enable or disable plotly menus",
                     "type": "boolean",
                     "default": true
                 }

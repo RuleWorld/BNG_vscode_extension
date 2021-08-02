@@ -9,6 +9,10 @@
     const page_title = document.getElementById('page_title').innerText;
     const page_folder = document.getElementById('folder').innerText;
 
+    const def_colors = ["#1f77b4", "#ff7f0e", "#2ca02c", "#d62728", "#9467bd", 
+                        "#8c564b", "#e377c2", "#7f7f7f", "#bcbd22", "#17becf"];
+    const clr_cnt = def_colors.length;
+
     // Handle messages sent from the extension to the webview
     window.addEventListener('message', event => {
         const message = event.data; // The json data that the extension sent
@@ -16,6 +20,7 @@
             case 'plot':
                 // message.data will contain the data
                 // message.names will contain the names of time series
+                let colors = []
                 let plot_data = [];
                 for (let i = 0; i < message.names.length; i++) {
                     if (i == 0) {
@@ -30,6 +35,7 @@
                         name: message.names[i]
                     }
                     plot_data.push(this_data);
+                    colors.push(def_colors[(i-1)%clr_cnt]);
                 }
                 let legend_status = message.legend;
                 let legend_buttons = [{
@@ -190,12 +196,21 @@
                         Plotly.restyle(plot, {
                             visible: false
                         });
+                        // gotta recolor 
+                        let new_colors = []
+                        for (let i = 0; i < curve_set.size; i++) {
+                            new_colors.push(colors[curve_set[i]])
+                        }
                         Plotly.restyle(plot, {
-                            visible: true
+                            visible: true,
+                            'line.color': new_colors,
+                            'marker.color': new_colors
                         }, Array.from(curve_set));
                     } else if (curve_set.size == 0) {
                         Plotly.restyle(plot, {
-                            visible: true
+                            visible: true,
+                            'line.color': colors,
+                            'marker.color': colors
                         });
                     }
                 });
