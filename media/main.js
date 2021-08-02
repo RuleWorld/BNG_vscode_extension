@@ -32,6 +32,19 @@
                     plot_data.push(this_data);
                 }
                 let legend_status = message.legend;
+                let legend_buttons = [{
+                    method: 'relayout',
+                    args: ['showlegend', true],
+                    label: 'legend on'
+                },
+                {
+                    method: 'relayout',
+                    args: ['showlegend', false],
+                    label: 'legend off'
+                }]
+                if (!legend_status) {
+                    legend_buttons.reverse()
+                }
                 let plot_options = {
                     showlegend: legend_status,
                     hovermode: 'closest',
@@ -52,16 +65,7 @@
                         xanchor: "left",
                         y: 1.18,
                         x: 0.1,
-                        buttons: [{
-                            method: 'relayout',
-                            args: ['showlegend', true],
-                            label: 'legend on'
-                        },
-                        {
-                            method: 'relayout',
-                            args: ['showlegend', false],
-                            label: 'legend off'
-                        }]
+                        buttons: legend_buttons
                     },
                     {
                         pad: { 'r': 10, 't': 10 },
