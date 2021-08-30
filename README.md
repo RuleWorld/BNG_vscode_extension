@@ -30,10 +30,14 @@ For other ways to install, check out the [installation guide](docs/install.md).
 
 Tips: 
 
+* Make sure to select a folder when opening up your model, currently that's how BNG extension knows where to save your results. 
 * For correct highlighting, please make sure ```dark-bngl``` theme is selected, you can see how to change themes [here](https://code.visualstudio.com/docs/getstarted/themes#_selecting-the-color-theme)
 * If suggestions disappear for snippets, you can press ```CTRL/CMD + space``` to show suggestions again
 
 ## Known Issues
+
+General issues
+* Need a `default results` folder to save results in case a folder wasn't selected before opening up a `bngl` file. 
 
 Highlighting issues
 * Using line breaks disrupt syntax highlighting

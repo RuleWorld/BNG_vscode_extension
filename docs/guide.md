@@ -18,6 +18,8 @@ If you notice that there is no highlighting on certain parts of the model or if 
 
 ### Running a model
 
+Important, for the extension to know where to write the results, you MUST open a folder with VS Code. The extension will use the folder selected as the place to put the results. This will change in future releases (current version: 0.5.9)
+
 Once you finished writing the model, you can try running it. For the run button to work, the default terminal window VS Code opens should have access to [Perl](https://www.perl.org/), [Python3](https://www.python.org/) (preferably [anaconda python](https://docs.anaconda.com/anaconda/)) and the [PyBioNetGen library](https://pypi.org/project/bionetgen/). See [here](https://github.com/RuleWorld/PyBioNetGen) for more instructions on how to install the library. You can test if you have the library correctly installed by [opening a new terminal](https://code.visualstudio.com/docs/editor/integrated-terminal#_terminal-keybindings) and running ```bionetgen -h```. 
 
 Once you press the run button (or use the shortcut ```CTRL/CMD+SHIFT+F1```), the extension should create a new folder with the same name as the model. A time stamped folder will also be created and the current model will be copied under there and the extension will use the terminal and the [PyBioNetGen library](https://pypi.org/project/bionetgen/) to run the model. Once the run completes, if the run created a ```.gdat``` file, it should open automatically.
