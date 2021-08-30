@@ -22,7 +22,12 @@ copyright = '2021, Ali Sinan Saglam'
 author = 'Ali Sinan Saglam'
 
 # The full version, including alpha/beta/rc tags
-release = '0.4.0'
+# let's pull from the package file
+import json, os
+json_path = os.path.join(*["..","..","package.json"])
+with open(json_path, "r") as f:
+    pdict = json.load(f)
+release = pdict["version"]
 
 
 # -- General configuration ---------------------------------------------------
