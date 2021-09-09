@@ -88,7 +88,8 @@ function activate(context) {
 			});
 		});
 		// set the terminal command we want to run
-		let term_cmd = `bionetgen run -i "${copy_path.fsPath}" -o "${new_fold_uri.fsPath}" -l "${new_fold_uri.fsPath}"`;
+		let PYBNG_VERSION = "0.4.5"
+		let term_cmd = `bionetgen -req "${PYBNG_VERSION}" run -i "${copy_path.fsPath}" -o "${new_fold_uri.fsPath}" -l "${new_fold_uri.fsPath}"`;
 		// focus on the terminal and run the command
 		term.show();
 		term.sendText(term_cmd);
@@ -112,11 +113,12 @@ function activate(context) {
 		// set the path to be copied to
 		let outpath = fpath.replace(fname, `${fname_noext}_${ext}.png`);
 		// set the terminal command we want to run
+		let PYBNG_VERSION = "0.4.5"
 		let term_cmd;
 		if (ext == "gdat" || ext == "scan") {
-			term_cmd = `bionetgen plot -i "${fpath}" -o "${outpath}" --legend`;
+			term_cmd = `bionetgen -req "${PYBNG_VERSION}" plot -i "${fpath}" -o "${outpath}" --legend`;
 		} else {
-			term_cmd = `bionetgen plot -i "${fpath}" -o "${outpath}"`;
+			term_cmd = `bionetgen -req "${PYBNG_VERSION}" plot -i "${fpath}" -o "${outpath}"`;
 		}
 		// focus on the terminal and run the command
 		term.show();

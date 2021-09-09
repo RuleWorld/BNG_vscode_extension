@@ -104,3 +104,6 @@ Adding configuration options to BNGL plotting
 
 - 0.5.9
 Additional plotting settings for configurations. Plot line series selection now preserves color ordering. 
+
+- 0.6.0
+Updating bionetgen commands with the -req keyword to keep the user informed on their bionetgen version. 
