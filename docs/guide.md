@@ -35,3 +35,9 @@ Once you have some ```gdat/cdat/scan``` files to look at, you can open one and y
 The blue button on the left should open a new window with an interactive plot (thanks to [plotly.js](https://plotly.com/javascript/)). You can also use the ```CTRL/CMD+SHIFT+F1``` shortcut. The plotly window also allows you to save the image as a png as well as a svg file and has [interactive features](https://plotly.com/javascript/). You can also change the plotting type to markers or lines+markers and use one of the selection tools to sub-select time series. If you select a region on the plot with no data points, every time series in the original dataset will be shown again.
 
 <img src=https://raw.githubusercontent.com/RuleWorld/BNG_vscode_extension/main/assets/plotting.gif>
+
+### Visualization
+
+You can also click on the visualize button that can be found to the left of the run button. This will generate all possible visualizations that's available to BioNetGen in a separate folder as GraphML files. These files are designed to be used in conjunction with [yEd](https://www.yworks.com/products/yed). If you have yEd installed, you can associate yEd with GraphML files in your OS ([example for windows 10](https://support.microsoft.com/en-us/windows/change-default-programs-in-windows-10-e5d82cad-17d1-c53b-3505-f10a32e1894d)). If you also install the [open in external app extension for VS Code](https://marketplace.visualstudio.com/items?itemName=YuTengjing.open-in-external-app) you can right click the GraphML files and click on `Open in externall App` to open the graph in yEd.
+
+<img src=https://raw.githubusercontent.com/RuleWorld/BNG_vscode_extension/main/assets/visualize.gif>
