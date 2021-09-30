@@ -107,3 +107,6 @@ Additional plotting settings for configurations. Plot line series selection now 
 
 - 0.6.0
 Updating bionetgen commands with the -req keyword to keep the user informed on their bionetgen version. 
+
+- 0.6.1
+Added a visualize button that runs `bionetgen visualize -i file.bngl -t all` on the file. BioNetGen requirement bumped up to 0.4.9. Updated documentation to showcase how to use yEd in conjunction with the extension for graph visualization. 

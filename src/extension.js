@@ -24,6 +24,8 @@ function activate(context) {
 	// TODO: Re-write this as TypeScript and use the compiler instead
 	// This line of code will only be executed once when your extension is activated
 
+	let PYBNG_VERSION = "0.5.0"
+
 	// function that deals with running bngl files
 	function runCommandHandler() {
 		// first we try to grab our terminal and create one if it doesn't exist
@@ -88,13 +90,55 @@ function activate(context) {
 			});
 		});
 		// set the terminal command we want to run
-		let PYBNG_VERSION = "0.4.5"
 		let term_cmd = `bionetgen -req "${PYBNG_VERSION}" run -i "${copy_path.fsPath}" -o "${new_fold_uri.fsPath}" -l "${new_fold_uri.fsPath}"`;
 		// focus on the terminal and run the command
 		term.show();
 		term.sendText(term_cmd);
 		// Started running, let the user know
 		vscode.window.showInformationMessage(`Started running ${fname} in folder ${fname_noext}/${fold_name}`);
+	}
+	// function that deals with visualizing bngl files
+	function vizCommandHandler() {
+		// first we try to grab our terminal and create one if it doesn't exist
+		let term = vscode.window.terminals.find(i => i.name == "bngl_term");
+		if (term == undefined) {
+			term = vscode.window.createTerminal("bngl_term");
+		}
+		// next we make a folder friendly time stamp
+		const date = new Date();
+		const year = date.getFullYear();
+		const month = `${date.getMonth() + 1}`.padStart(2, '0');
+		const day = `${date.getDate()}`.padStart(2, '0');
+		const seconds = `${date.getSeconds()}`.padStart(2, '0');
+		const fold_name = `${year}_${month}_${day}__${date.getHours()}_${date.getMinutes()}_${seconds}`
+		// Get workspace URI
+		let curr_workspace_uri = vscode.workspace.getWorkspaceFolder(vscode.window.activeTextEditor.document.uri).uri;
+		// find basename of the file we are working with
+		let fname = vscode.window.activeTextEditor.document.fileName;
+		// get base name
+		fname = path.basename(fname);
+		// remove extension
+		// TODO: Do a check here to make sure extension exists
+		let fname_noext = fname.replace(".bngl", "");
+		// Get folder URI to make the new folder
+		let new_fold_uri = vscode.Uri.joinPath(curr_workspace_uri, fname_noext, fold_name);
+		// get current file path
+		let curr_doc_uri = vscode.window.activeTextEditor.document.uri;
+		// set the path to be copied to
+		let copy_path = vscode.Uri.joinPath(new_fold_uri, fname);
+		// Create new directory and copy the file into our new folder
+		// FIXME: if a file of the same name as the folder exists
+		// this command fails to run. At least let the user know
+		vscode.workspace.fs.createDirectory(new_fold_uri).then(() => {
+			vscode.workspace.fs.copy(curr_doc_uri, copy_path);
+		});
+		// set the terminal command we want to run
+		let term_cmd = `bionetgen -req "${PYBNG_VERSION}" visualize -i "${copy_path.fsPath}" -o "${new_fold_uri.fsPath}" -t "all"`;
+		// focus on the terminal and run the command
+		term.show();
+		term.sendText(term_cmd);
+		// Started running, let the user know
+		vscode.window.showInformationMessage(`Started visualizing ${fname} in folder ${fname_noext}/${fold_name}`);
 	}
 	// one function for plotting gdat/cdat/scan files
 	function plotDatCommandHandler() {
@@ -113,7 +157,6 @@ function activate(context) {
 		// set the path to be copied to
 		let outpath = fpath.replace(fname, `${fname_noext}_${ext}.png`);
 		// set the terminal command we want to run
-		let PYBNG_VERSION = "0.4.5"
 		let term_cmd;
 		if (ext == "gdat" || ext == "scan") {
 			term_cmd = `bionetgen -req "${PYBNG_VERSION}" plot -i "${fpath}" -o "${outpath}" --legend`;
@@ -137,6 +180,7 @@ function activate(context) {
 	}
 	// names of the commands we want to register
 	const runCommandName = 'bng.run_bngl';
+	const vizCommandName = 'bng.run_viz';
 	const plotDatCommandName = 'bng.plot_dat';
 	const webviewCommandName = 'bng.webview';
 	// The command has been defined in the package.json file
@@ -144,12 +188,15 @@ function activate(context) {
 	// The commandId parameter must match the command field in package.json
 	let disposable1 = vscode.commands.registerCommand(runCommandName, runCommandHandler);
 	context.subscriptions.push(disposable1);
-	// these are the plotting commands for gdat/cdat/scan files
-	let disposable2 = vscode.commands.registerCommand(plotDatCommandName, plotDatCommandHandler);
+	// this is the command to visualize 
+	let disposable2 = vscode.commands.registerCommand(vizCommandName, vizCommandHandler);
 	context.subscriptions.push(disposable2);
-	// this one generates the webview panel for built-in plotting
-	let disposable3 = vscode.commands.registerCommand(webviewCommandName, () => { PlotPanel.create(context.extensionUri) });
+	// these are the plotting commands for gdat/cdat/scan files
+	let disposable3 = vscode.commands.registerCommand(plotDatCommandName, plotDatCommandHandler);
 	context.subscriptions.push(disposable3);
+	// this one generates the webview panel for built-in plotting
+	let disposable4 = vscode.commands.registerCommand(webviewCommandName, () => { PlotPanel.create(context.extensionUri) });
+	context.subscriptions.push(disposable4);
 	// TODO make this work
 	// resurrect webview 
 	// if (vscode.window.registerWebviewPanelSerializer) {

@@ -12,7 +12,7 @@
     "name": "bngl",
     "displayName": "BioNetGen Language",
     "description": "BNG language extension for vscode",
-    "version": "0.6.0",
+    "version": "0.6.1",
     "engines": {
         "vscode": "^1.52.0"
     },
@@ -82,6 +82,14 @@
                 }
             },
             {
+                "command": "bng.run_viz",
+                "title": "Make model visualizations",
+                "icon": {
+                    "dark": "./assets/network.svg",
+                    "light": "./assets/network.svg"
+                }
+            },
+            {
                 "command": "bng.webview",
                 "title": "Built-in plotting",
                 "icon": {
@@ -97,6 +105,12 @@
                     "group": "navigation",
                     "title": "Run BNG",
                     "command": "bng.run_bngl"
+                },
+                {
+                    "when": "resourceLangId == bngl && resourceExtname == .bngl",
+                    "group": "navigation",
+                    "title": "Run visualization",
+                    "command": "bng.run_viz"
                 },
                 {
                     "when": "resourceLangId == bngl && resourceExtname == .gdat",
@@ -147,6 +161,12 @@
                 "command": "bng.run_bngl",
                 "key": "ctrl+shift+f1",
                 "mac": "cmd+shift+f1",
+                "when": "resourceLangId == bngl && resourceExtname == .bngl"
+            },
+            {
+                "command": "bng.run_viz",
+                "key": "ctrl+shift+f2",
+                "mac": "cmd+shift+f2",
                 "when": "resourceLangId == bngl && resourceExtname == .bngl"
             },
             {
