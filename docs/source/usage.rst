@@ -81,3 +81,16 @@ select a region on the plot with no data points, every time series in the origin
 be shown again.
 
 .. image:: ../../assets/plotting.gif
+
+Visualization
+=============
+
+You can also click on the visualize button that can be found to the left of the run button. 
+This will generate all possible visualizations that's available to BioNetGen in a separate folder as GraphML files. 
+These files are designed to be used in conjunction with `yEd <https://www.yworks.com/products/yed>`_. 
+If you have yEd installed, you can associate yEd with GraphML files in your OS 
+(`example for windows 10 <https://support.microsoft.com/en-us/windows/change-default-programs-in-windows-10-e5d82cad-17d1-c53b-3505-f10a32e1894d>`_). 
+If you also install the `open in external app extension for VS Code <https://marketplace.visualstudio.com/items?itemName=YuTengjing.open-in-external-app>`_
+you can right click the GraphML files and click on `Open in externall App` to open the graph in yEd.
+
+.. image:: ../../assets/visualize.gif
