@@ -110,3 +110,6 @@ Updating bionetgen commands with the -req keyword to keep the user informed on t
 
 - 0.6.1
 Added a visualize button that runs `bionetgen visualize -i file.bngl -t all` on the file. BioNetGen requirement bumped up to 0.4.9. Updated documentation to showcase how to use yEd in conjunction with the extension for graph visualization. 
+
+- 0.6.2
+Added two new configuration options 1) turn on and off automated gdat opening (bngl.general.auto_open) 2) selection of a folder for model run results, to be used as a fallback in case workspace is not set (bngl.general.result_folder)

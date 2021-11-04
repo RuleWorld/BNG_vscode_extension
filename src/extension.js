@@ -40,12 +40,27 @@ function activate(context) {
 		const day = `${date.getDate()}`.padStart(2, '0');
 		const seconds = `${date.getSeconds()}`.padStart(2, '0');
 		const fold_name = `${year}_${month}_${day}__${date.getHours()}_${date.getMinutes()}_${seconds}`
+		// pull configuration
+		var config = vscode.workspace.getConfiguration("bngl");
 		// Get workspace URI
-		let curr_workspace_uri = vscode.workspace.getWorkspaceFolder(vscode.window.activeTextEditor.document.uri).uri;
+		let curr_workspace = vscode.workspace.getWorkspaceFolder(vscode.window.activeTextEditor.document.uri);
 		// find basename of the file we are working with
 		let fname = vscode.window.activeTextEditor.document.fileName;
 		// get base name
 		fname = path.basename(fname);
+		// let's check if the workspace folder exists to begin with
+		if (curr_workspace == undefined) { 
+			let def_folder = config.general.result_folder;
+			if (def_folder != null) {
+				// Gets the folder defined in configuration
+				var curr_workspace_uri = vscode.Uri.file(def_folder);
+			} else {
+				// Gets the folder the file is in and uses that for results
+				var curr_workspace_uri = vscode.Uri.file(vscode.window.activeTextEditor.document.uri.fsPath.replace(fname, ""));
+			}
+		} else {
+			var curr_workspace_uri = curr_workspace.uri;
+		}
 		// remove extension
 		// TODO: Do a check here to make sure extension exists
 		let fname_noext = fname.replace(".bngl", "");
@@ -58,37 +73,43 @@ function activate(context) {
 		// Create new directory and copy the file into our new folder
 		// FIXME: if a file of the same name as the folder exists
 		// this command fails to run. At least let the user know
-		vscode.workspace.fs.createDirectory(new_fold_uri).then(() => {
-			vscode.workspace.fs.copy(curr_doc_uri, copy_path).then(() => {
-				// start a watcher
-				// for now let's only check for model_name.gdat
-				let timeout_mili = 120000;
-				checkGdat(new_fold_uri.fsPath, timeout_mili).then(() => {
-					// we have a gdat in our folder, grab one and open
-					var files = fs.readdirSync(new_fold_uri.fsPath);
-					var outGdatPath;
-					for (var i = 0; i < files.length; i++) {
-						let ext = files[i].split(".").pop();
-						if (ext == "gdat") {
-							outGdatPath = path.join(new_fold_uri.fsPath, files[i]);
-							break
+		if (config.general.auto_open) {
+			vscode.workspace.fs.createDirectory(new_fold_uri).then(() => {
+				vscode.workspace.fs.copy(curr_doc_uri, copy_path).then(() => {
+					// start a watcher
+					// for now let's only check for model_name.gdat
+					let timeout_mili = 120000;
+					checkGdat(new_fold_uri.fsPath, timeout_mili).then(() => {
+						// we have a gdat in our folder, grab one and open
+						var files = fs.readdirSync(new_fold_uri.fsPath);
+						var outGdatPath;
+						for (var i = 0; i < files.length; i++) {
+							let ext = files[i].split(".").pop();
+							if (ext == "gdat") {
+								outGdatPath = path.join(new_fold_uri.fsPath, files[i]);
+								break
+							}
 						}
+						let outGdatUri = vscode.Uri.file(outGdatPath);
+						vscode.commands.executeCommand('vscode.open', outGdatUri);
+						// .then(() => {
+						// // FIXME: find a way to check for the main process and open
+						// // after because this opens too quickly/set delay won't work
+						// setTimeout(() => {
+						// 	PlotPanel.create(context.extensionUri);
+						// }, 3000);
+						// });
+					}).catch(() => {
+						vscode.window.showInformationMessage(`Couldn't find a gdat in ${timeout_mili} miliseconds`);
 					}
-					let outGdatUri = vscode.Uri.file(outGdatPath);
-					vscode.commands.executeCommand('vscode.open', outGdatUri);
-					// .then(() => {
-					// // FIXME: find a way to check for the main process and open
-					// // after because this opens too quickly/set delay won't work
-					// setTimeout(() => {
-					// 	PlotPanel.create(context.extensionUri);
-					// }, 3000);
-					// });
-				}).catch(() => {
-					vscode.window.showInformationMessage(`Couldn't find a gdat in ${timeout_mili} miliseconds`);
-				}
-				);
+					);
+				});
 			});
-		});
+		} else {
+			vscode.workspace.fs.createDirectory(new_fold_uri).then(() => {
+				vscode.workspace.fs.copy(curr_doc_uri, copy_path) 
+			});
+		}
 		// set the terminal command we want to run
 		let term_cmd = `bionetgen -req "${PYBNG_VERSION}" run -i "${copy_path.fsPath}" -o "${new_fold_uri.fsPath}" -l "${new_fold_uri.fsPath}"`;
 		// focus on the terminal and run the command

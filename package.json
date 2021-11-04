@@ -12,7 +12,7 @@
     "name": "bngl",
     "displayName": "BioNetGen Language",
     "description": "BNG language extension for vscode",
-    "version": "0.6.1",
+    "version": "0.6.2",
     "engines": {
         "vscode": "^1.52.0"
     },
@@ -190,6 +190,16 @@
         "configuration": {
             "title": "BioNetGen",
             "properties": {
+                "bngl.general.auto_open": {
+                    "markdownDescription": "(WIP) Enable or disable automated opening of result files like gdat.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "bngl.general.result_folder": {
+                    "markdownDescription": "Set default folder for results in case a workspace is not open (use absolute path).",
+                    "type": ["string","null"],
+                    "default": null
+                },
                 "bngl.plotting.legend": {
                     "markdownDescription": "To plot the legend or not with built-in plotting",
                     "type": "boolean",
