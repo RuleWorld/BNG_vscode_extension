@@ -13,6 +13,8 @@ const vscode = require('vscode');
 const fs = require('fs');
 const path = require('path');
 const os = require('os');
+const { spawnAsync } = require('./spawnAsync.js');
+const { getPythonPath } = require('./getPythonPath.js');
 
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
@@ -199,11 +201,34 @@ function activate(context) {
 		}
 		);
 	}
+	// command to handle installation of bionetgen
+	// todo: figure out when/where/how to let user run setup and/or when to run automatically
+	function setupCommandHandler() {
+		// might make sense to somehow check whether user's system already
+		// satisfies requirements (ie. setup has already been done) before proceeding?
+		// if requirements are not fulfilled, should setup block other commands?
+
+		// get path to python
+		const pythonPath = getPythonPath();
+		console.log(pythonPath); // for testing only
+
+		// spawn child process to run pip install
+		// todo: write command & args properly, use pythonPath once it's correct
+		spawnAsync('python', ['-m', 'pip', 'install', 'bionetgen']);
+		// spawnAsync(pythonPath, ['-m', 'pip', 'install', 'bionetgen']);
+		// spawnAsync('pip', ['install', 'bionetgen']);
+
+		// todo: figure out how to accomodate various platforms
+		// vscode default shells: PowerShell on Windows, bash on macOS and Linux
+		// what needs to change between these?
+		// is 32/64 bit distinction important at all?
+	}
 	// names of the commands we want to register
 	const runCommandName = 'bng.run_bngl';
 	const vizCommandName = 'bng.run_viz';
 	const plotDatCommandName = 'bng.plot_dat';
 	const webviewCommandName = 'bng.webview';
+	const setupCommandName = 'bng.setup';
 	// The command has been defined in the package.json file
 	// Now provide the implementation of the command with  registerCommand
 	// The commandId parameter must match the command field in package.json
@@ -218,6 +243,9 @@ function activate(context) {
 	// this one generates the webview panel for built-in plotting
 	let disposable4 = vscode.commands.registerCommand(webviewCommandName, () => { PlotPanel.create(context.extensionUri) });
 	context.subscriptions.push(disposable4);
+	// this command handles installation of bionetgen
+	let disposable5 = vscode.commands.registerCommand(setupCommandName, setupCommandHandler);
+	context.subscriptions.push(disposable5);
 	// TODO make this work
 	// resurrect webview 
 	// if (vscode.window.registerWebviewPanelSerializer) {
@@ -765,8 +793,6 @@ function get_nonce() {
 	}
 	return text;
 }
-
-exports.activate = activate;
 
 // this method is called when your extension is deactivated
 function deactivate() { }

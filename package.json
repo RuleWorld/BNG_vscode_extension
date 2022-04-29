@@ -23,6 +23,7 @@
     ],
     "main": "./src/extension.js",
     "activationEvents": [
+        "onCommand:bng.setup",
         "onLanguage:bngl"
     ],
     "contributes": {
@@ -96,6 +97,10 @@
                     "dark": "./assets/for_plotly_dark.svg",
                     "light": "./assets/for_plotly_light.svg"
                 }
+            },
+            {
+                "command": "bng.setup",
+                "title": "BNG setup"
             }
         ],
         "menus": {
@@ -184,8 +189,9 @@
         ],
         "scripts": {
             "lint": "eslint .",
+            "compile": "tsc -p ./",
             "pretest": "npm run lint",
-            "test": "node ./test/runTest.js"
+		    "test": "node ./out/test/runTest.js"
         },
         "configuration": {
             "title": "BioNetGen",
