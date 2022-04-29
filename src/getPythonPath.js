@@ -1,3 +1,5 @@
+const vscode = require('vscode');
+
 // get path to the python interpreter to be used for installing bionetgen
 function getPythonPath() {
     // let user select a python?
@@ -27,6 +29,15 @@ function getPythonPath() {
     // path to active interpreter is supposedly kept in some internal storage
     // path can maybe be accessed through extension API? not sure how
 
+    const pythonPath = vscode.workspace.getConfiguration("python").get("pythonPath");
+    const defaultInterpreterPath = vscode.workspace.getConfiguration("python").get("defaultInterpreterPath");
+
+    if (typeof defaultInterpreterPath !== 'undefined' && defaultInterpreterPath) {
+        return defaultInterpreterPath;
+    }
+    else if (typeof pythonPath !== 'undefined' && pythonPath) {
+        return pythonPath;
+    }
 
     // ALTERNATIVE METHODS
 

@@ -214,8 +214,8 @@ function activate(context) {
 
 		// spawn child process to run pip install
 		// todo: write command & args properly, use pythonPath once it's correct
-		spawnAsync('python', ['-m', 'pip', 'install', 'bionetgen']);
-		// spawnAsync(pythonPath, ['-m', 'pip', 'install', 'bionetgen']);
+		// spawnAsync('python', ['-m', 'pip', 'install', 'bionetgen']);
+		spawnAsync(pythonPath, ['-m', 'pip', 'install', 'bionetgen']);
 		// spawnAsync('pip', ['install', 'bionetgen']);
 
 		// todo: figure out how to accomodate various platforms
