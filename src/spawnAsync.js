@@ -27,7 +27,7 @@ function spawnAsync(command, args) {
     // what exit codes to consider?
     // what messages are useful to user?
     
-    // what should be printed (sent to terminal)?
+    // what should be printed (sent to terminal) and/or shown in popup?
     // currently everything is logged to (debug) console
 
     // expose the standard output of the command (what is normally printed)

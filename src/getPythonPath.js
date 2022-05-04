@@ -1,47 +1,86 @@
+// inspired by:
+// https://github.com/microsoft/vscode-python/issues/11294
+// https://github.com/formulahendry/vscode-code-runner/blob/2bed9aeeabc1118a5f3d75e47bdbcfaf412765ed/src/utility.ts#L6
+// https://code.visualstudio.com/api/references/vscode-api
+
+// note that this relies on the structure of the python extension & its API
+// https://github.com/microsoft/vscode-python/wiki/AB-Experiments
+// https://github.com/microsoft/vscode-python/blob/main/src/client/api.ts
+// https://github.com/microsoft/vscode-python/blob/main/src/client/apiTypes.ts
+
 const vscode = require('vscode');
 
 // get path to the python interpreter to be used for installing bionetgen
 function getPythonPath() {
-    // let user select a python?
+    // package python extension with this extension? extensionDependencies?
+    // warn user that they need to set an interpreter path?
 
+    // will this break things?
+    const defaultPath = "python";
 
-    // PYTHON EXTENSION
-
-    // references:
-    // https://code.visualstudio.com/docs/python/environments#_work-with-python-interpreters
-    // https://code.visualstudio.com/docs/python/settings-reference
-    // https://github.com/microsoft/vscode-python/wiki/AB-Experiments
-    // https://github.com/microsoft/vscode-python/issues/12596
-    // https://code.visualstudio.com/api/references/vscode-api#extensions
-
-    // if we use the python extension
-    // (in which case it should probably be packaged with this extension):
-    // the python extension looks for and uses the first python
-    // interpreter it finds in the system path by default,
-    // or a user can use the Select Interpreter command to specify
-
-    // then, how to programatically get the path of the active interpreter?
-    // not immediately clear how to do this through vscode/settings.json (?)
-    // in addition, the setting python.pythonPath is deprecated
-    // and the setting python.defaultInterpreterPath
-    // is not updated if user selects a different interpreter
-    
-    // path to active interpreter is supposedly kept in some internal storage
-    // path can maybe be accessed through extension API? not sure how
-
-    const pythonPath = vscode.workspace.getConfiguration("python").get("pythonPath");
-    const defaultInterpreterPath = vscode.workspace.getConfiguration("python").get("defaultInterpreterPath");
-
-    if (typeof defaultInterpreterPath !== 'undefined' && defaultInterpreterPath) {
-        return defaultInterpreterPath;
+    const pythonExt = vscode.extensions.getExtension('ms-python.python');
+    if (typeof pythonExt === 'undefined') {
+        vscode.window.showInformationMessage("Python extension undefined");
+        return defaultPath;
     }
-    else if (typeof pythonPath !== 'undefined' && pythonPath) {
-        return pythonPath;
-    }
+	
+    const flagValue = pythonExt.packageJSON.featureFlags.usingNewInterpreterStorage;
+    // new: the path to the current workspace interpreter is kept in VS Code’s persistent storage, and
+    // there is also a python.defaultInterpreterPath setting (which does not pick up changes if user selects interpreter)
+    // old: the path to the interpreter is stored in the python.pythonPath setting
 
-    // ALTERNATIVE METHODS
+    if (flagValue) {
+        // attempt to retrieve pythonPath through API
 
-    // can use something like <where.exe python> or <which python> instead?
+        // TODO: check if python extension is active & activate if not
+
+        // is this (resource) needed? would it make more sense to get a global setting? see below
+        const doc = vscode.window.activeTextEditor.document;
+
+        // @type {{execCommand: (string[] | undefined)}}
+        // an object which contains an array of strings for the command to execute a python interpreter
+        const executionDetails = pythonExt.exports.settings.getExecutionDetails(doc.uri);
+        // when no resource is provided, the setting scoped to the first workspace folder is returned,
+        // and if no folder is present, it returns the global setting
+
+        // @type {(string[] | undefined)}
+        // undefined: empty pythonPath string; no interpreter set
+        const execCommand = executionDetails["execCommand"];
+
+        if (typeof execCommand !== 'undefined' && execCommand) {
+            // @type {string}
+            const pythonPath = execCommand.join(" ");
+
+            return pythonPath;
+        }
+        else {
+            // if pythonPath cannot be retrieved through API, attempt to retrieve defaultInterpreterPath through settings
+
+            vscode.window.showInformationMessage("pythonPath undefined, attempting to retrieve defaultInterpreterPath");
+
+            const defaultInterpreterPath = vscode.workspace.getConfiguration("python").get("defaultInterpreterPath");
+        
+            if (typeof defaultInterpreterPath !== 'undefined' && defaultInterpreterPath) {
+                return defaultInterpreterPath;
+            }
+            else {
+                vscode.window.showInformationMessage("defaultInterpreterPath undefined");
+                return defaultPath;
+            }
+        }
+	} else {
+        // attempt to retrieve pythonPath through settings
+        
+		const pythonPath = vscode.workspace.getConfiguration("python").get("pythonPath");
+
+        if (typeof pythonPath !== 'undefined' && pythonPath) {
+            return pythonPath;
+        }
+        else {
+            vscode.window.showInformationMessage("pythonPath undefined");
+            return defaultPath;
+        }
+	}
 }
 
 module.exports = {

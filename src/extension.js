@@ -209,8 +209,9 @@ function activate(context) {
 		// if requirements are not fulfilled, should setup block other commands?
 
 		// get path to python
+		// todo: check not undefined?
 		const pythonPath = getPythonPath();
-		console.log(pythonPath); // for testing only
+		vscode.window.showInformationMessage(pythonPath);
 
 		// spawn child process to run pip install
 		// todo: write command & args properly, use pythonPath once it's correct
@@ -221,7 +222,7 @@ function activate(context) {
 		// todo: figure out how to accomodate various platforms
 		// vscode default shells: PowerShell on Windows, bash on macOS and Linux
 		// what needs to change between these?
-		// is 32/64 bit distinction important at all?
+		// address this in getPythonPath
 	}
 	// names of the commands we want to register
 	const runCommandName = 'bng.run_bngl';
