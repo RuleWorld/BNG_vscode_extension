@@ -209,15 +209,16 @@ function activate(context) {
 		// if requirements are not fulfilled, should setup block other commands?
 
 		// get path to python
-		// todo: check not undefined?
-		const pythonPath = getPythonPath();
-		vscode.window.showInformationMessage(pythonPath);
+		const pythonPathPromise = getPythonPath();
+		pythonPathPromise.then((pythonPath) => {
+			vscode.window.showInformationMessage("Setting up for the following Python: " + pythonPath);
 
-		// spawn child process to run pip install
-		// todo: write command & args properly, use pythonPath once it's correct
-		// spawnAsync('python', ['-m', 'pip', 'install', 'bionetgen']);
-		spawnAsync(pythonPath, ['-m', 'pip', 'install', 'bionetgen']);
-		// spawnAsync('pip', ['install', 'bionetgen']);
+			// spawn child process to run pip install
+			spawnAsync(pythonPath, ['-m', 'pip', 'install', 'bionetgen']);
+			// upgrade?
+
+			vscode.window.showInformationMessage("Setup complete.");
+		});
 
 		// todo: figure out how to accomodate various platforms
 		// vscode default shells: PowerShell on Windows, bash on macOS and Linux

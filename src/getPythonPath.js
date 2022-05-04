@@ -11,7 +11,7 @@
 const vscode = require('vscode');
 
 // get path to the python interpreter to be used for installing bionetgen
-function getPythonPath() {
+async function getPythonPath() {
     // package python extension with this extension? extensionDependencies?
     // warn user that they need to set an interpreter path?
 
@@ -20,7 +20,7 @@ function getPythonPath() {
 
     const pythonExt = vscode.extensions.getExtension('ms-python.python');
     if (typeof pythonExt === 'undefined') {
-        vscode.window.showInformationMessage("Python extension undefined");
+        vscode.window.showInformationMessage("Python extension undefined.");
         return defaultPath;
     }
 	
@@ -32,7 +32,9 @@ function getPythonPath() {
     if (flagValue) {
         // attempt to retrieve pythonPath through API
 
-        // TODO: check if python extension is active & activate if not
+        if (!pythonExt.isActive) {
+            await pythonExt.activate();
+        }
 
         // is this (resource) needed? would it make more sense to get a global setting? see below
         const doc = vscode.window.activeTextEditor.document;
