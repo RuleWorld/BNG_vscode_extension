@@ -12,7 +12,7 @@ const vscode = require('vscode');
 
 // get path to the python interpreter to be used for installing bionetgen
 async function getPythonPath() {
-    // package python extension with this extension? extensionDependencies?
+    // todo: package python extension with this extension? extensionDependencies?
     // warn user that they need to set an interpreter path?
 
     // will this break things?
@@ -58,7 +58,7 @@ async function getPythonPath() {
         else {
             // if pythonPath cannot be retrieved through API, attempt to retrieve defaultInterpreterPath through settings
 
-            vscode.window.showInformationMessage("pythonPath undefined, attempting to retrieve defaultInterpreterPath");
+            vscode.window.showInformationMessage("pythonPath undefined, attempting to retrieve defaultInterpreterPath.");
 
             const defaultInterpreterPath = vscode.workspace.getConfiguration("python").get("defaultInterpreterPath");
         
@@ -66,7 +66,7 @@ async function getPythonPath() {
                 return defaultInterpreterPath;
             }
             else {
-                vscode.window.showInformationMessage("defaultInterpreterPath undefined");
+                vscode.window.showInformationMessage("defaultInterpreterPath undefined.");
                 return defaultPath;
             }
         }
@@ -79,7 +79,7 @@ async function getPythonPath() {
             return pythonPath;
         }
         else {
-            vscode.window.showInformationMessage("pythonPath undefined");
+            vscode.window.showInformationMessage("pythonPath undefined.");
             return defaultPath;
         }
 	}

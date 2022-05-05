@@ -9,40 +9,41 @@ const cp = require('child_process');
 // spawn might not actually be the ideal choice, look into exec/fork?
 // though spawn might be better than exec for printing output continuously (?)
 // todo: check against examples
-function spawnAsync(command, args) {
+async function spawnAsync(command, args) {
 
-    // todo: make this async? is this necessary? if not, rename function
+    return await new Promise((resolve, reject) => {
+        // take one string and internally separate it into command + args?
+        // (probably easier for whoever calls this)
+        // how are command & args put together by spawn?
+        
+        const newProcess = cp.spawn(command, args);
 
-    // take one string and internally separate it into command + args?
-    // (probably easier for whoever calls this)
-    // how are command & args put together by spawn?
-    
-    const newProcess = cp.spawn(command, args);
+        // todo: error handling
+        // what types of errors and/or exit codes to consider?
+        // what should be printed (sent to terminal) and/or shown in popup?
+        // currently everything is logged to (debug) console
+        
+        // expose any errors with the process itself
+        // what to do if process fails to spawn?
+        newProcess.on('error', (err) => {
+            console.error("failed to start process");
+        });
 
-    // todo: let user know if the process was actually spawned (ie. setup began)
-    // todo: figure out where to handle errors with the process itself
-    // (this is distinct from stderr)
-    // todo: error handling
-    // what types of errors are possible?
-    // what exit codes to consider?
-    // what messages are useful to user?
-    
-    // what should be printed (sent to terminal) and/or shown in popup?
-    // currently everything is logged to (debug) console
+        // expose the standard output of the command (what is normally printed)
+        newProcess.stdout.on('data', (data) => {
+            console.log(`stdout: ${data}`);
+        });
 
-    // expose the standard output of the command (what is normally printed)
-    newProcess.stdout.on('data', (data) => {
-        console.log(`stdout: ${data}`);
-    });
+        // expose any errors that occur while the process is running
+        newProcess.stderr.on('data', (data) => {
+            console.error(`stderr: ${data}`);
+        });
 
-    // expose any errors that occur while the process is running
-    newProcess.stderr.on('data', (data) => {
-        console.error(`stderr: ${data}`);
-    });
-
-    // expose the exit code with which the process finished
-    newProcess.on('close', (code) => {
-        console.log(`process exited with code ${code}`);
+        // expose the exit code with which the process finished
+        newProcess.on('close', (code) => {
+            console.log(`process exited with code ${code}`);
+            return resolve(code);
+        });
     });
 }
 

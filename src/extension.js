@@ -26,6 +26,8 @@ function activate(context) {
 	// TODO: Re-write this as TypeScript and use the compiler instead
 	// This line of code will only be executed once when your extension is activated
 
+	vscode.commands.executeCommand('bng.setup');
+
 	let PYBNG_VERSION = "0.5.0"
 
 	// function that deals with running bngl files
@@ -202,28 +204,70 @@ function activate(context) {
 		);
 	}
 	// command to handle installation of bionetgen
-	// todo: figure out when/where/how to let user run setup and/or when to run automatically
+	// called when extension is activated
 	function setupCommandHandler() {
-		// might make sense to somehow check whether user's system already
-		// satisfies requirements (ie. setup has already been done) before proceeding?
-		// if requirements are not fulfilled, should setup block other commands?
-
 		// get path to python
 		const pythonPathPromise = getPythonPath();
+		
 		pythonPathPromise.then((pythonPath) => {
-			vscode.window.showInformationMessage("Setting up for the following Python: " + pythonPath);
-
-			// spawn child process to run pip install
-			spawnAsync(pythonPath, ['-m', 'pip', 'install', 'bionetgen']);
-			// upgrade?
-
-			vscode.window.showInformationMessage("Setup complete.");
+			// check if bionetgen is installed
+			const checkPromise = spawnAsync(pythonPath, ['-m', 'pip', 'show', 'bionetgen']);
+			
+			checkPromise.then((exitCode) => {
+				// if bionetgen is not installed (exit code is not 0), proceed with setup
+				if (exitCode) {
+					vscode.window.showInformationMessage("Setting up BNG for the following Python: " + pythonPath);
+					
+					// spawn child process to run pip install
+					const installPromise = spawnAsync(pythonPath, ['-m', 'pip', 'install', 'bionetgen']);
+					
+					installPromise.then((exitCode) => {
+						if (exitCode) {
+							vscode.window.showInformationMessage("BNG setup failed.");
+							// todo: get stderr (?) and display an informative error message
+						}
+						else {
+							vscode.window.showInformationMessage("BNG setup complete.");
+						}
+					});
+				}
+			});
 		});
+
+		// NOTES
+
+		// todo: check version of bionetgen? prompt user to upgrade?
+
+		// if bionetgen is not installed, should the setup command block other commands?
+		// this would probably need to be done with async/await; can that work?
+		// probably not super important because setup should be pretty fast
 
 		// todo: figure out how to accomodate various platforms
 		// vscode default shells: PowerShell on Windows, bash on macOS and Linux
 		// what needs to change between these?
 		// address this in getPythonPath
+	}
+	// command to manually upgrade bionetgen
+	function upgradeCommandHandler() {
+		// get path to python
+		const pythonPathPromise = getPythonPath();
+		
+		pythonPathPromise.then((pythonPath) => {
+			vscode.window.showInformationMessage("Upgrading BNG for the following Python: " + pythonPath);
+					
+			// spawn child process to run pip upgrade
+			const upgradePromise = spawnAsync(pythonPath, ['-m', 'pip', 'install', 'bionetgen', '--upgrade']);
+			
+			upgradePromise.then((exitCode) => {
+				if (exitCode) {
+					vscode.window.showInformationMessage("BNG upgrade failed.");
+					// todo: get stderr (?) and display an informative error message
+				}
+				else {
+					vscode.window.showInformationMessage("BNG upgrade complete.");
+				}
+			});
+		});
 	}
 	// names of the commands we want to register
 	const runCommandName = 'bng.run_bngl';
@@ -231,6 +275,7 @@ function activate(context) {
 	const plotDatCommandName = 'bng.plot_dat';
 	const webviewCommandName = 'bng.webview';
 	const setupCommandName = 'bng.setup';
+	const upgradeCommandName = 'bng.upgrade';
 	// The command has been defined in the package.json file
 	// Now provide the implementation of the command with  registerCommand
 	// The commandId parameter must match the command field in package.json
@@ -248,6 +293,8 @@ function activate(context) {
 	// this command handles installation of bionetgen
 	let disposable5 = vscode.commands.registerCommand(setupCommandName, setupCommandHandler);
 	context.subscriptions.push(disposable5);
+	let disposable6 = vscode.commands.registerCommand(upgradeCommandName, upgradeCommandHandler);
+	context.subscriptions.push(disposable6);
 	// TODO make this work
 	// resurrect webview 
 	// if (vscode.window.registerWebviewPanelSerializer) {

@@ -101,6 +101,10 @@
             {
                 "command": "bng.setup",
                 "title": "BNG setup"
+            },
+            {
+                "command": "bng.upgrade",
+                "title": "BNG upgrade"
             }
         ],
         "menus": {
