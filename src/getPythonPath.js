@@ -12,7 +12,6 @@ const vscode = require('vscode');
 
 // get path to the python interpreter to be used for installing bionetgen
 async function getPythonPath() {
-    // todo: package python extension with this extension? extensionDependencies?
     // warn user that they need to set an interpreter path?
 
     // will this break things?

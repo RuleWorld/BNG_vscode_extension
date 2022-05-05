@@ -191,6 +191,9 @@
                 "when": "resourceExtname == .gdat || resourceExtname == .cdat || resourceExtname == .scan"
             }
         ],
+        "extensionDependencies": [
+            "ms-python.python"
+        ],
         "scripts": {
             "lint": "eslint .",
             "compile": "tsc -p ./",
