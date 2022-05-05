@@ -24,9 +24,15 @@ const { getPythonPath } = require('./getPythonPath.js');
  */
 function activate(context) {
 	// TODO: Re-write this as TypeScript and use the compiler instead
+	// Get an ouput channel
+	var bngl_channel = vscode.window.createOutputChannel("BNGL");
 	// This line of code will only be executed once when your extension is activated
-
-	vscode.commands.executeCommand('bng.setup');
+	// check if the auto-setup configuration option is turned on
+	var config = vscode.workspace.getConfiguration("bngl");
+	if (config.general.auto_install) {
+		bngl_channel.appendLine("Running BNG auto-install ...");
+		vscode.commands.executeCommand('bng.setup');
+	}
 
 	let PYBNG_VERSION = "0.5.0"
 
@@ -206,27 +212,32 @@ function activate(context) {
 	// command to handle installation of bionetgen
 	// called when extension is activated
 	function setupCommandHandler() {
+		bngl_channel.appendLine("Getting python path");
 		// get path to python
 		const pythonPathPromise = getPythonPath();
 		
 		pythonPathPromise.then((pythonPath) => {
+			bngl_channel.appendLine("Found python, checking for bionetgen");
 			// check if bionetgen is installed
-			const checkPromise = spawnAsync(pythonPath, ['-m', 'pip', 'show', 'bionetgen']);
+			const checkPromise = spawnAsync(pythonPath, ['-m', 'pip', 'show', 'bionetgen'], bngl_channel);
 			
 			checkPromise.then((exitCode) => {
 				// if bionetgen is not installed (exit code is not 0), proceed with setup
 				if (exitCode) {
+					bngl_channel.appendLine("Installing PyBNG for python: " + pythonPath);
 					vscode.window.showInformationMessage("Setting up BNG for the following Python: " + pythonPath);
 					
 					// spawn child process to run pip install
-					const installPromise = spawnAsync(pythonPath, ['-m', 'pip', 'install', 'bionetgen']);
+					const installPromise = spawnAsync(pythonPath, ['-m', 'pip', 'install', 'bionetgen'], bngl_channel);
 					
 					installPromise.then((exitCode) => {
 						if (exitCode) {
+							bngl_channel.appendLine("pip install failed for python: " + pythonPath);
 							vscode.window.showInformationMessage("BNG setup failed.");
 							// todo: get stderr (?) and display an informative error message
 						}
 						else {
+							bngl_channel.appendLine("pip install successful for python: " + pythonPath);
 							vscode.window.showInformationMessage("BNG setup complete.");
 						}
 					});
@@ -256,7 +267,7 @@ function activate(context) {
 			vscode.window.showInformationMessage("Upgrading BNG for the following Python: " + pythonPath);
 					
 			// spawn child process to run pip upgrade
-			const upgradePromise = spawnAsync(pythonPath, ['-m', 'pip', 'install', 'bionetgen', '--upgrade']);
+			const upgradePromise = spawnAsync(pythonPath, ['-m', 'pip', 'install', 'bionetgen', '--upgrade'], bngl_channel);
 			
 			upgradePromise.then((exitCode) => {
 				if (exitCode) {

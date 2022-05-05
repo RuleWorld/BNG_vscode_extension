@@ -12,7 +12,7 @@
     "name": "bngl",
     "displayName": "BioNetGen Language",
     "description": "BNG language extension for vscode",
-    "version": "0.6.3",
+    "version": "0.6.4",
     "engines": {
         "vscode": "^1.52.0"
     },
@@ -203,6 +203,11 @@
         "configuration": {
             "title": "BioNetGen",
             "properties": {
+                "bngl.general.auto_install": {
+                    "markdownDescription": "Enable or disable automated install of PyBioNetGen.",
+                    "type": "boolean",
+                    "default": true
+                },
                 "bngl.general.auto_open": {
                     "markdownDescription": "(WIP) Enable or disable automated opening of result files like gdat.",
                     "type": "boolean",

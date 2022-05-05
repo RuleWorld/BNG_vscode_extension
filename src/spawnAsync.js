@@ -9,7 +9,7 @@ const cp = require('child_process');
 // spawn might not actually be the ideal choice, look into exec/fork?
 // though spawn might be better than exec for printing output continuously (?)
 // todo: check against examples
-async function spawnAsync(command, args) {
+async function spawnAsync(command, args, channel) {
 
     return await new Promise((resolve, reject) => {
         // take one string and internally separate it into command + args?
@@ -27,21 +27,33 @@ async function spawnAsync(command, args) {
         // what to do if process fails to spawn?
         newProcess.on('error', (err) => {
             console.error("failed to start process");
+            if (channel) {
+                channel.append("failed to start process");
+            }
         });
 
         // expose the standard output of the command (what is normally printed)
         newProcess.stdout.on('data', (data) => {
             console.log(`stdout: ${data}`);
+            if (channel) {
+                channel.append(data.toString());
+            }
         });
 
         // expose any errors that occur while the process is running
         newProcess.stderr.on('data', (data) => {
             console.error(`stderr: ${data}`);
+            if (channel) {
+                channel.append(data.toString());
+            }
         });
 
         // expose the exit code with which the process finished
         newProcess.on('close', (code) => {
             console.log(`process exited with code ${code}`);
+            if (channel) {
+                channel.append(`process exited with code ${code}`);
+            }
             return resolve(code);
         });
     });
