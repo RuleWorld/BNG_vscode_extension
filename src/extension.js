@@ -242,7 +242,7 @@ function activate(context) {
 							vscode.window.showInformationMessage("Setting up BNG for the following Python: " + pythonPath);
 							
 							// spawn child process to run pip install
-							const installPromise = spawnAsync(pythonPath, ['-m', 'pip', 'install', 'bionetgen'], bngl_channel);
+							const installPromise = spawnAsync(pythonPath, ['-m', 'pip', 'install', 'bionetgen', '--upgrade'], bngl_channel);
 							
 							installPromise.then((exitCode) => {
 								if (exitCode) {
@@ -320,6 +320,7 @@ function activate(context) {
 	// this command handles installation of bionetgen
 	let disposable5 = vscode.commands.registerCommand(setupCommandName, setupCommandHandler);
 	context.subscriptions.push(disposable5);
+	// this one upgrades bionetgen
 	let disposable6 = vscode.commands.registerCommand(upgradeCommandName, upgradeCommandHandler);
 	context.subscriptions.push(disposable6);
 	// TODO make this work
