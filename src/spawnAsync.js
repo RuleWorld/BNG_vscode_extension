@@ -5,7 +5,7 @@
 
 const cp = require('child_process');
 
-// spawn child process to run the given command
+// spawn child process to run the given command, write results to output channel
 // spawn might not actually be the ideal choice, look into exec/fork?
 // though spawn might be better than exec for printing output continuously (?)
 // todo: check against examples
@@ -20,15 +20,13 @@ async function spawnAsync(command, args, channel) {
 
         // todo: error handling
         // what types of errors and/or exit codes to consider?
-        // what should be printed (sent to terminal) and/or shown in popup?
-        // currently everything is logged to (debug) console
         
         // expose any errors with the process itself
         // what to do if process fails to spawn?
         newProcess.on('error', (err) => {
             console.error("failed to start process");
             if (channel) {
-                channel.append("failed to start process");
+                channel.appendLine("failed to start process");
             }
         });
 
@@ -52,7 +50,7 @@ async function spawnAsync(command, args, channel) {
         newProcess.on('close', (code) => {
             console.log(`process exited with code ${code}`);
             if (channel) {
-                channel.append(`process exited with code ${code}`);
+                channel.appendLine(`process exited with code ${code}`);
             }
             return resolve(code);
         });
