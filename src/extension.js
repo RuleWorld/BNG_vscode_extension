@@ -225,12 +225,13 @@ function activate(context) {
 			else {
 				bngl_channel.appendLine("Found perl, getting python path.");
 				// get path to python
-				const pythonPathPromise = getPythonPath();
+				const pythonPathPromise = getPythonPath(bngl_channel);
 				
 				pythonPathPromise.then((pythonPath) => {
-					// todo: consider the case where python is not installed
-					// currently getPythonPath() will return "python" if no specific path is found,
-					// which is incorrect/will lead to misleading debugging messages if there is no python.
+					// consider the case where python isn't found?
+					// currently getPythonPath() will return "python" by default if no specific path is found,
+					// which may be incorrect or lead to misleading debugging messages.
+					// this is somewhat addressed by the output from getPythonPath() but could maybe be improved
 					bngl_channel.appendLine("Found python, checking for bionetgen.");
 					// check if bionetgen is installed
 					const checkBNGPromise = spawnAsync(pythonPath, ['-m', 'pip', 'show', 'bionetgen'], bngl_channel);
@@ -276,8 +277,10 @@ function activate(context) {
 	}
 	// command to manually upgrade bionetgen
 	function upgradeCommandHandler() {
+		bngl_channel.appendLine("Running BNG upgrade ...");
+
 		// get path to python
-		const pythonPathPromise = getPythonPath();
+		const pythonPathPromise = getPythonPath(bngl_channel);
 		
 		pythonPathPromise.then((pythonPath) => {
 			vscode.window.showInformationMessage("Upgrading BNG for the following Python: " + pythonPath);

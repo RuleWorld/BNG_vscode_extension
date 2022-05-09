@@ -10,8 +10,8 @@
 
 const vscode = require('vscode');
 
-// get path to the python interpreter to be used for installing bionetgen
-async function getPythonPath() {
+// get path to the python interpreter to be used for installing bionetgen, write relevant info to output channel
+async function getPythonPath(channel) {
     // warn user that they need to set an interpreter path?
 
     // will this break things?
@@ -19,7 +19,9 @@ async function getPythonPath() {
 
     const pythonExt = vscode.extensions.getExtension('ms-python.python');
     if (typeof pythonExt === 'undefined') {
-        vscode.window.showInformationMessage("Python extension undefined.");
+        if (channel) {
+            channel.appendLine("Python extension undefined.");
+        }
         return defaultPath;
     }
 	
@@ -57,7 +59,9 @@ async function getPythonPath() {
         else {
             // if pythonPath cannot be retrieved through API, attempt to retrieve defaultInterpreterPath through settings
 
-            vscode.window.showInformationMessage("pythonPath undefined, attempting to retrieve defaultInterpreterPath.");
+            if (channel) {
+                channel.appendLine("pythonPath undefined, attempting to retrieve defaultInterpreterPath.");
+            }
 
             const defaultInterpreterPath = vscode.workspace.getConfiguration("python").get("defaultInterpreterPath");
         
@@ -65,7 +69,9 @@ async function getPythonPath() {
                 return defaultInterpreterPath;
             }
             else {
-                vscode.window.showInformationMessage("defaultInterpreterPath undefined.");
+                if (channel) {
+                    channel.appendLine("defaultInterpreterPath undefined.");
+                }
                 return defaultPath;
             }
         }
@@ -78,7 +84,9 @@ async function getPythonPath() {
             return pythonPath;
         }
         else {
-            vscode.window.showInformationMessage("pythonPath undefined.");
+            if (channel) {
+                channel.appendLine("pythonPath undefined.");
+            }
             return defaultPath;
         }
 	}
