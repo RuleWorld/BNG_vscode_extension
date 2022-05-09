@@ -115,7 +115,7 @@ Added a visualize button that runs `bionetgen visualize -i file.bngl -t all` on 
 Added two new configuration options 1) turn on and off automated gdat opening (bngl.general.auto_open) 2) selection of a folder for model run results, to be used as a fallback in case workspace is not set (bngl.general.result_folder)
 
 - 0.6.3
-Added two new commands, bng.setup and bng.update. Upon activation of the extension, the extension will use the current default python and run `python -m pip show bionetgen` to ensure PyBioNetGen is installed. If it's not installed, the extension will attempt to run `python -m pip install bionetgen --upgrade` to install PyBioNetGen. bng.update can be used to force run `python -m pip install --upgrade` manually. 
+Added two new commands, bng.setup and bng.upgrade. Upon activation of the extension, the extension will use the current default python and run `python -m pip show bionetgen` to ensure PyBioNetGen is installed. If it's not installed, the extension will attempt to run `python -m pip install bionetgen --upgrade` to install PyBioNetGen. bng.upgrade can be used to force run `python -m pip install --upgrade` manually. 
 
 - 0.6.4
 Added setting option to stop bng.setup checking upon activation. Piping all setup stdout/stderr an output channel named `BNGL` to make debugging easier.
