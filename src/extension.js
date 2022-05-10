@@ -220,7 +220,7 @@ function activate(context) {
 			if (exitCode) {
 				// if perl is not installed (exit code is not 0), tell user to install it
 				bngl_channel.appendLine("Could not find perl.");
-				vscode.window.showInformationMessage("You must install Perl (https://www.perl.org/get.html). We recommend Strawberry Perl for Windows.");
+				vscode.window.showInformationMessage("You must install Perl (https://www.perl.org/get.html). We recommend Strawberry Perl (https://strawberryperl.com/) for Windows.");
 			}
 			else {
 				bngl_channel.appendLine("Found perl, getting python path.");
