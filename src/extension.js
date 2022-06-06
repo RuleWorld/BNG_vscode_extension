@@ -13,8 +13,8 @@ const vscode = require('vscode');
 const fs = require('fs');
 const path = require('path');
 const os = require('os');
-const { spawnAsync } = require('./spawnAsync.js');
-const { getPythonPath } = require('./getPythonPath.js');
+const { spawnAsync } = require('./utils/spawnAsync.js');
+const { getPythonPath } = require('./utils/getPythonPath.js');
 
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
@@ -211,93 +211,73 @@ function activate(context) {
 	}
 	// command to handle installation of bionetgen
 	// called when extension is activated
-	function setupCommandHandler() {
+	async function setupCommandHandler() {
 		bngl_channel.appendLine("Checking for perl.");
-		// check if perl is installed
-		const checkPerlPromise = spawnAsync('perl', ['-v'], bngl_channel);
+		const perlCheckExitCode = await spawnAsync('perl', ['-v'], bngl_channel);
+		
+		// if perl is not installed (exit code is not 0), tell user to install it
+		if (perlCheckExitCode) {
+			bngl_channel.appendLine("Could not find perl.");
+			vscode.window.showInformationMessage("You must install Perl (https://www.perl.org/get.html). We recommend Strawberry Perl for Windows.");
+		}
+		else {
+			bngl_channel.appendLine("Found perl.");
+		}
 
-		checkPerlPromise.then((exitCode) => {
-			if (exitCode) {
-				// if perl is not installed (exit code is not 0), tell user to install it
-				bngl_channel.appendLine("Could not find perl.");
-				vscode.window.showInformationMessage("You must install Perl (https://www.perl.org/get.html). We recommend Strawberry Perl for Windows.");
+		bngl_channel.appendLine("Getting python path.");
+		const pythonPath = await getPythonPath(bngl_channel);
+		// if getPythonPath() cannot find a particular path to python, it will log the reason to bngl_channel and return "python" by default
+		bngl_channel.appendLine("Found python path: " + pythonPath);
+
+		bngl_channel.appendLine("Checking for bionetgen.");
+		const bngCheckExitCode = await spawnAsync(pythonPath, ['-m', 'pip', 'show', 'bionetgen'], bngl_channel);
+		// if spawnAsync() cannot run the python at pythonPath, it will log an error to bngl_channel
+		
+		// if bionetgen is not installed (exit code is not 0), proceed with setup
+		// note that this will also run (and fail) if there is an issue running the python at pythonPath
+		if (bngCheckExitCode) {
+			bngl_channel.appendLine("Installing PyBNG for python: " + pythonPath);
+			vscode.window.showInformationMessage("Setting up BNG for the following Python: " + pythonPath);
+			
+			// spawn child process to run pip install
+			const installExitCode = await spawnAsync(pythonPath, ['-m', 'pip', 'install', 'bionetgen', '--upgrade'], bngl_channel);
+			
+			if (installExitCode) {
+				bngl_channel.appendLine("pip install failed for python: " + pythonPath);
+				vscode.window.showInformationMessage("BNG setup failed.");
 			}
 			else {
-				bngl_channel.appendLine("Found perl, getting python path.");
-				// get path to python
-				const pythonPathPromise = getPythonPath(bngl_channel);
-				
-				pythonPathPromise.then((pythonPath) => {
-					// consider the case where python isn't found?
-					// currently getPythonPath() will return "python" by default if no specific path is found,
-					// which may be incorrect or lead to misleading debugging messages.
-					// this is somewhat addressed by the output from getPythonPath() but could maybe be improved
-					bngl_channel.appendLine("Found python, checking for bionetgen.");
-					// check if bionetgen is installed
-					const checkBNGPromise = spawnAsync(pythonPath, ['-m', 'pip', 'show', 'bionetgen'], bngl_channel);
-					
-					checkBNGPromise.then((exitCode) => {
-						// if bionetgen is not installed (exit code is not 0), proceed with setup
-						if (exitCode) {
-							bngl_channel.appendLine("Installing PyBNG for python: " + pythonPath);
-							vscode.window.showInformationMessage("Setting up BNG for the following Python: " + pythonPath);
-							
-							// spawn child process to run pip install
-							const installPromise = spawnAsync(pythonPath, ['-m', 'pip', 'install', 'bionetgen', '--upgrade'], bngl_channel);
-							
-							installPromise.then((exitCode) => {
-								if (exitCode) {
-									bngl_channel.appendLine("pip install failed for python: " + pythonPath);
-									vscode.window.showInformationMessage("BNG setup failed.");
-									// todo: get stderr (?) and display an informative error message
-								}
-								else {
-									bngl_channel.appendLine("pip install successful for python: " + pythonPath);
-									vscode.window.showInformationMessage("BNG setup complete.");
-								}
-							});
-						}
-					});
-				});
+				bngl_channel.appendLine("pip install succeeded for python: " + pythonPath);
+				vscode.window.showInformationMessage("BNG setup complete.");
 			}
-		});
-
-		// NOTES
-
-		// todo: check version of bionetgen? prompt user to upgrade?
-
-		// if bionetgen is not installed, should the setup command block other commands?
-		// this would probably need to be done with async/await; can that work?
-		// probably not super important because setup should be pretty fast
-
-		// todo: figure out how to accomodate various platforms
-		// vscode default shells: PowerShell on Windows, bash on macOS and Linux
-		// what needs to change between these?
-		// address this in getPythonPath
+		}
+		else {
+			bngl_channel.appendLine("Found bionetgen.");
+			// todo: check version of bionetgen? prompt user to upgrade?
+		}
 	}
 	// command to manually upgrade bionetgen
-	function upgradeCommandHandler() {
+	async function upgradeCommandHandler() {
 		bngl_channel.appendLine("Running BNG upgrade ...");
 
-		// get path to python
-		const pythonPathPromise = getPythonPath(bngl_channel);
+		bngl_channel.appendLine("Getting python path.");
+		const pythonPath = await getPythonPath(bngl_channel);
+		bngl_channel.appendLine("Found python path: " + pythonPath);
 		
-		pythonPathPromise.then((pythonPath) => {
-			vscode.window.showInformationMessage("Upgrading BNG for the following Python: " + pythonPath);
+		bngl_channel.appendLine("Upgrading PyBNG for python: " + pythonPath);
+		vscode.window.showInformationMessage("Upgrading BNG for the following Python: " + pythonPath);
 					
-			// spawn child process to run pip upgrade
-			const upgradePromise = spawnAsync(pythonPath, ['-m', 'pip', 'install', 'bionetgen', '--upgrade'], bngl_channel);
-			
-			upgradePromise.then((exitCode) => {
-				if (exitCode) {
-					vscode.window.showInformationMessage("BNG upgrade failed.");
-					// todo: get stderr (?) and display an informative error message
-				}
-				else {
-					vscode.window.showInformationMessage("BNG upgrade complete.");
-				}
-			});
-		});
+		// spawn child process to run pip upgrade
+		const upgradeExitCode = await spawnAsync(pythonPath, ['-m', 'pip', 'install', 'bionetgen', '--upgrade'], bngl_channel);
+		
+		if (upgradeExitCode) {
+			bngl_channel.appendLine("pip upgrade failed for python: " + pythonPath);
+			vscode.window.showInformationMessage("BNG upgrade failed.");
+		}
+		else {
+			bngl_channel.appendLine("pip upgrade successful for python: " + pythonPath);
+			vscode.window.showInformationMessage("BNG upgrade complete.");
+		}
 	}
 	// names of the commands we want to register
 	const runCommandName = 'bng.run_bngl';
