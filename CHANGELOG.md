@@ -119,3 +119,6 @@ Added two new commands, bng.setup and bng.upgrade. Upon activation of the extens
 
 - 0.6.4
 Added setting option to stop bng.setup checking upon activation. Piping all setup stdout/stderr an output channel named `BNGL` to make debugging easier.
+
+- 0.6.5
+The extension now checks for the existence of perl upon activation and warns the user if Perl cannot be called. 
