@@ -6,33 +6,21 @@
 const cp = require('child_process');
 
 // spawn child process to run the given command, write results to output channel
-// spawn might not actually be the ideal choice, look into exec/fork?
-// though spawn might be better than exec for printing output continuously (?)
-// todo: check against examples
 async function spawnAsync(command, args, channel) {
 
-    return await new Promise((resolve, reject) => {
-        // take one string and internally separate it into command + args?
-        // (probably easier for whoever calls this)
-        // how are command & args put together by spawn?
-        
+    // expect this promise to resolve; reject is not used because this seems to cause strange behavior in VS Code
+    return new Promise((resolve, reject) => {
         const newProcess = cp.spawn(command, args);
-
-        // todo: error handling
-        // what types of errors and/or exit codes to consider?
         
-        // expose any errors with the process itself
-        // what to do if process fails to spawn?
+        // expose errors with the process itself
         newProcess.on('error', (err) => {
-            console.error("failed to start process");
             if (channel) {
-                channel.appendLine("failed to start process");
+                channel.appendLine(err);
             }
         });
 
         // expose the standard output of the command (what is normally printed)
         newProcess.stdout.on('data', (data) => {
-            console.log(`stdout: ${data}`);
             if (channel) {
                 channel.append(data.toString());
             }
@@ -40,19 +28,17 @@ async function spawnAsync(command, args, channel) {
 
         // expose any errors that occur while the process is running
         newProcess.stderr.on('data', (data) => {
-            console.error(`stderr: ${data}`);
             if (channel) {
                 channel.append(data.toString());
             }
         });
 
-        // expose the exit code with which the process finished
+        // expose and return the exit code with which the process finished
         newProcess.on('close', (code) => {
-            console.log(`process exited with code ${code}`);
             if (channel) {
                 channel.appendLine(`process exited with code ${code}`);
             }
-            return resolve(code);
+            resolve(code);
         });
     });
 }
