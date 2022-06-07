@@ -14,7 +14,7 @@ const vscode = require('vscode');
 async function getPythonPath(channel) {
     // warn user that they need to set an interpreter path?
 
-    // will this break things?
+    // if no particular path can be found, return defaultPath
     const defaultPath = "python";
 
     const pythonExt = vscode.extensions.getExtension('ms-python.python');
@@ -34,24 +34,32 @@ async function getPythonPath(channel) {
         // attempt to retrieve pythonPath through API
 
         if (!pythonExt.isActive) {
-            await pythonExt.activate();
+            try {
+                await pythonExt.activate();
+            } catch (e) {
+                if (channel) {
+                    channel.appendLine("Python extension could not be activated.");
+                    channel.appendLine(e);
+                }
+                return defaultPath;
+            }
         }
 
         // is this (resource) needed? would it make more sense to get a global setting? see below
         const doc = vscode.window.activeTextEditor.document;
 
-        // @type {{execCommand: (string[] | undefined)}}
+        // type {execCommand: (string[] | undefined)}
         // an object which contains an array of strings for the command to execute a python interpreter
         const executionDetails = pythonExt.exports.settings.getExecutionDetails(doc.uri);
         // when no resource is provided, the setting scoped to the first workspace folder is returned,
         // and if no folder is present, it returns the global setting
 
-        // @type {(string[] | undefined)}
+        // type (string[] | undefined)
         // undefined: empty pythonPath string; no interpreter set
         const execCommand = executionDetails["execCommand"];
 
         if (typeof execCommand !== 'undefined' && execCommand) {
-            // @type {string}
+            // type string
             const pythonPath = execCommand.join(" ");
 
             return pythonPath;
