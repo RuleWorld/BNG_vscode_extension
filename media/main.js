@@ -215,8 +215,33 @@
                     }
                 });
             case 'network':
-                // render a network in plot
-                let elements = {
+                const graphmlText = message.data;
+                // get XML document corresponding to GraphML text
+                const xmlParser = new DOMParser();
+                const xmlDoc = xmlParser.parseFromString(graphmlText, 'text/xml');
+                // initialize collection of elements to be used for cytoscape rendering
+                let cytoElements = {
+                    nodes: [],
+                    edges: []
+                };
+                // get relevant GraphML elements from XML document
+                // let graphmlGraphs = xmlDoc.getElementsByTagName("graph");
+                let graphmlNodes = xmlDoc.getElementsByTagName("node");
+                let graphmlEdges = xmlDoc.getElementsByTagName("edge");
+                // iterate over elements and add to collection
+                for (const node of graphmlNodes) {
+                    cytoElements["nodes"].push(
+                        {data: {id: node.id}}
+                    );
+                }
+                for (const edge of graphmlEdges) {
+                    cytoElements["edges"].push(
+                        {data: {id: edge.id,
+                                source: edge.getAttribute("source"),
+                                target: edge.getAttribute("target")}}
+                    );
+                }
+                let exampleElements = {
                     nodes: [
                         { data: { id: 'a' }, position: { x: 100, y: 100 } },
                         { data: { id: 'b' } },
@@ -264,7 +289,7 @@
                 };
                 var cy = cytoscape({
                     container: network,
-                    elements: message.data["elements"],
+                    elements: cytoElements, // message.data["elements"],
                     style: style,
                     layout: layout_opts
                 });

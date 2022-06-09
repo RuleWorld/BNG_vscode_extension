@@ -435,7 +435,7 @@ class PlotPanel {
 	/** @type {vscode.Uri} */
 	cytoUri
 	/** @type {vscode.Uri} */
-	cytoGMLUri;
+	cytoGraphMLUri;
 	/** @type {vscode.Uri} */
 	jqUri
 	/** @type {vscode.Uri} */
@@ -562,11 +562,11 @@ class PlotPanel {
 		this.plotlyUri = webview.asWebviewUri(plotlyOnDisk);
 		// Local path to main script run in the webview
 		const cytoOnDisk = vscode.Uri.joinPath(PlotPanel._extensionUri, 'media', 'cytoscape.min.js');
-		const cytoGMLOnDisk = vscode.Uri.joinPath(PlotPanel._extensionUri, 'media', 'cytoscape-graphml.js');
+		const cytoGraphMLOnDisk = vscode.Uri.joinPath(PlotPanel._extensionUri, 'media', 'cytoscape-graphml.js');
 		const jqOnDisk = vscode.Uri.joinPath(PlotPanel._extensionUri, 'media', 'jquery-3.5.1.min.js');
 		// And the uri we use to load this script in the webview
 		this.cytoUri = webview.asWebviewUri(cytoOnDisk);
-		this.cytoGMLUri = webview.asWebviewUri(cytoGMLOnDisk);
+		this.cytoGraphMLUri = webview.asWebviewUri(cytoGraphMLOnDisk);
 		this.jqUri = webview.asWebviewUri(jqOnDisk);
 		// Local path to css styles
 		const stylesPathMainPath = vscode.Uri.joinPath(PlotPanel._extensionUri, 'media', 'main.css');
@@ -583,8 +583,8 @@ class PlotPanel {
 		const webview = this._panel.webview;
 		// content depends on the extension
 		switch (this._ext) {
-			case "gml":
-				this._set_gml_html(webview);
+			case "graphml":
+				this._set_graphml_html(webview);
 				return;
 			case "gdat":
 			case "cdat":
@@ -599,8 +599,8 @@ class PlotPanel {
 		const webview = this._panel.webview;
 		// content depends on the extension
 		switch (this._ext) {
-			case "gml":
-				this._send_gml_data(webview);
+			case "graphml":
+				this._send_graphml_data(webview);
 				return;
 			case "gdat":
 			case "cdat":
@@ -614,7 +614,7 @@ class PlotPanel {
 	 * 
 	 * @param {vscode.Webview} webview 
 	 */
-	_set_gml_html(webview) {
+	_set_graphml_html(webview) {
 
 		// Local path to css styles
 		// const styleResetPath = vscode.Uri.joinPath(this._extensionUri, 'media', 'reset.css');
@@ -655,13 +655,13 @@ class PlotPanel {
 	 * 
 	 * 
 	 */
-	_send_gml_data(webview) {
+	_send_graphml_data(webview) {
 		// now we'll parse the editor text and turn it into a 
 		// data format we can pass along to the webview that's open
 		webview.postMessage({
 			command: 'network',
 			context: 'data',
-			data: this._load_gml(this._text)
+			data: this._load_graphml(this._text)
 		});
 	}
 
@@ -683,14 +683,13 @@ class PlotPanel {
 		});
 	}
 
-
 	/**
 	 * 
 	 * @param {String} text 
 	 *
 	 */
-	_load_gml(text) {
-		return JSON.parse(text)
+	_load_graphml(text) {
+		return text; // JSON.parse(text);
 	}
 
 	/**
@@ -804,8 +803,8 @@ class PlotPanel {
 		let fpath = vscode.window.activeTextEditor.document.fileName;
 		let extension = fpath.split(".").pop();
 		let title = "Unknown";
-		if (extension == "gml") {
-			title = "GML Viewer";
+		if (extension == "graphml") {
+			title = "GraphML Viewer";
 		} else if (extension == "gdat" || extension == "cdat") {
 			title = "Plot viewer";
 		} else if (extension == "scan") {
