@@ -683,6 +683,7 @@ class PlotPanel {
 		});
 	}
 
+	// do we need this function?
 	/**
 	 * 
 	 * @param {String} text 

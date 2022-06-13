@@ -215,58 +215,208 @@
                     }
                 });
             case 'network':
-                const graphmlText = message.data;
+                // parse GraphML & render with cytoscape.js
+
+                // --- TODO ---
+                //
+                // - figure out default style settings (how they work & what to set them to)
+                // - on a related note, include safety checks in addNode() & addEdge() and/or in stylesheet
+                //   (handle cases where features can't be extracted from GraphML for whatever reason)
+                //
+                // - work on node label features for readability (alignment, font size, color, constrast against background, etc.)
+                // -- currently not using any of the XML-attributes included with <y:NodeLabel>
+                //
+                // - work on edge visibility (contrast of line color against background?)
+                //
+                // - handle edge direction
+                // -- double check how yEd & the GraphML handle edge direction
+                // --- currently, I can't tell whether this is determined by the
+                //     XML-attribute "edgedefault" for <graph> elements or the
+                //     XML-attributes "source", "target" for <y:Arrows> elements under edge <data>
+                //     (or something else?)
+                // --- edge elements do not seem to have the (optional) XML-attribute "directed"
+                // -- double check how cytoscape handles edge direction
+                // --- currently, my understanding is that direction is determined by
+                //     attributes associated with target-arrow in the edge style settings
+                //     (ie. if there's no target-arrow, then the edge is undirected),
+                //     so right now all edges are assumed to be directed because
+                //     target-arrow-shape is hard-coded into the stylesheet
+                // -- should probably make something in the rendering code check whether
+                //    edges are supposed to be directed & adjust style settings accordingly
+                //
+                // - work on group/compound node layouting, look into cytoscape extensions
+                
+                // --- assumptions about structure of GraphML ---
+                //
+                // features of nodes:
+                // - each node has XML-attribute "id"
+                // - each node contains a <data> element, which contains the following elements:
+                // -- <y:Fill> w/ XML-attribute "color"
+                // -- <y:BorderStyle> w/ XML-attributes "width", "color"
+                // -- <y:Shape> (not currently used)
+                // -- <y:NodeLabel> w/ text content
+                // - when retrieving features of group nodes, note that they contain multiple
+                //   instances of these elements (corresponding to each of the nested nodes
+                //   in the group); assume that the elements describing the group node occur first
+                //
+                // hierarchy of nodes:
+                // - group nodes are denoted by XML-attribute yfiles.foldertype="group"
+                // - group nodes can contain regular nodes & graphs
+                // - graphs can contain group nodes & regular nodes
+                // - graphs are used in conjunction with group nodes;
+                //   a graph is either at the top level or is the child of a group node
+                //
+                // features of edges:
+                // - each edge has XML-attributes "id", "source", "target"
+                // - each edge contains a <data> element, which contains the following elements:
+                // -- <y:LineStyle> w/ XML-attributes "width", "color"
+                // -- <y:Arrows> (not currently used)
+                // -- <y:BendStyle> (not currently used)
+
                 // get XML document corresponding to GraphML text
+                const graphmlText = message.data;
                 const xmlParser = new DOMParser();
                 const xmlDoc = xmlParser.parseFromString(graphmlText, 'text/xml');
+                
                 // initialize collection of elements to be used for cytoscape rendering
                 let cytoElements = {
                     nodes: [],
                     edges: []
                 };
-                // get relevant GraphML elements from XML document
-                // let graphmlGraphs = xmlDoc.getElementsByTagName("graph");
-                let graphmlNodes = xmlDoc.getElementsByTagName("node");
-                let graphmlEdges = xmlDoc.getElementsByTagName("edge");
-                // iterate over elements and add to collection
-                for (const node of graphmlNodes) {
+
+                // --- add nodes from the XML document to the cytoscape collection ---
+
+                // function to add a node (w/ features) to the cytoscape collection
+                // node: element (with tag "node") from XML document
+                // parentId: id of parent of node, null if none (ie. node is at top level)
+                function addNode (node, parentId) {
+                    // get features of the node
+                    let backgroundColor = node.getElementsByTagName("y:Fill").item(0).getAttribute("color");
+                    let border = node.getElementsByTagName("y:BorderStyle").item(0)
+                    let borderWidth = border.getAttribute("width");
+                    let borderColor = border.getAttribute("color");
+                    let label = node.getElementsByTagName("y:NodeLabel").item(0).textContent;
+                    
+                    // add the node to the collection
                     cytoElements["nodes"].push(
-                        {data: {id: node.id}}
+                        {data: {id: node.id,
+                                parent: parentId,
+                                backgroundColor: backgroundColor,
+                                borderWidth: borderWidth,
+                                borderColor: borderColor,
+                                label: label}}
                     );
                 }
-                for (const edge of graphmlEdges) {
+
+                // TEMPORARY, for testing purposes:
+                //
+                // choose grouped or flat node hierarchy
+                let mode = "grouped";
+                // let mode = "flat";
+                //
+                // for grouped mode, choose method of obtaining hierarchy information
+                let method = "recursive";
+                // let method = "property";
+
+                if (mode == "grouped" && method == "recursive") {
+                    let parentStack = []; // empty at top level
+                    let graphmlRoot = xmlDoc.getElementsByTagName("graphml").item(0);
+
+                    // recursive function to add child nodes of root to the
+                    // cytoscape collection, preserving grouping/hierarchy
+                    // root: element from XML document
+                    function addChildNodes (root) {
+                        let children = root.children;
+                        for (const element of children) {
+                            if (element.tagName == "graph") {
+                                addChildNodes(element);
+                            }
+                            else if (element.tagName == "node") {
+                                let parentId = null;
+                                // if parentStack is not empty, use the last parentId added
+                                if (parentStack.length != 0) {
+                                    parentId = parentStack[parentStack.length - 1];
+                                }
+
+                                // if element is a group node,
+                                // add it to the cytoscape collection and also add its children
+                                if (element.getAttribute("yfiles.foldertype") == "group") {
+                                    addNode(element, parentId);
+
+                                    parentStack.push(element.id); // this group node is now the last on stack
+                                    addChildNodes(element);
+                                    parentStack.pop(); // after adding all nodes in the group, remove it from stack
+                                }
+
+                                // if element is a regular node,
+                                // simply add it to the cytoscape collection
+                                else {
+                                    addNode(element, parentId);
+                                }
+                            }
+                        }
+                    }
+
+                    addChildNodes(graphmlRoot);
+                }
+
+                if (mode == "grouped" && method == "property") {
+                    let graphmlNodes = xmlDoc.getElementsByTagName("node");
+                    for (const node of graphmlNodes) {
+                        let parent = node.parentElement.parentElement; // node is inside graph is inside group node
+                        let parentId = parent.id;
+                        // check if node is at top level
+                        if (parent.tagName == "graphml") {
+                            parentId = null;
+                        }
+                        addNode(node, parentId);
+                    }
+                }
+
+                if (mode == "flat") {
+                    let graphmlNodes = xmlDoc.getElementsByTagName("node");
+                    for (const node of graphmlNodes) {
+                        addNode(node, null);
+                    }
+                }
+
+                // --- add edges from the XML document to the cytoscape collection ---
+
+                // function to add an edge (w/ features) to the cytoscape collection
+                // edge: element (with tag "edge") from XML document
+                function addEdge (edge) {
+                    // get features of the edge
+                    let source = edge.getAttribute("source");
+                    let target = edge.getAttribute("target");
+                    let line = edge.getElementsByTagName("y:LineStyle").item(0);
+                    let lineWidth = line.getAttribute("width");
+                    let lineColor = line.getAttribute("color");
+                    
+                    // add the edge to the collection
                     cytoElements["edges"].push(
                         {data: {id: edge.id,
-                                source: edge.getAttribute("source"),
-                                target: edge.getAttribute("target")}}
+                                source: source,
+                                target: target,
+                                lineWidth: lineWidth,
+                                lineColor: lineColor}}
                     );
                 }
-                let exampleElements = {
-                    nodes: [
-                        { data: { id: 'a' }, position: { x: 100, y: 100 } },
-                        { data: { id: 'b' } },
-                        { data: { id: 'c' } },
-                        { data: { id: 'd' } },
-                        { data: { id: 'e' } },
-                        { data: { id: 'f' } },
-                        { data: { id: 'g' } }
-                    ],
-                    edges: [
-                        { data: { id: 'ab', source: 'a', target: 'b' } },
-                        { data: { id: 'eb', source: 'e', target: 'b' } },
-                        { data: { id: 'ag', source: 'a', target: 'g' } },
-                        { data: { id: 'fd', source: 'f', target: 'd' } },
-                        { data: { id: 'fe', source: 'f', target: 'e' } },
-                        { data: { id: 'bc', source: 'b', target: 'c' } },
-                        { data: { id: 'ce', source: 'c', target: 'e' } }
-                    ]
-                };
+
+                let graphmlEdges = xmlDoc.getElementsByTagName("edge");
+                for (const edge of graphmlEdges) {
+                    addEdge(edge);
+                }
+
+                // --- set up graph ---
+
                 let style = [ // the stylesheet for the graph
                     {
                         selector: 'node',
                         style: {
-                            'background-color': '#999',
-                            'label': 'data(id)',
+                            'background-color': 'data(backgroundColor)',
+                            'border-width': 'data(borderWidth)',
+                            'border-color': 'data(borderColor)',
+                            'label': 'data(label)',
                             'color': '#999',
                             'min-zoomed-font-size': '12'
                         }
@@ -274,22 +424,22 @@
                     {
                         selector: 'edge',
                         style: {
-                            'width': 3,
-                            'line-color': '#ccc',
-                            'target-arrow-color': '#ccc',
+                            'width': 'data(lineWidth)',
+                            'line-color': 'data(lineColor)',
+                            'target-arrow-color': 'data(lineColor)',
                             'target-arrow-shape': 'triangle',
                             'curve-style': 'bezier'
                         }
                     }
                 ];
                 let layout_opts = {
-                    name: 'cose',
+                    name: 'breadthfirst',
                     fit: true,
                     animate: "end"
                 };
                 var cy = cytoscape({
                     container: network,
-                    elements: cytoElements, // message.data["elements"],
+                    elements: cytoElements,
                     style: style,
                     layout: layout_opts
                 });
@@ -302,6 +452,7 @@
                 break;
         }
     });
+    
     vscode.postMessage({
         command: 'ready',
     })
