@@ -31,6 +31,7 @@ body {
 	left: 0;
 	top: 50px;
 	z-index: 0;
+	background-color: white;
 }
 
 #head_div {
@@ -56,6 +57,7 @@ body {
 #top_buttons {
 	position: relative;
 	display: inline-block;
+	width: 100%;
 }
 
 /* Dropdown Content (Hidden by Default) */
@@ -70,7 +72,8 @@ body {
 /* Show the dropdown menu (use JS to add this class to the .dropdown-content container when the user clicks on the dropdown button) */
 .show {display:block;}
 
-/* #top_buttons {
+/*
+#top_buttons {
 	border: none;
 	text-align: center;
 	outline: 1px solid transparent;
@@ -96,7 +99,8 @@ body {
 
 #top_buttons:focus {
 	outline-color: var(--vscode-focusBorder);
-} */
+}
+*/
 
 ol,
 ul {
@@ -130,7 +134,6 @@ code {
 button {
 	border: none;
 	padding: var(--input-padding-vertical) var(--input-padding-horizontal);
-	width: 100%;
 	text-align: center;
 	outline: 1px solid transparent;
 	outline-offset: 2px !important;
