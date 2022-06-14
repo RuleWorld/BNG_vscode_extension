@@ -217,28 +217,6 @@
             case 'network':
                 // parse GraphML & render with cytoscape.js
 
-                // --- TODO ---
-                //
-                // - figure out default style settings (how they work & what to set them to)
-                // - on a related note, include safety checks in addNode() & addEdge() and/or in stylesheet
-                //   (handle cases where features can't be extracted from GraphML for whatever reason)
-                //
-                // - handle edge direction
-                // -- double check how yEd & the GraphML handle edge direction
-                // --- currently, I can't tell whether this is determined by the
-                //     XML-attribute "edgedefault" for <graph> elements or the
-                //     XML-attributes "source", "target" for <y:Arrows> elements under edge <data>
-                //     (or something else?)
-                // --- edge elements do not seem to have the (optional) XML-attribute "directed"
-                // -- double check how cytoscape handles edge direction
-                // --- currently, my understanding is that direction is determined by
-                //     attributes associated with target-arrow in the edge style settings
-                //     (ie. if there's no target-arrow, then the edge is undirected),
-                //     so right now all edges are assumed to be directed because
-                //     target-arrow-shape is hard-coded into the stylesheet
-                // -- should probably make something in the rendering code check whether
-                //    edges are supposed to be directed & adjust style settings accordingly
-
                 // --- assumptions about structure of GraphML ---
                 //
                 // features of nodes:
@@ -263,7 +241,7 @@
                 // - each edge has XML-attributes "id", "source", "target"
                 // - each edge contains a <data> element, which contains the following elements:
                 // -- <y:LineStyle> w/ XML-attributes "width", "color"
-                // -- <y:Arrows> (not currently used)
+                // -- <y:Arrows> w/ XML-attribute "target"
                 // -- <y:BendStyle> (not currently used)
 
                 // get XML document corresponding to GraphML text
@@ -283,15 +261,28 @@
                 // node: element (with tag "node") from XML document
                 // parentId: id of parent of node, null if none (ie. node is at top level)
                 function addNode (node, parentId) {
-                    // get features of the node
-                    let backgroundColor = node.getElementsByTagName("y:Fill").item(0).getAttribute("color");
-                    let border = node.getElementsByTagName("y:BorderStyle").item(0)
-                    let borderWidth = border.getAttribute("width");
-                    let borderColor = border.getAttribute("color");
+                    // --- get features of the node, use defaults if needed ---
+                    // get background color, set default color if it isn't found
+                    let backgroundColor = node.getElementsByTagName("y:Fill").item(0);
+                    backgroundColor = (backgroundColor) ? backgroundColor.getAttribute("color") : null;
+                    backgroundColor = (backgroundColor) ? backgroundColor : "#999999";
+                    // get border
+                    let border = node.getElementsByTagName("y:BorderStyle").item(0);
+                    // make sure border is not null before trying to get its attributes
+                    let borderWidth = (border) ? border.getAttribute("width") : null;
+                    let borderColor = (border) ? border.getAttribute("color") : null;
+                    // set default border width and/or color if these attributes aren't found
+                    borderWidth = (borderWidth) ? borderWidth : "1";
+                    borderColor = (borderColor) ? borderColor : "#000000";
+                    // get label
                     let label = node.getElementsByTagName("y:NodeLabel").item(0);
-                    let labelText = label.textContent;
-                    let labelColor = label.getAttribute("textColor");
-                    let labelWeight = (label.getAttribute("fontStyle") == "bold") ? "bold" : "normal";
+                    // make sure label is not null before trying to get its content & attributes
+                    let labelText = (label) ? label.textContent : "";
+                    let labelColor = (label) ? label.getAttribute("textColor") : null;
+                    let labelWeight = (label) ? label.getAttribute("fontStyle") : null;
+                    // set default label color and/or weight if these attributes aren't found
+                    labelColor = (labelColor) ? labelColor : "#000000";
+                    labelWeight = (labelWeight && (labelWeight == "bold")) ? "bold" : "normal"
                     
                     // add the node to the collection
                     cytoElements["nodes"].push(
@@ -383,12 +374,23 @@
                 // function to add an edge (w/ features) to the cytoscape collection
                 // edge: element (with tag "edge") from XML document
                 function addEdge (edge) {
-                    // get features of the edge
+                    // --- get features of the edge, use defaults if needed ---
                     let source = edge.getAttribute("source");
                     let target = edge.getAttribute("target");
+                    // get line
                     let line = edge.getElementsByTagName("y:LineStyle").item(0);
-                    let lineWidth = line.getAttribute("width");
-                    let lineColor = line.getAttribute("color");
+                    // make sure line is not null before trying to get its attributes
+                    let lineWidth = (line) ? line.getAttribute("width") : null;
+                    let lineColor = (line) ? line.getAttribute("color") : null;
+                    // set default line width and/or color if these attributes aren't found
+                    lineWidth = (lineWidth) ? lineWidth : "1";
+                    lineColor = (lineColor) ? lineColor : "#000000";
+                    // get arrow, set default if it isn't found
+                    let arrow = edge.getElementsByTagName("y:Arrows").item(0);
+                    arrow = (arrow) ? arrow.getAttribute("target") : null;
+                    // this will recognize only the "standard" arrow type as indicating a directed edge,
+                    // and set "none" (indicating an undirected edge) otherwise; adjust this if needed
+                    arrow = (arrow && (arrow == "standard")) ? "triangle" : "none";
                     
                     // add the edge to the collection
                     cytoElements["edges"].push(
@@ -396,7 +398,8 @@
                                 source: source,
                                 target: target,
                                 lineWidth: lineWidth,
-                                lineColor: lineColor}}
+                                lineColor: lineColor,
+                                arrow: arrow}}
                     );
                 }
 
@@ -428,7 +431,7 @@
                             'width': 'data(lineWidth)',
                             'line-color': 'data(lineColor)',
                             'target-arrow-color': 'data(lineColor)',
-                            'target-arrow-shape': 'triangle',
+                            'target-arrow-shape': 'data(arrow)',
                             'curve-style': 'bezier'
                         }
                     }
