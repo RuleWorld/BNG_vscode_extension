@@ -223,11 +223,6 @@
                 // - on a related note, include safety checks in addNode() & addEdge() and/or in stylesheet
                 //   (handle cases where features can't be extracted from GraphML for whatever reason)
                 //
-                // - work on node label features for readability (alignment, font size, color, constrast against background, etc.)
-                // -- currently not using any of the XML-attributes included with <y:NodeLabel>
-                //
-                // - work on edge visibility (contrast of line color against background?)
-                //
                 // - handle edge direction
                 // -- double check how yEd & the GraphML handle edge direction
                 // --- currently, I can't tell whether this is determined by the
@@ -243,9 +238,7 @@
                 //     target-arrow-shape is hard-coded into the stylesheet
                 // -- should probably make something in the rendering code check whether
                 //    edges are supposed to be directed & adjust style settings accordingly
-                //
-                // - work on group/compound node layouting, look into cytoscape extensions
-                
+
                 // --- assumptions about structure of GraphML ---
                 //
                 // features of nodes:
@@ -254,7 +247,7 @@
                 // -- <y:Fill> w/ XML-attribute "color"
                 // -- <y:BorderStyle> w/ XML-attributes "width", "color"
                 // -- <y:Shape> (not currently used)
-                // -- <y:NodeLabel> w/ text content
+                // -- <y:NodeLabel> w/ text content & XML-attributes "textColor", "fontStyle"
                 // - when retrieving features of group nodes, note that they contain multiple
                 //   instances of these elements (corresponding to each of the nested nodes
                 //   in the group); assume that the elements describing the group node occur first
@@ -295,7 +288,10 @@
                     let border = node.getElementsByTagName("y:BorderStyle").item(0)
                     let borderWidth = border.getAttribute("width");
                     let borderColor = border.getAttribute("color");
-                    let label = node.getElementsByTagName("y:NodeLabel").item(0).textContent;
+                    let label = node.getElementsByTagName("y:NodeLabel").item(0);
+                    let labelText = label.textContent;
+                    let labelColor = label.getAttribute("textColor");
+                    let labelWeight = (label.getAttribute("fontStyle") == "bold") ? "bold" : "normal";
                     
                     // add the node to the collection
                     cytoElements["nodes"].push(
@@ -304,7 +300,9 @@
                                 backgroundColor: backgroundColor,
                                 borderWidth: borderWidth,
                                 borderColor: borderColor,
-                                label: label}}
+                                labelText: labelText,
+                                labelColor: labelColor,
+                                labelWeight: labelWeight}}
                     );
                 }
 
@@ -416,8 +414,11 @@
                             'background-color': 'data(backgroundColor)',
                             'border-width': 'data(borderWidth)',
                             'border-color': 'data(borderColor)',
-                            'label': 'data(label)',
-                            'color': '#999',
+                            'label': 'data(labelText)',
+                            'color': 'data(labelColor)',
+                            'font-weight': 'data(labelWeight)',
+                            'text-valign': 'top',
+                            'text-halign': 'center',
                             'min-zoomed-font-size': '12'
                         }
                     },
