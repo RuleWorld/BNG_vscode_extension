@@ -40,7 +40,7 @@
                     ".gdat",
                     ".cdat",
                     ".scan",
-                    ".gml"
+                    ".graphml"
                 ],
                 "configuration": "./bngl-language-configuration.json"
             }
@@ -158,9 +158,9 @@
                     "command": "bng.webview"
                 },
                 {
-                    "when": "resourceLangId == bngl && resourceExtname == .gml",
+                    "when": "resourceLangId == bngl && resourceExtname == .graphml",
                     "group": "navigation",
-                    "title": "GML View",
+                    "title": "GraphML View",
                     "command": "bng.webview"
                 }
             ]
