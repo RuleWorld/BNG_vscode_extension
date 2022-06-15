@@ -261,28 +261,24 @@
                 // node: element (with tag "node") from XML document
                 // parentId: id of parent of node, null if none (ie. node is at top level)
                 function addNode (node, parentId) {
-                    // --- get features of the node, use defaults if needed ---
-                    // get background color, set default color if it isn't found
+                    // --- get features of the node, check that they exist, use defaults if not found ---
+                    // background color
                     let backgroundColor = node.getElementsByTagName("y:Fill").item(0);
                     backgroundColor = (backgroundColor) ? backgroundColor.getAttribute("color") : null;
                     backgroundColor = (backgroundColor) ? backgroundColor : "#999999";
-                    // get border
+                    // border
                     let border = node.getElementsByTagName("y:BorderStyle").item(0);
-                    // make sure border is not null before trying to get its attributes
                     let borderWidth = (border) ? border.getAttribute("width") : null;
                     let borderColor = (border) ? border.getAttribute("color") : null;
-                    // set default border width and/or color if these attributes aren't found
                     borderWidth = (borderWidth) ? borderWidth : "1";
                     borderColor = (borderColor) ? borderColor : "#000000";
-                    // get label
+                    // label
                     let label = node.getElementsByTagName("y:NodeLabel").item(0);
-                    // make sure label is not null before trying to get its content & attributes
                     let labelText = (label) ? label.textContent : "";
                     let labelColor = (label) ? label.getAttribute("textColor") : null;
                     let labelWeight = (label) ? label.getAttribute("fontStyle") : null;
-                    // set default label color and/or weight if these attributes aren't found
                     labelColor = (labelColor) ? labelColor : "#000000";
-                    labelWeight = (labelWeight && (labelWeight == "bold")) ? "bold" : "normal"
+                    labelWeight = (labelWeight && (labelWeight == "bold")) ? "bold" : "normal";
                     
                     // add the node to the collection
                     cytoElements["nodes"].push(
@@ -374,22 +370,20 @@
                 // function to add an edge (w/ features) to the cytoscape collection
                 // edge: element (with tag "edge") from XML document
                 function addEdge (edge) {
-                    // --- get features of the edge, use defaults if needed ---
+                    // --- get features of the edge, check that they exist, use defaults if not found ---
                     let source = edge.getAttribute("source");
                     let target = edge.getAttribute("target");
-                    // get line
+                    // line
                     let line = edge.getElementsByTagName("y:LineStyle").item(0);
-                    // make sure line is not null before trying to get its attributes
                     let lineWidth = (line) ? line.getAttribute("width") : null;
                     let lineColor = (line) ? line.getAttribute("color") : null;
-                    // set default line width and/or color if these attributes aren't found
                     lineWidth = (lineWidth) ? lineWidth : "1";
                     lineColor = (lineColor) ? lineColor : "#000000";
-                    // get arrow, set default if it isn't found
+                    // arrow
+                    // - this will recognize only the "standard" arrow type as indicating a directed edge,
+                    //   and set "none" (indicating an undirected edge) otherwise; adjust this if needed
                     let arrow = edge.getElementsByTagName("y:Arrows").item(0);
                     arrow = (arrow) ? arrow.getAttribute("target") : null;
-                    // this will recognize only the "standard" arrow type as indicating a directed edge,
-                    // and set "none" (indicating an undirected edge) otherwise; adjust this if needed
                     arrow = (arrow && (arrow == "standard")) ? "triangle" : "none";
                     
                     // add the edge to the collection
@@ -449,15 +443,34 @@
                 });
                 var layout = cy.layout(layout_opts);
                 layout.run();
+                // button: redo layout
                 $("#layout_button").click(function () {
                     layout.run();
                 });
+                // button: save as png
+                $("#png_button").click(function () {
+                    // cytoscape will export current view of graph
+                    let uri = cy.png({
+                        output: 'base64uri',
+                        bg: '#FFFFFF', // should bg be white or transparent?
+                        full: false, // false = current view, true = entire graph
+                        scale: 10 // what scale to use?
+                    });
+                    // extension will decode output and save the file
+                    vscode.postMessage({
+                        command: 'image',
+                        type: 'png',
+                        title: page_title,
+                        folder: page_folder,
+                        text: uri
+                    });
                 cy.mount(network);
+                });
                 break;
         }
     });
     
     vscode.postMessage({
         command: 'ready',
-    })
+    });
 }());
