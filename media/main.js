@@ -464,8 +464,8 @@
                         folder: page_folder,
                         text: uri
                     });
-                cy.mount(network);
                 });
+                cy.mount(network);
                 break;
         }
     });
