@@ -642,7 +642,8 @@ class PlotPanel {
 				<div id="folder" style="display: none;">${PlotPanel.get_current_folder()}</div>
 				<div id="network"></div>
 				<div id="top_buttons">
-				  <button id="layout_button" class="button" type="button">Redo layout</button>
+				  <button id="layout_button" class="button" type="button">Redo Layout</button>
+				  <button id="png_button" class="button" type="button">Save as PNG</button>
 				</div>
 				<script nonce="${this._nonce}" src="${this.jqUri}" type="text/javascript"></script>
 				<script nonce="${this._nonce}" src="${this.cytoUri}" type="text/javascript"></script>
@@ -661,7 +662,7 @@ class PlotPanel {
 		webview.postMessage({
 			command: 'network',
 			context: 'data',
-			data: this._load_graphml(this._text)
+			data: this._text
 		});
 	}
 
@@ -681,16 +682,6 @@ class PlotPanel {
 			max_series: this._config.plotting.max_series_count,
 			menus: this._config.plotting.menus,
 		});
-	}
-
-	// do we need this function?
-	/**
-	 * 
-	 * @param {String} text 
-	 *
-	 */
-	_load_graphml(text) {
-		return text; // JSON.parse(text);
 	}
 
 	/**
