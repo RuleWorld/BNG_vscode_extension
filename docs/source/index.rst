@@ -18,6 +18,7 @@ This is a `VS Code <https://code.visualstudio.com/>`_ extension for
 
    install
    usage
+   devs
 
 
 Indices and tables
