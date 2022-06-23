@@ -27,5 +27,5 @@ If you don't, you need to setup your environment so that the terminal has access
 guides you can find online.
 
 The extension should automatically run ``pip install bionetgen`` to get PyBioNetGen. Once complete, make sure it's installed correctly by
-running ``bionetgen -h``. If this doesn't work, try reloading VS Code and opening a .bngl file. Alternatively, you can open the command line in VS Code (``CTRL/CMD + Shift + P`` or under ``Help -> Show All Commands``) and select the "BNG setup" command.
+running ``bionetgen -h``. If this doesn't work, try reloading VS Code and opening a .bngl file. Alternatively, you can open the command line in VS Code (``CTRL/CMD + SHIFT + P`` or under ``Help -> Show All Commands``) and select the "BNG setup" command.
 You can find more information on installation `here <https://pybionetgen.readthedocs.io/en/latest/>`_.
