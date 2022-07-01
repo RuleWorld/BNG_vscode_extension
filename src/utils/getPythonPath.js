@@ -50,9 +50,17 @@ async function getPythonPath(channel) {
 
         // type {execCommand: (string[] | undefined)}
         // an object which contains an array of strings for the command to execute a python interpreter
-        const executionDetails = pythonExt.exports.settings.getExecutionDetails(doc.uri);
-        // when no resource is provided, the setting scoped to the first workspace folder is returned,
-        // and if no folder is present, it returns the global setting
+        var executionDetails;
+        if (typeof doc !== 'undefined' && doc) {
+            executionDetails = pythonExt.exports.settings.getExecutionDetails(doc.uri);
+        }
+        else {
+            // when no resource is provided, the setting scoped to the first workspace folder is returned,
+            // and if no folder is present, it returns the global setting
+            executionDetails = pythonExt.exports.settings.getExecutionDetails();
+        }
+
+        // TODO: check executionDetails not undefined
 
         // type (string[] | undefined)
         // undefined: empty pythonPath string; no interpreter set
