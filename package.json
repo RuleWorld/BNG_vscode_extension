@@ -226,7 +226,7 @@
                 "bngl.plotting.max_series_count": {
                     "markdownDescription": "The number of maximum time series to plot.",
                     "type": "number",
-                    "default": 10,
+                    "default": 50,
                     "minimum": 1
                 },
                 "bngl.plotting.menus": {
