@@ -50,10 +50,7 @@ async function getPythonPath(channel) {
         if (typeof doc !== 'undefined' && doc) {
             doc = doc.document;
         }
-        else {
-            doc = undefined;
-        }
-
+        
         // type {execCommand: (string[] | undefined)}
         // an object which contains an array of strings for the command to execute a python interpreter
         var executionDetails;
