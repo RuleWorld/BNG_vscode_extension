@@ -46,7 +46,13 @@ async function getPythonPath(channel) {
         }
 
         // is this (resource) needed? would it make more sense to get a global setting? see below
-        const doc = vscode.window.activeTextEditor.document;
+        let doc = vscode.window.activeTextEditor;
+        if (typeof doc !== 'undefined' && doc) {
+            doc = doc.document;
+        }
+        else {
+            doc = undefined;
+        }
 
         // type {execCommand: (string[] | undefined)}
         // an object which contains an array of strings for the command to execute a python interpreter
