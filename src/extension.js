@@ -190,20 +190,14 @@ function activate(context) {
 		if (ext == "gdat" || ext == "scan") {
 			term_cmd = `bionetgen -req "${PYBNG_VERSION}" plot -i "${fpath}" -o "${outpath}" --legend`;
 			bngl_channel.appendLine(term_cmd);
-			// exitCode = await spawnAsync('bionetgen', ['-req', PYBNG_VERSION, 'plot', '-i', fpath, '-o', outpath, '--legend'], bngl_channel);
+			exitCode = spawnAsync('bionetgen', ['-req', PYBNG_VERSION, 'plot', '-i', fpath, '-o', outpath, '--legend'], bngl_channel);
 		} else {
 			term_cmd = `bionetgen -req "${PYBNG_VERSION}" plot -i "${fpath}" -o "${outpath}"`;
 			bngl_channel.appendLine(term_cmd);
-			// exitCode = await spawnAsync('bionetgen', ['-req', PYBNG_VERSION, 'plot', '-i', fpath, '-o', outpath], bngl_channel);
+			exitCode = spawnAsync('bionetgen', ['-req', PYBNG_VERSION, 'plot', '-i', fpath, '-o', outpath], bngl_channel);
 		}
-		
-		// run using terminal (old)
-		let term = vscode.window.terminals.find(i => i.name == "bngl_term");
-		if (term == undefined) {
-			term = vscode.window.createTerminal("bngl_term");
-		}
-		term.show();
-		term.sendText(term_cmd);
+		// currently await spawnAsync is not used
+		// because plot can be long-running and there is no need to block the rest of this function (?)
 
 		// what to do with the below?
 		let outUri = vscode.Uri.file(outpath);
