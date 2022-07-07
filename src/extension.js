@@ -37,13 +37,8 @@ function activate(context) {
 	let PYBNG_VERSION = "0.5.0"
 
 	// function that deals with running bngl files
-	function runCommandHandler() {
-		// first we try to grab our terminal and create one if it doesn't exist
-		let term = vscode.window.terminals.find(i => i.name == "bngl_term");
-		if (term == undefined) {
-			term = vscode.window.createTerminal("bngl_term");
-		}
-		// next we make a folder friendly time stamp
+	async function runCommandHandler() {
+		// make a folder friendly time stamp
 		const date = new Date();
 		const year = date.getFullYear();
 		const month = `${date.getMonth() + 1}`.padStart(2, '0');
@@ -120,22 +115,23 @@ function activate(context) {
 				vscode.workspace.fs.copy(curr_doc_uri, copy_path) 
 			});
 		}
-		// set the terminal command we want to run
-		let term_cmd = `bionetgen -req "${PYBNG_VERSION}" run -i "${copy_path.fsPath}" -o "${new_fold_uri.fsPath}" -l "${new_fold_uri.fsPath}"`;
-		// focus on the terminal and run the command
-		term.show();
-		term.sendText(term_cmd);
-		// Started running, let the user know
+		// what to do with the above?
+
+		// run & let the user know
 		vscode.window.showInformationMessage(`Started running ${fname} in folder ${fname_noext}/${fold_name}`);
+		let term_cmd = `bionetgen -req "${PYBNG_VERSION}" run -i "${copy_path.fsPath}" -o "${new_fold_uri.fsPath}" -l "${new_fold_uri.fsPath}"`;
+		bngl_channel.appendLine(term_cmd);
+		const exitCode = await spawnAsync('bionetgen', ['-req', PYBNG_VERSION, 'run', '-i', copy_path.fsPath, '-o', new_fold_uri.fsPath, '-l', new_fold_uri.fsPath], bngl_channel);
+		if (exitCode) {
+			vscode.window.showInformationMessage("Something went wrong, see BNGL output channel for details");
+		}
+		else {
+			vscode.window.showInformationMessage("Finished running successfully");
+		}
 	}
 	// function that deals with visualizing bngl files
-	function vizCommandHandler() {
-		// first we try to grab our terminal and create one if it doesn't exist
-		let term = vscode.window.terminals.find(i => i.name == "bngl_term");
-		if (term == undefined) {
-			term = vscode.window.createTerminal("bngl_term");
-		}
-		// next we make a folder friendly time stamp
+	async function vizCommandHandler() {
+		// make a folder friendly time stamp
 		const date = new Date();
 		const year = date.getFullYear();
 		const month = `${date.getMonth() + 1}`.padStart(2, '0');
@@ -163,20 +159,21 @@ function activate(context) {
 		vscode.workspace.fs.createDirectory(new_fold_uri).then(() => {
 			vscode.workspace.fs.copy(curr_doc_uri, copy_path);
 		});
-		// set the terminal command we want to run
-		let term_cmd = `bionetgen -req "${PYBNG_VERSION}" visualize -i "${copy_path.fsPath}" -o "${new_fold_uri.fsPath}" -t "all"`;
-		// focus on the terminal and run the command
-		term.show();
-		term.sendText(term_cmd);
-		// Started running, let the user know
+
+		// run & let the user know
 		vscode.window.showInformationMessage(`Started visualizing ${fname} in folder ${fname_noext}/${fold_name}`);
+		let term_cmd = `bionetgen -req "${PYBNG_VERSION}" visualize -i "${copy_path.fsPath}" -o "${new_fold_uri.fsPath}" -t "all"`;
+		bngl_channel.appendLine(term_cmd);
+		const exitCode = await spawnAsync('bionetgen', ['-req', PYBNG_VERSION, 'visualize', '-i', copy_path.fsPath, '-o', new_fold_uri.fsPath, '-t', 'all'], bngl_channel);
+		if (exitCode) {
+			vscode.window.showInformationMessage("Something went wrong, see BNGL output channel for details");
+		}
+		else {
+			vscode.window.showInformationMessage("Finished visualizing successfully");
+		}
 	}
 	// one function for plotting gdat/cdat/scan files
-	function plotDatCommandHandler() {
-		let term = vscode.window.terminals.find(i => i.name == "bngl_term");
-		if (term == undefined) {
-			term = vscode.window.createTerminal("bngl_term");
-		}
+	async function plotDatCommandHandler() {
 		// find basename of the file we are working with
 		let fpath = vscode.window.activeTextEditor.document.fileName;
 		let fname = path.basename(fpath);
@@ -187,16 +184,22 @@ function activate(context) {
 		let fname_noext = split.join('.');
 		// set the path to be copied to
 		let outpath = fpath.replace(fname, `${fname_noext}_${ext}.png`);
-		// set the terminal command we want to run
+		// run
 		let term_cmd;
+		let exitCode;
 		if (ext == "gdat" || ext == "scan") {
 			term_cmd = `bionetgen -req "${PYBNG_VERSION}" plot -i "${fpath}" -o "${outpath}" --legend`;
+			bngl_channel.appendLine(term_cmd);
+			exitCode = spawnAsync('bionetgen', ['-req', PYBNG_VERSION, 'plot', '-i', fpath, '-o', outpath, '--legend'], bngl_channel);
 		} else {
 			term_cmd = `bionetgen -req "${PYBNG_VERSION}" plot -i "${fpath}" -o "${outpath}"`;
+			bngl_channel.appendLine(term_cmd);
+			exitCode = spawnAsync('bionetgen', ['-req', PYBNG_VERSION, 'plot', '-i', fpath, '-o', outpath], bngl_channel);
 		}
-		// focus on the terminal and run the command
-		term.show();
-		term.sendText(term_cmd);
+		// currently await spawnAsync is not used
+		// because plot can be long-running and there is no need to block the rest of this function (?)
+
+		// what to do with the below?
 		let outUri = vscode.Uri.file(outpath);
 		let timeout_mili = 10000;
 		// let's check to see if our image file is created within 10s
