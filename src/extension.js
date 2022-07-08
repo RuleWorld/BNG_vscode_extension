@@ -186,31 +186,38 @@ function activate(context) {
 		let outpath = fpath.replace(fname, `${fname_noext}_${ext}.png`);
 		// run
 		let term_cmd;
-		let exitCode;
+		let process;
 		if (ext == "gdat" || ext == "scan") {
 			term_cmd = `bionetgen -d -req "${PYBNG_VERSION}" plot -i "${fpath}" -o "${outpath}" --legend`;
-			bngl_channel.appendLine(term_cmd);
-			exitCode = spawnAsync('bionetgen', ['-d', '-req', PYBNG_VERSION, 'plot', '-i', fpath, '-o', outpath, '--legend'], bngl_channel);
+			process = spawnAsync('bionetgen', ['-d', '-req', PYBNG_VERSION, 'plot', '-i', fpath, '-o', outpath, '--legend'], bngl_channel);
 		} else {
 			term_cmd = `bionetgen -d -req "${PYBNG_VERSION}" plot -i "${fpath}" -o "${outpath}"`;
-			bngl_channel.appendLine(term_cmd);
-			exitCode = spawnAsync('bionetgen', ['-d', '-req', PYBNG_VERSION, 'plot', '-i', fpath, '-o', outpath], bngl_channel);
+			process = spawnAsync('bionetgen', ['-d', '-req', PYBNG_VERSION, 'plot', '-i', fpath, '-o', outpath], bngl_channel);
 		}
-		// currently await spawnAsync is not used
-		// because plot can be long-running and there is no need to block the rest of this function (?)
+		bngl_channel.appendLine(term_cmd);
+		vscode.window.showInformationMessage(`Started plotting ${fpath} to ${outpath}`);
 
-		// what to do with the below?
-		let outUri = vscode.Uri.file(outpath);
-		let timeout_mili = 10000;
-		// let's check to see if our image file is created within 10s
-		// if so, open it
-		checkImage(outpath, timeout_mili).then(() => {
-			vscode.window.showInformationMessage(`Done plotting ${fpath} to ${outpath}`);
-			vscode.commands.executeCommand('vscode.open', outUri);
+		// once plotting process has closed, check whether the image file has been created & open it if so
+		process.then((exitCode) => {
+			if (exitCode) {
+				vscode.window.showInformationMessage("Plotting failed, see BNGL output channel for details");
+			}
+			else {
+				vscode.window.showInformationMessage("Done plotting");
+				let outUri = vscode.Uri.file(outpath);
+				fs.access(outpath, fs.constants.F_OK, function (err) {
+					if (!err) {
+						vscode.commands.executeCommand('vscode.open', outUri);
+					}
+					else {
+						vscode.window.showInformationMessage("Could not open plot image file, see BNGL output channel for details");
+						bngl_channel.appendLine(err.toString());
+					}
+				});
+			}
 		}).catch(() => {
-			vscode.window.showInformationMessage(`Plotting didn't finish within ${timeout_mili} miliseconds`);
-		}
-		);
+			// this promise is not expected to ever reject, even if exitCode is nonzero (see spawnAsync.js)
+		});
 	}
 	// command to handle installation of bionetgen
 	// called when extension is activated
@@ -323,44 +330,6 @@ function activate(context) {
 	// 		}
 	// 	});
 	// }
-}
-
-/**
- * @param {string} outpath
- * @param {number} [timeout]
- */
-function checkImage(outpath, timeout) {
-	// this returns a promise that will wait until 
-	// a file given by outpath is found or a timeout
-	// limit is reached
-	return new Promise(function (resolve, reject) {
-		// timer that closes watcher if timeout is reached
-		var timer = setTimeout(function () {
-			watcher.close();
-			reject();
-		}, timeout);
-		// checks a path to see if it returns F_OK which 
-		// indicates that the file is visible/exists
-		fs.access(outpath, fs.constants.F_OK, function (err) {
-			if (!err) {
-				clearTimeout(timer);
-				watcher.close();
-				resolve();
-			}
-		});
-		// checks a folder to see if a file is renamed 
-		// into the file we are watching out for
-		var dir = path.dirname(outpath);
-		var basename = path.basename(outpath);
-		var watcher = fs.watch(dir, function (eventType, filename) {
-			if (eventType == "rename" && filename == basename) {
-				clearTimeout(timer);
-				watcher.close();
-				resolve();
-			}
-		});
-	}
-	)
 }
 
 /**
