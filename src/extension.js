@@ -75,59 +75,78 @@ function activate(context) {
 		let curr_doc_uri = vscode.window.activeTextEditor.document.uri;
 		// set the path to be copied to
 		let copy_path = vscode.Uri.joinPath(new_fold_uri, fname);
-		// Create new directory and copy the file into our new folder
+
+		// create new directory and copy the file into our new folder
 		// FIXME: if a file of the same name as the folder exists
 		// this command fails to run. At least let the user know
-		if (config.general.auto_open) {
-			vscode.workspace.fs.createDirectory(new_fold_uri).then(() => {
-				vscode.workspace.fs.copy(curr_doc_uri, copy_path).then(() => {
-					// start a watcher
-					// for now let's only check for model_name.gdat
-					let timeout_mili = 120000;
-					checkGdat(new_fold_uri.fsPath, timeout_mili).then(() => {
-						// we have a gdat in our folder, grab one and open
-						var files = fs.readdirSync(new_fold_uri.fsPath);
-						var outGdatPath;
-						for (var i = 0; i < files.length; i++) {
-							let ext = files[i].split(".").pop();
-							if (ext == "gdat") {
-								outGdatPath = path.join(new_fold_uri.fsPath, files[i]);
-								break
-							}
-						}
-						let outGdatUri = vscode.Uri.file(outGdatPath);
-						vscode.commands.executeCommand('vscode.open', outGdatUri);
-						// .then(() => {
-						// // FIXME: find a way to check for the main process and open
-						// // after because this opens too quickly/set delay won't work
-						// setTimeout(() => {
-						// 	PlotPanel.create(context.extensionUri);
-						// }, 3000);
-						// });
-					}).catch(() => {
-						vscode.window.showInformationMessage(`Couldn't find a gdat in ${timeout_mili} miliseconds`);
-					}
-					);
-				});
-			});
-		} else {
-			vscode.workspace.fs.createDirectory(new_fold_uri).then(() => {
-				vscode.workspace.fs.copy(curr_doc_uri, copy_path) 
-			});
-		}
-		// what to do with the above?
+		await vscode.workspace.fs.createDirectory(new_fold_uri);
+		await vscode.workspace.fs.copy(curr_doc_uri, copy_path);
 
 		// run & let the user know
-		vscode.window.showInformationMessage(`Started running ${fname} in folder ${fname_noext}/${fold_name}`);
+		const process = spawnAsync('bionetgen', ['-req', PYBNG_VERSION, 'run', '-i', copy_path.fsPath, '-o', new_fold_uri.fsPath, '-l', new_fold_uri.fsPath], bngl_channel);
 		let term_cmd = `bionetgen -req "${PYBNG_VERSION}" run -i "${copy_path.fsPath}" -o "${new_fold_uri.fsPath}" -l "${new_fold_uri.fsPath}"`;
 		bngl_channel.appendLine(term_cmd);
-		const exitCode = await spawnAsync('bionetgen', ['-req', PYBNG_VERSION, 'run', '-i', copy_path.fsPath, '-o', new_fold_uri.fsPath, '-l', new_fold_uri.fsPath], bngl_channel);
-		if (exitCode) {
-			vscode.window.showInformationMessage("Something went wrong, see BNGL output channel for details");
+		vscode.window.showInformationMessage(`Started running ${fname} in folder ${fname_noext}/${fold_name}`);
+
+		// todo: remove this block after new stuff is complete, also remove checkGdat
+		/*
+		// start a watcher
+		// for now let's only check for model_name.gdat
+		let timeout_mili = 120000;
+		checkGdat(new_fold_uri.fsPath, timeout_mili).then(() => {
+			// we have a gdat in our folder, grab one and open
+			var files = fs.readdirSync(new_fold_uri.fsPath);
+			var outGdatPath;
+			for (var i = 0; i < files.length; i++) {
+				let ext = files[i].split(".").pop();
+				if (ext == "gdat") {
+					outGdatPath = path.join(new_fold_uri.fsPath, files[i]);
+					break
+				}
+			}
+			let outGdatUri = vscode.Uri.file(outGdatPath);
+			vscode.commands.executeCommand('vscode.open', outGdatUri);
+			// .then(() => {
+			// // FIXME: find a way to check for the main process and open
+			// // after because this opens too quickly/set delay won't work
+			// setTimeout(() => {
+			// 	PlotPanel.create(context.extensionUri);
+			// }, 3000);
+			// });
+		}).catch(() => {
+			vscode.window.showInformationMessage(`Couldn't find a gdat in ${timeout_mili} miliseconds`);
 		}
-		else {
-			vscode.window.showInformationMessage("Finished running successfully");
-		}
+		);
+		*/
+
+		// once running process has closed, [?]
+		process.then((exitCode) => {
+			if (exitCode) {
+				vscode.window.showInformationMessage("Something went wrong, see BNGL output channel for details");
+			}
+			else {
+				vscode.window.showInformationMessage("Finished running successfully");
+
+				// /*
+				if (config.general.auto_open) {
+					// todo: safety checks & error handling
+					var files = fs.readdirSync(new_fold_uri.fsPath);
+					var outGdatPath;
+					for (var i = 0; i < files.length; i++) {
+						let ext = files[i].split(".").pop();
+						if (ext == "gdat") {
+							outGdatPath = path.join(new_fold_uri.fsPath, files[i]);
+							break
+						}
+					}
+					let outGdatUri = vscode.Uri.file(outGdatPath);
+					vscode.commands.executeCommand('vscode.open', outGdatUri);
+				}
+				// */
+			}
+		}).catch(() => {
+			// this promise is not expected to ever reject, even if exitCode is nonzero (see spawnAsync.js)
+		});
 	}
 	// function that deals with visualizing bngl files
 	async function vizCommandHandler() {
@@ -161,9 +180,9 @@ function activate(context) {
 		});
 
 		// run & let the user know
-		vscode.window.showInformationMessage(`Started visualizing ${fname} in folder ${fname_noext}/${fold_name}`);
 		let term_cmd = `bionetgen -req "${PYBNG_VERSION}" visualize -i "${copy_path.fsPath}" -o "${new_fold_uri.fsPath}" -t "all"`;
 		bngl_channel.appendLine(term_cmd);
+		vscode.window.showInformationMessage(`Started visualizing ${fname} in folder ${fname_noext}/${fold_name}`);
 		const exitCode = await spawnAsync('bionetgen', ['-req', PYBNG_VERSION, 'visualize', '-i', copy_path.fsPath, '-o', new_fold_uri.fsPath, '-t', 'all'], bngl_channel);
 		if (exitCode) {
 			vscode.window.showInformationMessage("Something went wrong, see BNGL output channel for details");
@@ -184,7 +203,8 @@ function activate(context) {
 		let fname_noext = split.join('.');
 		// set the path to be copied to
 		let outpath = fpath.replace(fname, `${fname_noext}_${ext}.png`);
-		// run
+		
+		// run & let the user know
 		let term_cmd;
 		let process;
 		if (ext == "gdat" || ext == "scan") {
@@ -254,7 +274,7 @@ function activate(context) {
 			
 			if (installExitCode) {
 				bngl_channel.appendLine("pip install failed for python: " + pythonPath);
-				vscode.window.showInformationMessage("BNG setup failed.");
+				vscode.window.showInformationMessage("BNG setup failed, see BNGL output channel for details.");
 			}
 			else {
 				bngl_channel.appendLine("pip install succeeded for python: " + pythonPath);
@@ -282,7 +302,7 @@ function activate(context) {
 		
 		if (upgradeExitCode) {
 			bngl_channel.appendLine("pip upgrade failed for python: " + pythonPath);
-			vscode.window.showInformationMessage("BNG upgrade failed.");
+			vscode.window.showInformationMessage("BNG upgrade failed, see BNGL output channel for details.");
 		}
 		else {
 			bngl_channel.appendLine("pip upgrade successful for python: " + pythonPath);
