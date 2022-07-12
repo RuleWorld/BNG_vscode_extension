@@ -119,7 +119,6 @@ function activate(context) {
 		);
 		*/
 
-		// once running process has closed, [?]
 		process.then((exitCode) => {
 			if (exitCode) {
 				vscode.window.showInformationMessage("Something went wrong, see BNGL output channel for details");
@@ -127,22 +126,33 @@ function activate(context) {
 			else {
 				vscode.window.showInformationMessage("Finished running successfully");
 
-				// /*
+				// if auto_open setting is enabled, try to open a gdat file (which?)
 				if (config.general.auto_open) {
-					// todo: safety checks & error handling
-					var files = fs.readdirSync(new_fold_uri.fsPath);
-					var outGdatPath;
-					for (var i = 0; i < files.length; i++) {
-						let ext = files[i].split(".").pop();
-						if (ext == "gdat") {
-							outGdatPath = path.join(new_fold_uri.fsPath, files[i]);
-							break
+					try {
+						// read from new directory
+						var files = fs.readdirSync(new_fold_uri.fsPath);
+						var outGdatPath;
+						for (var i = 0; i < files.length; i++) {
+							let ext = files[i].split(".").pop();
+							if (ext == "gdat") {
+								outGdatPath = path.join(new_fold_uri.fsPath, files[i]);
+								break
+							}
+						}
+						// check if a gdat file was found & open it if so
+						if (typeof outGdatPath !== 'undefined' && outGdatPath) {
+							let outGdatUri = vscode.Uri.file(outGdatPath);
+							vscode.commands.executeCommand('vscode.open', outGdatUri);
+						}
+						else {
+							// should anything be done if no gdat file was found?
 						}
 					}
-					let outGdatUri = vscode.Uri.file(outGdatPath);
-					vscode.commands.executeCommand('vscode.open', outGdatUri);
+					catch (err) {
+						// in case reading from the new directory fails
+						bngl_channel.appendLine(err);
+					}
 				}
-				// */
 			}
 		}).catch(() => {
 			// this promise is not expected to ever reject, even if exitCode is nonzero (see spawnAsync.js)
