@@ -116,18 +116,32 @@ function activate(context) {
 			});
 		}
 		// what to do with the above?
-
+		// set the command we want to run
+		let term_cmd = `bionetgen -req "${PYBNG_VERSION}" run -i "${copy_path.fsPath}" -o "${new_fold_uri.fsPath}" -l "${new_fold_uri.fsPath}"`;
+		// run the bngl file, use terminal if user opted to
+		if (config.general.enable_terminal_runner) {
+			// first we try to grab our terminal and create one if it doesn't exist
+			let term = vscode.window.terminals.find(i => i.name == "bngl_term");
+			if (term == undefined) {
+				term = vscode.window.createTerminal("bngl_term");
+			}
+			// focus on the terminal and run the command
+			term.show();
+			term.sendText(term_cmd);
+		} else {
+			// run the command in the background
+			bngl_channel.appendLine(term_cmd);
+			const exitCode = await spawnAsync('bionetgen', ['-req', PYBNG_VERSION, 'run', '-i', copy_path.fsPath, '-o', new_fold_uri.fsPath, '-l', new_fold_uri.fsPath], bngl_channel);
+			if (exitCode) {
+				vscode.window.showInformationMessage("Something went wrong, see BNGL output channel for details");
+			}
+			else {
+				vscode.window.showInformationMessage("Finished running successfully");
+			}
+		}
 		// run & let the user know
 		vscode.window.showInformationMessage(`Started running ${fname} in folder ${fname_noext}/${fold_name}`);
-		let term_cmd = `bionetgen -req "${PYBNG_VERSION}" run -i "${copy_path.fsPath}" -o "${new_fold_uri.fsPath}" -l "${new_fold_uri.fsPath}"`;
-		bngl_channel.appendLine(term_cmd);
-		const exitCode = await spawnAsync('bionetgen', ['-req', PYBNG_VERSION, 'run', '-i', copy_path.fsPath, '-o', new_fold_uri.fsPath, '-l', new_fold_uri.fsPath], bngl_channel);
-		if (exitCode) {
-			vscode.window.showInformationMessage("Something went wrong, see BNGL output channel for details");
-		}
-		else {
-			vscode.window.showInformationMessage("Finished running successfully");
-		}
+		
 	}
 	// function that deals with visualizing bngl files
 	async function vizCommandHandler() {
@@ -164,12 +178,25 @@ function activate(context) {
 		vscode.window.showInformationMessage(`Started visualizing ${fname} in folder ${fname_noext}/${fold_name}`);
 		let term_cmd = `bionetgen -req "${PYBNG_VERSION}" visualize -i "${copy_path.fsPath}" -o "${new_fold_uri.fsPath}" -t "all"`;
 		bngl_channel.appendLine(term_cmd);
-		const exitCode = await spawnAsync('bionetgen', ['-req', PYBNG_VERSION, 'visualize', '-i', copy_path.fsPath, '-o', new_fold_uri.fsPath, '-t', 'all'], bngl_channel);
-		if (exitCode) {
-			vscode.window.showInformationMessage("Something went wrong, see BNGL output channel for details");
-		}
-		else {
-			vscode.window.showInformationMessage("Finished visualizing successfully");
+		
+		if (config.general.enable_terminal_runner) {
+			// first we try to grab our terminal and create one if it doesn't exist
+			let term = vscode.window.terminals.find(i => i.name == "bngl_term");
+			if (term == undefined) {
+				term = vscode.window.createTerminal("bngl_term");
+			}
+			// focus on the terminal and run the command
+			term.show();
+			term.sendText(term_cmd);
+		} else {
+			// run the command in the background
+			const exitCode = await spawnAsync('bionetgen', ['-req', PYBNG_VERSION, 'visualize', '-i', copy_path.fsPath, '-o', new_fold_uri.fsPath, '-t', 'all'], bngl_channel);
+			if (exitCode) {
+				vscode.window.showInformationMessage("Something went wrong, see BNGL output channel for details");
+			}
+			else {
+				vscode.window.showInformationMessage("Finished visualizing successfully");
+			}
 		}
 	}
 	// one function for plotting gdat/cdat/scan files
