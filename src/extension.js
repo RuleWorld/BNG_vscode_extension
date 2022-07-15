@@ -214,14 +214,32 @@ function activate(context) {
 		// run
 		let term_cmd;
 		let exitCode;
-		if (ext == "gdat" || ext == "scan") {
-			term_cmd = `bionetgen -d -req "${PYBNG_VERSION}" plot -i "${fpath}" -o "${outpath}" --legend`;
-			bngl_channel.appendLine(term_cmd);
-			exitCode = spawnAsync('bionetgen', ['-d', '-req', PYBNG_VERSION, 'plot', '-i', fpath, '-o', outpath, '--legend'], bngl_channel);
-		} else {
-			term_cmd = `bionetgen -d -req "${PYBNG_VERSION}" plot -i "${fpath}" -o "${outpath}"`;
-			bngl_channel.appendLine(term_cmd);
-			exitCode = spawnAsync('bionetgen', ['-d', '-req', PYBNG_VERSION, 'plot', '-i', fpath, '-o', outpath], bngl_channel);
+		if (config.general.enable_terminal_runner) {
+			let term = vscode.window.terminals.find(i => i.name == "bngl_term");
+			if (term == undefined) {
+				term = vscode.window.createTerminal("bngl_term");
+			}
+			// focus on the terminal and run the command
+			term.show();
+			if (ext == "gdat" || ext == "scan") {
+				term_cmd = `bionetgen -d -req "${PYBNG_VERSION}" plot -i "${fpath}" -o "${outpath}" --legend`;
+				bngl_channel.appendLine(term_cmd);
+				term.sendText(term_cmd);
+			} else {
+				term_cmd = `bionetgen -d -req "${PYBNG_VERSION}" plot -i "${fpath}" -o "${outpath}"`;
+				bngl_channel.appendLine(term_cmd);
+				term.sendText(term_cmd);
+			}
+		} else { 
+			if (ext == "gdat" || ext == "scan") {
+				term_cmd = `bionetgen -d -req "${PYBNG_VERSION}" plot -i "${fpath}" -o "${outpath}" --legend`;
+				bngl_channel.appendLine(term_cmd);
+				exitCode = spawnAsync('bionetgen', ['-d', '-req', PYBNG_VERSION, 'plot', '-i', fpath, '-o', outpath, '--legend'], bngl_channel);
+			} else {
+				term_cmd = `bionetgen -d -req "${PYBNG_VERSION}" plot -i "${fpath}" -o "${outpath}"`;
+				bngl_channel.appendLine(term_cmd);
+				exitCode = spawnAsync('bionetgen', ['-d', '-req', PYBNG_VERSION, 'plot', '-i', fpath, '-o', outpath], bngl_channel);
+			}
 		}
 		// currently await spawnAsync is not used
 		// because plot can be long-running and there is no need to block the rest of this function (?)
