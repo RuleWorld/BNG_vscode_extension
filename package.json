@@ -24,6 +24,7 @@
     "main": "./src/extension.js",
     "activationEvents": [
         "onCommand:bng.setup",
+        "onCommand:bng.upgrade",
         "onLanguage:bngl"
     ],
     "contributes": {
