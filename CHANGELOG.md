@@ -131,3 +131,6 @@ Run and plotting operations moved out of terminal calls and now spawns processes
 
 - 0.6.8
 Old terminal runner is now an extra option under extension settings. 
+
+- 0.6.9
+Plotting and graph visualizing now correctly respects the terminal runner option. Changed result placement behavior and all results will now be placed in the same folder as the bngl file that's open. 

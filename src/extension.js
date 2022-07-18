@@ -38,33 +38,22 @@ function activate(context) {
 
 	// function that deals with running bngl files
 	async function runCommandHandler() {
-		// make a folder friendly time stamp
-		const date = new Date();
-		const year = date.getFullYear();
-		const month = `${date.getMonth() + 1}`.padStart(2, '0');
-		const day = `${date.getDate()}`.padStart(2, '0');
-		const seconds = `${date.getSeconds()}`.padStart(2, '0');
-		const fold_name = `${year}_${month}_${day}__${date.getHours()}_${date.getMinutes()}_${seconds}`
+		const fold_name = get_time_stamped_folder_name();
 		// pull configuration
 		var config = vscode.workspace.getConfiguration("bngl");
-		// Get workspace URI
-		let curr_workspace = vscode.workspace.getWorkspaceFolder(vscode.window.activeTextEditor.document.uri);
 		// find basename of the file we are working with
 		let fname = vscode.window.activeTextEditor.document.fileName;
 		// get base name
 		fname = path.basename(fname);
-		// let's check if the workspace folder exists to begin with
-		if (curr_workspace == undefined) { 
-			let def_folder = config.general.result_folder;
-			if (def_folder != null) {
-				// Gets the folder defined in configuration
-				var curr_workspace_uri = vscode.Uri.file(def_folder);
-			} else {
-				// Gets the folder the file is in and uses that for results
-				var curr_workspace_uri = vscode.Uri.file(vscode.window.activeTextEditor.document.uri.fsPath.replace(fname, ""));
-			}
+		// always dump the results in the same folder as the bngl
+		// unless the user has specified a folder in settings
+		let def_folder = config.general.result_folder;
+		if (def_folder != null) {
+			// Gets the folder defined in configuration
+			var curr_workspace_uri = vscode.Uri.file(def_folder);
 		} else {
-			var curr_workspace_uri = curr_workspace.uri;
+			// Gets the folder the file is in and uses that for results
+			var curr_workspace_uri = vscode.Uri.file(vscode.window.activeTextEditor.document.uri.fsPath.replace(fname, ""));
 		}
 		// remove extension
 		// TODO: Do a check here to make sure extension exists
@@ -145,19 +134,23 @@ function activate(context) {
 	}
 	// function that deals with visualizing bngl files
 	async function vizCommandHandler() {
-		// make a folder friendly time stamp
-		const date = new Date();
-		const year = date.getFullYear();
-		const month = `${date.getMonth() + 1}`.padStart(2, '0');
-		const day = `${date.getDate()}`.padStart(2, '0');
-		const seconds = `${date.getSeconds()}`.padStart(2, '0');
-		const fold_name = `${year}_${month}_${day}__${date.getHours()}_${date.getMinutes()}_${seconds}`
-		// Get workspace URI
-		let curr_workspace_uri = vscode.workspace.getWorkspaceFolder(vscode.window.activeTextEditor.document.uri).uri;
+		const fold_name = get_time_stamped_folder_name();
+		// pull configuration
+		var config = vscode.workspace.getConfiguration("bngl");
 		// find basename of the file we are working with
 		let fname = vscode.window.activeTextEditor.document.fileName;
 		// get base name
 		fname = path.basename(fname);
+		// always dump the results in the same folder as the bngl
+		// unless the user has specified a folder in settings
+		let def_folder = config.general.result_folder;
+		if (def_folder != null) {
+			// Gets the folder defined in configuration
+			var curr_workspace_uri = vscode.Uri.file(def_folder);
+		} else {
+			// Gets the folder the file is in and uses that for results
+			var curr_workspace_uri = vscode.Uri.file(vscode.window.activeTextEditor.document.uri.fsPath.replace(fname, ""));
+		}
 		// remove extension
 		// TODO: Do a check here to make sure extension exists
 		let fname_noext = fname.replace(".bngl", "");
@@ -212,8 +205,7 @@ function activate(context) {
 		// set the path to be copied to
 		let outpath = fpath.replace(fname, `${fname_noext}_${ext}.png`);
 		// run
-		let term_cmd;
-		let exitCode;
+		let term_cmd;	
 		if (config.general.enable_terminal_runner) {
 			let term = vscode.window.terminals.find(i => i.name == "bngl_term");
 			if (term == undefined) {
@@ -231,6 +223,7 @@ function activate(context) {
 				term.sendText(term_cmd);
 			}
 		} else { 
+			let exitCode;
 			if (ext == "gdat" || ext == "scan") {
 				term_cmd = `bionetgen -d -req "${PYBNG_VERSION}" plot -i "${fpath}" -o "${outpath}" --legend`;
 				bngl_channel.appendLine(term_cmd);
@@ -891,6 +884,17 @@ function get_nonce() {
 		text += possible.charAt(Math.floor(Math.random() * possible.length));
 	}
 	return text;
+}
+
+function get_time_stamped_folder_name() {
+	// make a folder friendly time stamp
+	const date = new Date();
+	const year = date.getFullYear();
+	const month = `${date.getMonth() + 1}`.padStart(2, '0');
+	const day = `${date.getDate()}`.padStart(2, '0');
+	const seconds = `${date.getSeconds()}`.padStart(2, '0');
+	const fold_name = `${year}_${month}_${day}__${date.getHours()}_${date.getMinutes()}_${seconds}`
+	return fold_name;
 }
 
 // this method is called when your extension is deactivated
