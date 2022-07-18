@@ -123,6 +123,7 @@ function activate(context) {
 			const exitCode = await spawnAsync('bionetgen', ['-req', PYBNG_VERSION, 'run', '-i', copy_path.fsPath, '-o', new_fold_uri.fsPath, '-l', new_fold_uri.fsPath], bngl_channel);
 			if (exitCode) {
 				vscode.window.showInformationMessage("Something went wrong, see BNGL output channel for details");
+				bngl_channel.show();
 			}
 			else {
 				vscode.window.showInformationMessage("Finished running successfully");
@@ -186,6 +187,7 @@ function activate(context) {
 			const exitCode = await spawnAsync('bionetgen', ['-req', PYBNG_VERSION, 'visualize', '-i', copy_path.fsPath, '-o', new_fold_uri.fsPath, '-t', 'all'], bngl_channel);
 			if (exitCode) {
 				vscode.window.showInformationMessage("Something went wrong, see BNGL output channel for details");
+				bngl_channel.show();
 			}
 			else {
 				vscode.window.showInformationMessage("Finished visualizing successfully");
@@ -260,6 +262,7 @@ function activate(context) {
 		if (perlCheckExitCode) {
 			bngl_channel.appendLine("Could not find perl.");
 			vscode.window.showInformationMessage("You must install Perl (https://www.perl.org/get.html). We recommend Strawberry Perl for Windows. We recommend Strawberry Perl (https://strawberryperl.com/) for Windows.");
+			bngl_channel.show();
 		}
 		else {
 			bngl_channel.appendLine("Found perl.");
@@ -314,6 +317,7 @@ function activate(context) {
 		if (upgradeExitCode) {
 			bngl_channel.appendLine("pip upgrade failed for python: " + pythonPath);
 			vscode.window.showInformationMessage("BNG upgrade failed.");
+			bngl_channel.show();
 		}
 		else {
 			bngl_channel.appendLine("pip upgrade successful for python: " + pythonPath);
