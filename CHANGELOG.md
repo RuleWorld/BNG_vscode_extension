@@ -134,3 +134,6 @@ Old terminal runner is now an extra option under extension settings.
 
 - 0.6.9
 Plotting and graph visualizing now correctly respects the terminal runner option. Changed result placement behavior and all results will now be placed in the same folder as the bngl file that's open. 
+
+- 0.7.0
+When there is an error with the spawn runner, output channel will automatically pop up. Calling BNG upgrade will automatically activate the extension. 
