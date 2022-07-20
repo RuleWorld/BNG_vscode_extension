@@ -232,11 +232,11 @@ function activate(context) {
 			if (ext == "gdat" || ext == "scan") {
 				term_cmd = `bionetgen -d -req "${PYBNG_VERSION}" plot -i "${fpath}" -o "${outpath}" --legend`;
 				bngl_channel.appendLine(term_cmd);
-				exitCode = spawnAsync('bionetgen', ['-d', '-req', PYBNG_VERSION, 'plot', '-i', fpath, '-o', outpath, '--legend'], bngl_channel);
+				exitCode = spawnAsync('bionetgen', ['-d', '-req', PYBNG_VERSION, 'plot', '-i', fpath, '-o', outpath, '--legend'], bngl_channel, openProcesses);
 			} else {
 				term_cmd = `bionetgen -d -req "${PYBNG_VERSION}" plot -i "${fpath}" -o "${outpath}"`;
 				bngl_channel.appendLine(term_cmd);
-				exitCode = spawnAsync('bionetgen', ['-d', '-req', PYBNG_VERSION, 'plot', '-i', fpath, '-o', outpath], bngl_channel);
+				exitCode = spawnAsync('bionetgen', ['-d', '-req', PYBNG_VERSION, 'plot', '-i', fpath, '-o', outpath], bngl_channel, openProcesses);
 			}
 		}
 		// currently await spawnAsync is not used
