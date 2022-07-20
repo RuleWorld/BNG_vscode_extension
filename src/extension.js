@@ -13,8 +13,11 @@ const vscode = require('vscode');
 const fs = require('fs');
 const path = require('path');
 const os = require('os');
+const process = require('process');
 const { spawnAsync } = require('./utils/spawnAsync.js');
 const { getPythonPath } = require('./utils/getPythonPath.js');
+
+var openProcesses = new Set(); // keep track of PIDs of open processes
 
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
@@ -131,7 +134,7 @@ function activate(context) {
 		} else {
 			// run the command in the background
 			bngl_channel.appendLine(term_cmd);
-			const exitCode = await spawnAsync('bionetgen', ['-req', PYBNG_VERSION, 'run', '-i', copy_path.fsPath, '-o', new_fold_uri.fsPath, '-l', new_fold_uri.fsPath], bngl_channel);
+			const exitCode = await spawnAsync('bionetgen', ['-req', PYBNG_VERSION, 'run', '-i', copy_path.fsPath, '-o', new_fold_uri.fsPath, '-l', new_fold_uri.fsPath], bngl_channel, openProcesses);
 			if (exitCode) {
 				vscode.window.showInformationMessage("Something went wrong, see BNGL output channel for details");
 			}
@@ -190,7 +193,7 @@ function activate(context) {
 			term.sendText(term_cmd);
 		} else {
 			// run the command in the background
-			const exitCode = await spawnAsync('bionetgen', ['-req', PYBNG_VERSION, 'visualize', '-i', copy_path.fsPath, '-o', new_fold_uri.fsPath, '-t', 'all'], bngl_channel);
+			const exitCode = await spawnAsync('bionetgen', ['-req', PYBNG_VERSION, 'visualize', '-i', copy_path.fsPath, '-o', new_fold_uri.fsPath, '-t', 'all'], bngl_channel, openProcesses);
 			if (exitCode) {
 				vscode.window.showInformationMessage("Something went wrong, see BNGL output channel for details");
 			}
@@ -217,11 +220,11 @@ function activate(context) {
 		if (ext == "gdat" || ext == "scan") {
 			term_cmd = `bionetgen -d -req "${PYBNG_VERSION}" plot -i "${fpath}" -o "${outpath}" --legend`;
 			bngl_channel.appendLine(term_cmd);
-			exitCode = spawnAsync('bionetgen', ['-d', '-req', PYBNG_VERSION, 'plot', '-i', fpath, '-o', outpath, '--legend'], bngl_channel);
+			exitCode = spawnAsync('bionetgen', ['-d', '-req', PYBNG_VERSION, 'plot', '-i', fpath, '-o', outpath, '--legend'], bngl_channel, openProcesses);
 		} else {
 			term_cmd = `bionetgen -d -req "${PYBNG_VERSION}" plot -i "${fpath}" -o "${outpath}"`;
 			bngl_channel.appendLine(term_cmd);
-			exitCode = spawnAsync('bionetgen', ['-d', '-req', PYBNG_VERSION, 'plot', '-i', fpath, '-o', outpath], bngl_channel);
+			exitCode = spawnAsync('bionetgen', ['-d', '-req', PYBNG_VERSION, 'plot', '-i', fpath, '-o', outpath], bngl_channel, openProcesses);
 		}
 		// currently await spawnAsync is not used
 		// because plot can be long-running and there is no need to block the rest of this function (?)
@@ -243,7 +246,7 @@ function activate(context) {
 	// called when extension is activated
 	async function setupCommandHandler() {
 		bngl_channel.appendLine("Checking for perl.");
-		const perlCheckExitCode = await spawnAsync('perl', ['-v'], bngl_channel);
+		const perlCheckExitCode = await spawnAsync('perl', ['-v'], bngl_channel, openProcesses);
 		
 		// if perl is not installed (exit code is not 0), tell user to install it
 		if (perlCheckExitCode) {
@@ -260,7 +263,7 @@ function activate(context) {
 		bngl_channel.appendLine("Found python path: " + pythonPath);
 
 		bngl_channel.appendLine("Checking for bionetgen.");
-		const bngCheckExitCode = await spawnAsync(pythonPath, ['-m', 'pip', 'show', 'bionetgen'], bngl_channel);
+		const bngCheckExitCode = await spawnAsync(pythonPath, ['-m', 'pip', 'show', 'bionetgen'], bngl_channel, openProcesses);
 		// if spawnAsync() cannot run the python at pythonPath, it will log an error to bngl_channel
 		
 		// if bionetgen is not installed (exit code is not 0), proceed with setup
@@ -270,7 +273,7 @@ function activate(context) {
 			vscode.window.showInformationMessage("Setting up BNG for the following Python: " + pythonPath);
 			
 			// spawn child process to run pip install
-			const installExitCode = await spawnAsync(pythonPath, ['-m', 'pip', 'install', 'bionetgen', '--upgrade'], bngl_channel);
+			const installExitCode = await spawnAsync(pythonPath, ['-m', 'pip', 'install', 'bionetgen', '--upgrade'], bngl_channel, openProcesses);
 			
 			if (installExitCode) {
 				bngl_channel.appendLine("pip install failed for python: " + pythonPath);
@@ -298,7 +301,7 @@ function activate(context) {
 		vscode.window.showInformationMessage("Upgrading BNG for the following Python: " + pythonPath);
 					
 		// spawn child process to run pip upgrade
-		const upgradeExitCode = await spawnAsync(pythonPath, ['-m', 'pip', 'install', 'bionetgen', '--upgrade'], bngl_channel);
+		const upgradeExitCode = await spawnAsync(pythonPath, ['-m', 'pip', 'install', 'bionetgen', '--upgrade'], bngl_channel, openProcesses);
 		
 		if (upgradeExitCode) {
 			bngl_channel.appendLine("pip upgrade failed for python: " + pythonPath);
@@ -336,6 +339,10 @@ function activate(context) {
 	// this one upgrades bionetgen
 	let disposable6 = vscode.commands.registerCommand(upgradeCommandName, upgradeCommandHandler);
 	context.subscriptions.push(disposable6);
+
+	// fix this (& in package.json)
+	context.subscriptions.push(vscode.commands.registerCommand('bng.process_cleanup', () => {processCleanup()}));
+
 	// TODO make this work
 	// resurrect webview 
 	// if (vscode.window.registerWebviewPanelSerializer) {
@@ -875,8 +882,23 @@ function get_nonce() {
 	return text;
 }
 
+// fix this
+function processCleanup() {
+	console.log('open processes before cleanup: ' + openProcesses.size);
+	openProcesses.forEach((pid) => {
+		process.kill(pid); // should kill via signal - why does the corresponding close event say signal is null?
+		// there are some weird nuances with signals that can be used here, especially on windows
+	});
+	// there is a delay before spawnAsync catches this
+	setTimeout(function() {
+		console.log('open processes after cleanup: ' + openProcesses.size);
+	}, 1000);
+}
+
 // this method is called when your extension is deactivated
-function deactivate() { }
+function deactivate() {
+
+}
 
 module.exports = {
 	activate,

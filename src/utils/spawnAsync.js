@@ -6,12 +6,17 @@
 const cp = require('child_process');
 
 // spawn child process to run the given command, write results to output channel
-async function spawnAsync(command, args, channel) {
+async function spawnAsync(command, args, channel, openProcessSet) {
 
     // expect this promise to resolve; reject is not used because this seems to cause strange behavior in VS Code
     return new Promise((resolve, reject) => {
         const newProcess = cp.spawn(command, args);
-        
+        const pid = newProcess.pid;
+        console.log('opened process ' + pid);
+        if (openProcessSet) {
+            openProcessSet.add(pid);
+        }
+            
         // expose errors with the process itself
         newProcess.on('error', (err) => {
             if (channel) {
@@ -34,9 +39,13 @@ async function spawnAsync(command, args, channel) {
         });
 
         // expose and return the exit code with which the process finished
-        newProcess.on('close', (code) => {
+        newProcess.on('close', (code, signal) => {
             if (channel) {
                 channel.appendLine(`process exited with code ${code}`);
+            }
+            console.log('closed process ' + pid + ' with code ' + code + ', signal ' + signal);
+            if (openProcessSet) {
+                openProcessSet.delete(pid);
             }
             resolve(code);
         });

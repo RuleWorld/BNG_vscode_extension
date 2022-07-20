@@ -105,6 +105,10 @@
             {
                 "command": "bng.upgrade",
                 "title": "BNG upgrade"
+            },
+            {
+                "command": "bng.process_cleanup",
+                "title": "BNG process cleanup"
             }
         ],
         "menus": {
