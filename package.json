@@ -110,8 +110,20 @@
             {
                 "command": "bng.process_cleanup",
                 "title": "BNG process cleanup"
+            },
+            {
+                "command": "bng.kill_process",
+                "title": "Kill process"
             }
         ],
+        "views": {
+            "explorer": [
+                {
+                    "id": "processManagerTreeView",
+                    "name": "BNG Process Manager"
+                }
+            ]
+        },
         "menus": {
             "editor/title": [
                 {
@@ -167,6 +179,12 @@
                     "group": "navigation",
                     "title": "GraphML View",
                     "command": "bng.webview"
+                }
+            ],
+            "view/item/context": [
+                {
+                    "when": "view == processManagerTreeView",
+                    "command": "bng.kill_process"
                 }
             ]
         },

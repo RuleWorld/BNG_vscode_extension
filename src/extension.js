@@ -13,11 +13,11 @@ const vscode = require('vscode');
 const fs = require('fs');
 const path = require('path');
 const os = require('os');
-const process = require('process');
 const { spawnAsync } = require('./utils/spawnAsync.js');
 const { getPythonPath } = require('./utils/getPythonPath.js');
+var { ProcessManager, ProcessManagerProvider } = require('./processManagement.js');
 
-var openProcesses = new Set(); // keep track of PIDs of open processes
+var processManager = new ProcessManager();
 
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
@@ -123,7 +123,7 @@ function activate(context) {
 		} else {
 			// run the command in the background
 			bngl_channel.appendLine(term_cmd);
-			const exitCode = await spawnAsync('bionetgen', ['-req', PYBNG_VERSION, 'run', '-i', copy_path.fsPath, '-o', new_fold_uri.fsPath, '-l', new_fold_uri.fsPath], bngl_channel, openProcesses);
+			const exitCode = await spawnAsync('bionetgen', ['-req', PYBNG_VERSION, 'run', '-i', copy_path.fsPath, '-o', new_fold_uri.fsPath, '-l', new_fold_uri.fsPath], bngl_channel, processManager);
 			if (exitCode) {
 				vscode.window.showInformationMessage("Something went wrong, see BNGL output channel for details");
 				bngl_channel.show();
@@ -187,7 +187,7 @@ function activate(context) {
 			term.sendText(term_cmd);
 		} else {
 			// run the command in the background
-			const exitCode = await spawnAsync('bionetgen', ['-req', PYBNG_VERSION, 'visualize', '-i', copy_path.fsPath, '-o', new_fold_uri.fsPath, '-t', 'all'], bngl_channel, openProcesses);
+			const exitCode = await spawnAsync('bionetgen', ['-req', PYBNG_VERSION, 'visualize', '-i', copy_path.fsPath, '-o', new_fold_uri.fsPath, '-t', 'all'], bngl_channel, processManager);
 			if (exitCode) {
 				vscode.window.showInformationMessage("Something went wrong, see BNGL output channel for details");
 				bngl_channel.show();
@@ -232,11 +232,11 @@ function activate(context) {
 			if (ext == "gdat" || ext == "scan") {
 				term_cmd = `bionetgen -d -req "${PYBNG_VERSION}" plot -i "${fpath}" -o "${outpath}" --legend`;
 				bngl_channel.appendLine(term_cmd);
-				exitCode = spawnAsync('bionetgen', ['-d', '-req', PYBNG_VERSION, 'plot', '-i', fpath, '-o', outpath, '--legend'], bngl_channel, openProcesses);
+				exitCode = spawnAsync('bionetgen', ['-d', '-req', PYBNG_VERSION, 'plot', '-i', fpath, '-o', outpath, '--legend'], bngl_channel, processManager);
 			} else {
 				term_cmd = `bionetgen -d -req "${PYBNG_VERSION}" plot -i "${fpath}" -o "${outpath}"`;
 				bngl_channel.appendLine(term_cmd);
-				exitCode = spawnAsync('bionetgen', ['-d', '-req', PYBNG_VERSION, 'plot', '-i', fpath, '-o', outpath], bngl_channel, openProcesses);
+				exitCode = spawnAsync('bionetgen', ['-d', '-req', PYBNG_VERSION, 'plot', '-i', fpath, '-o', outpath], bngl_channel, processManager);
 			}
 		}
 		// currently await spawnAsync is not used
@@ -259,7 +259,7 @@ function activate(context) {
 	// called when extension is activated
 	async function setupCommandHandler() {
 		bngl_channel.appendLine("Checking for perl.");
-		const perlCheckExitCode = await spawnAsync('perl', ['-v'], bngl_channel, openProcesses);
+		const perlCheckExitCode = await spawnAsync('perl', ['-v'], bngl_channel, processManager);
 		
 		// if perl is not installed (exit code is not 0), tell user to install it
 		if (perlCheckExitCode) {
@@ -277,7 +277,7 @@ function activate(context) {
 		bngl_channel.appendLine("Found python path: " + pythonPath);
 
 		bngl_channel.appendLine("Checking for bionetgen.");
-		const bngCheckExitCode = await spawnAsync(pythonPath, ['-m', 'pip', 'show', 'bionetgen'], bngl_channel, openProcesses);
+		const bngCheckExitCode = await spawnAsync(pythonPath, ['-m', 'pip', 'show', 'bionetgen'], bngl_channel, processManager);
 		// if spawnAsync() cannot run the python at pythonPath, it will log an error to bngl_channel
 		
 		// if bionetgen is not installed (exit code is not 0), proceed with setup
@@ -287,7 +287,7 @@ function activate(context) {
 			vscode.window.showInformationMessage("Setting up BNG for the following Python: " + pythonPath);
 			
 			// spawn child process to run pip install
-			const installExitCode = await spawnAsync(pythonPath, ['-m', 'pip', 'install', 'bionetgen', '--upgrade'], bngl_channel, openProcesses);
+			const installExitCode = await spawnAsync(pythonPath, ['-m', 'pip', 'install', 'bionetgen', '--upgrade'], bngl_channel, processManager);
 			
 			if (installExitCode) {
 				bngl_channel.appendLine("pip install failed for python: " + pythonPath);
@@ -315,7 +315,7 @@ function activate(context) {
 		vscode.window.showInformationMessage("Upgrading BNG for the following Python: " + pythonPath);
 					
 		// spawn child process to run pip upgrade
-		const upgradeExitCode = await spawnAsync(pythonPath, ['-m', 'pip', 'install', 'bionetgen', '--upgrade'], bngl_channel, openProcesses);
+		const upgradeExitCode = await spawnAsync(pythonPath, ['-m', 'pip', 'install', 'bionetgen', '--upgrade'], bngl_channel, processManager);
 		
 		if (upgradeExitCode) {
 			bngl_channel.appendLine("pip upgrade failed for python: " + pythonPath);
@@ -355,9 +355,19 @@ function activate(context) {
 	let disposable6 = vscode.commands.registerCommand(upgradeCommandName, upgradeCommandHandler);
 	context.subscriptions.push(disposable6);
 
-	// fix this (& in package.json)
-	context.subscriptions.push(vscode.commands.registerCommand('bng.process_cleanup', () => {processCleanup()}));
+	// commands for process management
+	// fix these (here & in package.json)
+	// - maybe just expose process.kill & don't bother going through processManager
+	// - kill_process currently shows up in command palette but only actually works from tree view;
+	//   don't register it in package.json, or explicitly hide it?
+	// - not sure how exactly kill_process knows to use the pid of the selected process
+	//   or if/how this needs to be changed if/when the tree view items get more complex
+	context.subscriptions.push(vscode.commands.registerCommand('bng.process_cleanup', () => { processManager.killAllProcesses() }));
+	context.subscriptions.push(vscode.commands.registerCommand('bng.kill_process', (pid) => { processManager.killProcess(pid) }));
 
+	// process manager tree view
+	let processManagerTreeView = vscode.window.createTreeView('processManagerTreeView', {treeDataProvider: new ProcessManagerProvider(processManager)});
+	
 	// TODO make this work
 	// resurrect webview 
 	// if (vscode.window.registerWebviewPanelSerializer) {
@@ -895,19 +905,6 @@ function get_nonce() {
 		text += possible.charAt(Math.floor(Math.random() * possible.length));
 	}
 	return text;
-}
-
-// fix this
-function processCleanup() {
-	console.log('open processes before cleanup: ' + openProcesses.size);
-	openProcesses.forEach((pid) => {
-		process.kill(pid); // should kill via signal - why does the corresponding close event say signal is null?
-		// there are some weird nuances with signals that can be used here, especially on windows
-	});
-	// there is a delay before spawnAsync catches this
-	setTimeout(function() {
-		console.log('open processes after cleanup: ' + openProcesses.size);
-	}, 1000);
 }
 
 function get_time_stamped_folder_name() {
