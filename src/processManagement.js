@@ -5,7 +5,47 @@
 // - extension creates processManagerTreeView & registers a ProcessManagerProvider instance based on the ProcessManager instance
 
 const vscode = require('vscode');
-const process = require('process');
+const cp = require('child_process');
+
+// WIP: sub-process tracking
+function getProcessList(ppid) {
+    // windows
+    if (process.platform === "win32") {
+        let helper;
+
+        // there are a couple potential ways of doing this
+
+        // get processes which are children of the given process (only gets direct children)
+        if (ppid) {
+            helper = cp.spawn('wmic', ['process', 'where', `(ParentProcessId=${ppid})`, 'get', 'Caption,ProcessId']);
+        }
+        // if ppid is not given, get all processes
+        else {
+            // try to get only those which are relevant to bionetgen
+            // - BNG2.pl shows up with Caption perl.exe
+            //   (could be problematic if there happen to be other perl things running, unless we only track children of bionetgen processes)
+            // - not sure how run_network shows up
+            // - can look into using something other than / in addition to Caption for filtering (+ getting details to display in tree view)
+            helper = cp.spawn('wmic', ['process', 'where', '(Caption="NFsim.exe" or Caption="perl.exe")', 'get', 'Caption,ProcessId']);
+        }
+
+        // how to combine parent/child hierarchy with filtering and integrate all of this with tree view stuff in a clean way?
+        // - consider nested children
+        // - there are some intermediate processes that come up eg. python, command line; do we want to track these?
+        // - how exactly does the tree data provider assemble the tree view?
+        // -- when is getChildren() called? could maybe use this there
+
+        // figure out how to parse this stdout
+        // get this process information in the same format as whatever is tracked by ProcessManager & used with getTreeItem()
+        // - currently these just pass around PIDs, but some naming/labeling info is needed as well
+        helper.stdout.setEncoding('utf8');
+        helper.stdout.on('data', (data) => { console.log(data) });
+    }
+    // mac & linux
+    else {
+        // todo
+    }
+}
 
 // tree data provider for tree view
 class ProcessManagerProvider {
@@ -34,6 +74,8 @@ class ProcessManagerProvider {
     refresh() {
         this._onDidChangeTreeData.fire();
         setTimeout(() => { this.refresh() }, 500);
+
+        getProcessList(); // move this
     }
 
 }

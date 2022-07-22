@@ -362,6 +362,7 @@ function activate(context) {
 	//   don't register it in package.json, or explicitly hide it?
 	// - not sure how exactly kill_process knows to use the pid of the selected process
 	//   or if/how this needs to be changed if/when the tree view items get more complex
+	// - put process_cleanup / killAllProcesses in deactivate once it correctly cleans up sub-processes
 	context.subscriptions.push(vscode.commands.registerCommand('bng.process_cleanup', () => { processManager.killAllProcesses() }));
 	context.subscriptions.push(vscode.commands.registerCommand('bng.kill_process', (pid) => { processManager.killProcess(pid) }));
 
