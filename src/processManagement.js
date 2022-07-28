@@ -70,7 +70,7 @@ class ProcessManager {
         let processList = await getProcessList();
         this._openProcessesUntracked.clear();
         for (const processObject of processList) {
-            this._openProcessesUntracked.set(process.pid, processObject);
+            this._openProcessesUntracked.set(processObject.pid, processObject);
         }
 
         setTimeout(() => { this.refresh() }, 500); // how often to refresh?
