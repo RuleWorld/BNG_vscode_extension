@@ -31,9 +31,16 @@ class ProcessManagerProvider {
     }
 
     // figure out how this thing works
-    getTreeItem(pid) {
+    getTreeItem(processObject) {
         // what information to display / include in tree item?
-        return new vscode.TreeItem(pid.toString());
+
+        const pid = processObject.pid;
+        const name = processObject.name.replace(".exe", ""); // todo: clean up process path (in case there is one)?
+        const model = ""; // todo: get model name?
+
+        let label = `${pid.toString()}: ${name}/${model}`;
+
+        return new vscode.TreeItem(label);
     }
 
     // figure out how to keep tree view updated / when to update
@@ -45,26 +52,35 @@ class ProcessManagerProvider {
 }
 
 class ProcessManager {
-    // do we need to keep track of anything besides PID? is this where that info should be kept?
-    // - maybe parent/child stuff for sub-processes; depends on how tree view handles this
-    // - name / other info to display to user?
-
-    _openProcessesTracked; // set of PIDs of open processes directly tracked by spawnAsync
-    _openProcessesUntracked; // array of PIDs of open processes not directly tracked by spawnAsync (ie. sub-processes)
+    // map objects which store key/value pairs
+    // - key: PID of process
+    // - value: object storing process details
+    // -- PID
+    // -- name
+    _openProcessesTracked; // open processes directly tracked by spawnAsync
+    _openProcessesUntracked; // open processes not directly tracked by spawnAsync (ie. sub-processes)
 
     constructor() {
-        this._openProcessesTracked = new Set();
-        this._openProcessesUntracked = [];
+        this._openProcessesTracked = new Map();
+        this._openProcessesUntracked = new Map();
         this.refresh();
     }
 
     async refresh() {
-        this._openProcessesUntracked = await getProcessList();
+        let processList = await getProcessList();
+        this._openProcessesUntracked.clear();
+        for (const processObject of processList) {
+            this._openProcessesUntracked.set(process.pid, processObject);
+        }
+
         setTimeout(() => { this.refresh() }, 500); // how often to refresh?
     }
 
-    add (pid) {
-        this._openProcessesTracked.add(pid);
+    async add (pid, command) {
+        this._openProcessesTracked.set(pid, {
+            pid: pid,
+            name: command // is this what we want to do?
+        });
     }
 
     delete (pid) {
@@ -72,7 +88,7 @@ class ProcessManager {
     }
 
     get openProcessList() {
-        return Array.from(this._openProcessesTracked).concat(this._openProcessesUntracked);
+        return Array.from(this._openProcessesTracked.values()).concat(Array.from(this._openProcessesUntracked.values()));
     }
 
     // notes on process.kill
@@ -80,17 +96,17 @@ class ProcessManager {
     // - there might be some weird nuances with signals that can be used here, especially on windows
     // - there's a delay before spawnAsync catches this
 
-    killProcess(pid) {
-        process.kill(pid);
+    killProcess(processObject) {
+        process.kill(processObject.pid);
     }
 
     killAllProcesses() {
-        this._openProcessesTracked.forEach((pid) => {
+        for (const pid of this._openProcessesTracked.keys()) {
             process.kill(pid);
-        });
-        this._openProcessesUntracked.forEach((pid) => {
+        }
+        for (const pid of this._openProcessesUntracked.keys()) {
             process.kill(pid);
-        });
+        }
     }
 }
 
@@ -149,8 +165,11 @@ async function getProcessList(ppid) {
                         // split each line by whitespace to get process information
                         const processInfo = line.trim().split(/\s+/);
                         const pid = parseInt(processInfo[0]);
-                        // const name = processInfo[1];
-                        processList.push(pid);
+                        const name = processInfo[1];
+                        processList.push({
+                            pid: pid,
+                            name: name
+                        });
                     }
                 }
             });

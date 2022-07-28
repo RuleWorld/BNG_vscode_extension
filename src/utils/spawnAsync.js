@@ -15,7 +15,7 @@ async function spawnAsync(command, args, channel, processManager) {
         const pid = newProcess.pid;
         console.log('opened process ' + pid);
         if (processManager) {
-            processManager.add(pid);
+            processManager.add(pid, command);
         }
             
         // expose errors with the process itself
