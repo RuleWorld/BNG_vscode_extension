@@ -32,10 +32,10 @@ class ProcessManagerProvider {
 
     getTreeItem(processObject) {
         const pid = processObject.pid;
-        const name = processObject.name.replace(".exe", ""); // todo: clean up process path (in case there is one)?
+        const name = processObject.name.split(/[\\\/]/).pop().replace(".exe", ""); // take last segment of path if there is one, remove extension
         const model = ""; // todo: get model name?
 
-        let label = `${pid.toString()}: ${name}/${model}`;
+        let label = `${pid.toString()}: ${name}`; // /${model}`;
 
         return new vscode.TreeItem(label);
     }
@@ -91,6 +91,12 @@ class ProcessManager {
     // - should kill via signal, why does the corresponding close event say signal is null?
     // - there might be some weird nuances with signals that can be used here, especially on windows
     // - there's a delay before spawnAsync catches this
+    // - todo: fix issues with killing a bionetgen process which has open sub-processes
+    // -- if you kill the bionetgen process, spawnAsync will not register it as closed until its sub-processes are killed,
+    //    so it will remain visible in the tree view although it no longer exists
+    // -- attempts to use killAllProcesses() (eg. via process_cleanup command on deactivate) will fail
+    // -- sub-processes will become orphans if you exit without killing them manually
+    // -- killing a bionetgen process should probably also kill its sub-processes (?)
 
     killProcess(processObject) {
         process.kill(processObject.pid);
