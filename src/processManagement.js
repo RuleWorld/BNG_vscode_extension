@@ -30,10 +30,7 @@ class ProcessManagerProvider {
         return this._processManager.openProcessList;
     }
 
-    // figure out how this thing works
     getTreeItem(processObject) {
-        // what information to display / include in tree item?
-
         const pid = processObject.pid;
         const name = processObject.name.replace(".exe", ""); // todo: clean up process path (in case there is one)?
         const model = ""; // todo: get model name?
@@ -43,10 +40,9 @@ class ProcessManagerProvider {
         return new vscode.TreeItem(label);
     }
 
-    // figure out how to keep tree view updated / when to update
     refresh() {
         this._onDidChangeTreeData.fire();
-        setTimeout(() => { this.refresh() }, 500);
+        setTimeout(() => { this.refresh() }, 500); // when to refresh?
     }
 
 }
@@ -73,10 +69,10 @@ class ProcessManager {
             this._openProcessesUntracked.set(processObject.pid, processObject);
         }
 
-        setTimeout(() => { this.refresh() }, 500); // how often to refresh?
+        setTimeout(() => { this.refresh() }, 500); // when to refresh?
     }
 
-    async add (pid, command) {
+    add (pid, command) {
         this._openProcessesTracked.set(pid, {
             pid: pid,
             name: command // is this what we want to do?
@@ -120,20 +116,16 @@ async function getProcessList(ppid) {
         if (process.platform === "win32") {
             let helper;
 
-            // there are a couple potential ways of doing this
-
-            // get processes which are children of the given process (only gets direct children)
+            // [not currently used] get processes which are children of the given process (only gets direct children)
             if (ppid) {
-                helper = cp.spawn('Get-WmiObject', ['Win32_Process', '-Filter', `"ParentProcessId = ${ppid}"`, '|', 'Select-Object', 'Name, ProcessID'], {'shell':'powershell.exe'});
+                helper = cp.spawn('Get-WmiObject', ['Win32_Process', '-Filter', `"ParentProcessId = ${ppid}"`, '|', 'Select-Object', 'ProcessID, Name'], {'shell':'powershell.exe'});
             }
             // if ppid is not given, get all processes
             else {
                 // try to get only those which are relevant to bionetgen
                 // - BNG2.pl shows up with name perl.exe
-                //   (could be problematic if there happen to be other perl things running, unless we only track children of bionetgen processes)
-                // - not sure how run_network shows up
-                // - can look into using something other than / in addition to name for filtering
-                // - can get other details depending on what is needed for tree view
+                //   (could be problematic if there happen to be other perl things running, need to restrict to children of bionetgen processes)
+                // - not sure how run_network shows up, currently not included
                 helper = cp.spawn('Get-WmiObject', ['Win32_Process', '-Filter', `"Name = 'perl.exe' or Name = 'NFsim.exe'"`, '|', 'Select-Object', 'ProcessID, Name'], {'shell':'powershell.exe'});
             }
 
@@ -145,8 +137,7 @@ async function getProcessList(ppid) {
             // - how exactly does the tree data provider assemble the tree view?
 
             // parse stdout to get information about open processes
-            // - get it in the same format as whatever is tracked by ProcessManager & used with getTreeItem()
-            // - currently these just pass around PIDs, but some naming/labeling info is needed as well (use an object?)
+            // results should be compatible with ProcessManager & getTreeItem()
             helper.stdout.setEncoding('utf8'); // allows data to be passed as string; otherwise data is passed as buffer
             helper.stdout.on('data', (data) => {
                 // assumptions:
