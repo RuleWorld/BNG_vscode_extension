@@ -357,12 +357,12 @@ function activate(context) {
 
 	// commands for process management
 	// fix these (here & in package.json)
-	// - maybe just expose process.kill & don't bother going through processManager
 	// - kill_process currently shows up in command palette but only actually works from tree view;
 	//   don't register it in package.json, or explicitly hide it?
 	// - not sure how exactly kill_process knows to use the pid of the selected process
 	//   or if/how this needs to be changed if/when the tree view items get more complex
-	// - put process_cleanup / killAllProcesses in deactivate once it correctly cleans up sub-processes
+	// - process_cleanup currently kills all instances of perl.exe, this is probably not ideal
+	//   (need to restrict to children of bionetgen processes)
 	context.subscriptions.push(vscode.commands.registerCommand('bng.process_cleanup', () => { processManager.killAllProcesses() }));
 	context.subscriptions.push(vscode.commands.registerCommand('bng.kill_process', (pid) => { processManager.killProcess(pid) }));
 
@@ -921,7 +921,7 @@ function get_time_stamped_folder_name() {
 
 // this method is called when your extension is deactivated
 function deactivate() {
-
+	vscode.commands.executeCommand('bng.process_cleanup');
 }
 
 module.exports = {
