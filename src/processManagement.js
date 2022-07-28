@@ -130,9 +130,9 @@ async function getProcessList(ppid) {
             else {
                 // try to get only those which are relevant to bionetgen
                 // - BNG2.pl shows up with name perl.exe
-                //   (could be problematic if there happen to be other perl things running, need to restrict to children of bionetgen processes)
-                // - not sure how run_network shows up, currently not included
-                helper = cp.spawn('Get-WmiObject', ['Win32_Process', '-Filter', `"Name = 'perl.exe' or Name = 'NFsim.exe'"`, '|', 'Select-Object', 'ProcessID, Name'], {'shell':'powershell.exe'});
+                //   (could be problematic if there happen to be other perl things running, need to either restrict to children of bionetgen processes or match on CommandLine or something)
+                const processMatch = `"Name = 'perl.exe' or Name = 'NFsim.exe' or Name = 'run_network.exe'"`;
+                helper = cp.spawn('Get-WmiObject', ['Win32_Process', '-Filter', processMatch, '|', 'Select-Object', 'ProcessID, Name'], {'shell':'powershell.exe'});
             }
 
             // need some kind of error message if spawn fails for whatever reason
