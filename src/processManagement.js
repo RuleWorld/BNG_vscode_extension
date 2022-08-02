@@ -113,34 +113,40 @@ class ProcessManager {
 }
 
 // WIP: sub-process tracking
-async function getProcessList(ppid) {
+async function getProcessList() { // (ppid) {
 
     return new Promise((resolve, reject) => {
         let processList = [];
+
+        // todo: rename helpers, clean this stuff up
+
+        // need some kind of error message if spawn fails for whatever reason
+
+        // how to combine parent/child hierarchy with filtering and integrate all of this with tree view stuff in a clean way?
+        // - consider nested children
+        // - there are some intermediate processes that come up eg. python, command line; do we want to track these?
+        // - how exactly does the tree data provider assemble the tree view?
 
         // windows
         if (process.platform === "win32") {
             let helper;
 
+            /*
             // [not currently used] get processes which are children of the given process (only gets direct children)
             if (ppid) {
                 helper = cp.spawn('Get-WmiObject', ['Win32_Process', '-Filter', `"ParentProcessId = ${ppid}"`, '|', 'Select-Object', 'ProcessID, Name'], {'shell':'powershell.exe'});
             }
             // if ppid is not given, get all processes
             else {
-                // try to get only those which are relevant to bionetgen
-                // - BNG2.pl shows up with name perl.exe
+            */
+                // get only processes which are relevant to bionetgen
+                // - note: BNG2.pl shows up with name perl.exe
                 //   (could be problematic if there happen to be other perl things running, need to either restrict to children of bionetgen processes or match on CommandLine or something)
                 const processMatch = `"Name = 'perl.exe' or Name = 'NFsim.exe' or Name = 'run_network.exe'"`;
                 helper = cp.spawn('Get-WmiObject', ['Win32_Process', '-Filter', processMatch, '|', 'Select-Object', 'ProcessID, Name'], {'shell':'powershell.exe'});
+            /*
             }
-
-            // need some kind of error message if spawn fails for whatever reason
-
-            // how to combine parent/child hierarchy with filtering and integrate all of this with tree view stuff in a clean way?
-            // - consider nested children
-            // - there are some intermediate processes that come up eg. python, command line; do we want to track these?
-            // - how exactly does the tree data provider assemble the tree view?
+            */
 
             // parse stdout to get information about open processes
             // results should be compatible with ProcessManager & getTreeItem()
@@ -176,8 +182,46 @@ async function getProcessList(ppid) {
         }
         // mac & linux
         else {
-            // todo
-            resolve(processList);
+            // get full process list
+            let helper;
+            helper = cp.spawn('ps', ['ax', '-o', 'pid,command']);
+
+            // filter process list to get only lines corresponding to processes relevant to bionetgen
+            let helper2;
+            helper2 = cp.spawn('grep', ['-e', 'BNG2\.pl', '-e', 'NFsim', '-e', 'run_network']);
+            
+            // remove instances of grep from results
+            let helper3;
+            helper3 = cp.spawn('grep', ['-v', 'grep']);
+
+            // pipe output of ps to grep (workaround for not being able to use | as an argument in spawn)
+            helper.stdout.pipe(helper2.stdin);
+            helper2.stdout.pipe(helper3.stdin);
+
+            // parse stdout to get information about open processes
+            // results should be compatible with ProcessManager & getTreeItem()
+            helper3.stdout.setEncoding('utf8'); // allows data to be passed as string; otherwise data is passed as buffer
+            helper3.stdout.on('data', (data) => {
+                // assumptions:
+                // - chunks of data provided by grep consist only of lines containing relevant process information
+
+                // trim whitespace & split by newline
+                let lines = data.trim().split(/\n/);
+                
+                for (const line of lines) {
+                    // split each line by whitespace to get process information
+                    const processInfo = line.trim().split(/\s+/);
+                    const pid = parseInt(processInfo[0]);
+                    const name = processInfo[1];
+                    processList.push({
+                        pid: pid,
+                        name: name
+                    });
+                }
+            });
+            helper3.on('close', () => {
+                resolve(processList);
+            });
         }
     });
 }

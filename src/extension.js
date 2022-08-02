@@ -359,7 +359,7 @@ function activate(context) {
 	// fix these (here & in package.json)
 	// - kill_process currently shows up in command palette but only actually works from tree view;
 	//   don't register it in package.json, or explicitly hide it?
-	// - process_cleanup currently kills all instances of perl.exe, this is probably not ideal
+	// - process_cleanup currently kills all instances of perl.exe (if on windows), this is probably not ideal
 	//   (need to restrict to children of bionetgen processes)
 	context.subscriptions.push(vscode.commands.registerCommand('bng.process_cleanup', () => { processManager.killAllProcesses() }));
 	context.subscriptions.push(vscode.commands.registerCommand('bng.kill_process', (processObject) => { processManager.killProcess(processObject) }));
