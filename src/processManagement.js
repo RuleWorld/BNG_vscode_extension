@@ -10,6 +10,10 @@
 // - extension registers commands to kill processes through the ProcessManager instance
 // - extension creates processManagerTreeView & registers a ProcessManagerProvider instance based on the ProcessManager instance
 
+// notes:
+// - ProcessManagerProvider & ProcessManager have independent refresh schedules, as
+//   coupling these results in annoying flashing visuals in VSCode UI due to handling of async getProcessList()
+
 const vscode = require('vscode');
 const cp = require('child_process');
 
@@ -17,6 +21,7 @@ const cp = require('child_process');
 class ProcessManagerProvider {
     _processManager;
 
+    // for refresh
     _onDidChangeTreeData = new vscode.EventEmitter();
     onDidChangeTreeData = this._onDidChangeTreeData.event;
 
@@ -25,11 +30,23 @@ class ProcessManagerProvider {
         this.refresh();
     }
 
-    // figure out how this thing works & what to do about tree hierarchy / tracking sub-processes
-    getChildren() {
-        return this._processManager.openProcessList;
+    // reads from processManager to get open processes at specified level of process tree
+    // note: process tree will include only processes opened through spawnAsync & their children
+    getChildren(processObject) {
+        // todo: make sure this doesn't create an infinite loop,
+        //       needs to return [] once it reaches the bottom of the tree
+
+        // get sub-processes of processObject
+        if (processObject) {
+            return this._processManager.getOpenProcesses(processObject.pid);
+        }
+        // get top-level processes
+        else {
+            return this._processManager.getOpenProcesses();
+        }
     }
 
+    // converts the given processObject to a TreeItem to be displayed in VSCode UI
     getTreeItem(processObject) {
         const pid = processObject.pid;
         const name = processObject.name.split(/[\\\/]/).pop().replace(".exe", ""); // take last segment of path if there is one, remove extension
@@ -37,7 +54,7 @@ class ProcessManagerProvider {
 
         let label = `${pid.toString()}: ${name}`; // /${model}`;
 
-        return new vscode.TreeItem(label);
+        return new vscode.TreeItem(label, vscode.TreeItemCollapsibleState.Expanded);
     }
 
     refresh() {
@@ -62,7 +79,10 @@ class ProcessManager {
         this.refresh();
     }
 
+    // refreshes stored collection of open sub-processes
     async refresh() {
+        // todo: hierarchy stuff
+
         let processList = await getProcessList();
         this._openProcessesUntracked.clear();
         for (const processObject of processList) {
@@ -72,6 +92,8 @@ class ProcessManager {
         setTimeout(() => { this.refresh() }, 500); // when to refresh?
     }
 
+    // maintains (adds to) stored collection of tracked processes
+    // usage: called when a new process is initiated by spawnAsync
     add (pid, command) {
         this._openProcessesTracked.set(pid, {
             pid: pid,
@@ -79,12 +101,26 @@ class ProcessManager {
         });
     }
 
+    // maintains (deletes from) stored collection of tracked processes
+    // usage: called when a tracked process terminates
     delete (pid) {
         this._openProcessesTracked.delete(pid);
     }
 
-    get openProcessList() {
-        return Array.from(this._openProcessesTracked.values()).concat(Array.from(this._openProcessesUntracked.values()));
+    // reads from stored collections of open processes
+    getOpenProcesses(ppid) {
+        // sub-processes
+        if (ppid) {
+            // todo: needs to return array of processes at level under ppid,
+            //       make sure this is eventually []
+
+            return Array.from(this._openProcessesUntracked.values());
+        }
+        // top-level processes
+        // - assumption: a process is top-level iff it comes from spawnAsync
+        else {
+            return Array.from(this._openProcessesTracked.values());
+        }
     }
 
     // notes on process.kill
