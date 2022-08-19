@@ -120,7 +120,8 @@
             "explorer": [
                 {
                     "id": "processManagerTreeView",
-                    "name": "BNG Process Manager"
+                    "name": "BNG Process Manager",
+                    "when": "bng.processManagerActive"
                 }
             ]
         },
@@ -185,6 +186,16 @@
                 {
                     "when": "view == processManagerTreeView",
                     "command": "bng.kill_process"
+                }
+            ],
+            "commandPalette": [
+                {
+                    "command": "bng.kill_process",
+                    "when": "false"
+                },
+                {
+                    "command": "bng.process_cleanup",
+                    "when": "bng.processManagerActive"
                 }
             ]
         },

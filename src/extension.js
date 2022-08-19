@@ -15,7 +15,7 @@ const path = require('path');
 const os = require('os');
 const { spawnAsync } = require('./utils/spawnAsync.js');
 const { getPythonPath } = require('./utils/getPythonPath.js');
-var { ProcessManager, ProcessManagerProvider } = require('./processManagement.js');
+var { ProcessManager, ProcessManagerProvider } = require('./utils/processManagement.js');
 
 var processManager = new ProcessManager();
 
@@ -356,16 +356,12 @@ function activate(context) {
 	context.subscriptions.push(disposable6);
 
 	// commands for process management
-	// fix these (here & in package.json)
-	// - kill_process currently shows up in command palette but only actually works from tree view;
-	//   don't register it in package.json, or explicitly hide it?
-	// - process_cleanup currently kills all instances of perl.exe (if on windows), this is probably not ideal
-	//   (need to restrict to children of bionetgen processes)
+	// - kill_process is hidden from command palette (see package.json) because it can only work through tree view
 	context.subscriptions.push(vscode.commands.registerCommand('bng.process_cleanup', () => { processManager.killAllProcesses() }));
 	context.subscriptions.push(vscode.commands.registerCommand('bng.kill_process', (processObject) => { processManager.killProcess(processObject) }));
 
-	// process manager tree view
 	let processManagerTreeView = vscode.window.createTreeView('processManagerTreeView', {treeDataProvider: new ProcessManagerProvider(processManager)});
+	vscode.commands.executeCommand('setContext', 'bng.processManagerActive', true); // show process manager tree view only when extension is active
 	
 	// TODO make this work
 	// resurrect webview 

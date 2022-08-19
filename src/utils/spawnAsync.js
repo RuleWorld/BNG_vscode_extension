@@ -4,7 +4,7 @@
 // https://github.com/microsoft/vscode-docker/blob/main/src/utils/spawnAsync.ts
 
 const cp = require('child_process');
-var { ProcessManager } = require('../processManagement.js');
+var { ProcessManager } = require('./processManagement.js');
 
 // spawn child process to run the given command, write results to output channel
 async function spawnAsync(command, args, channel, processManager) {
@@ -13,7 +13,6 @@ async function spawnAsync(command, args, channel, processManager) {
     return new Promise((resolve, reject) => {
         const newProcess = cp.spawn(command, args);
         const pid = newProcess.pid;
-        console.log('opened process ' + pid);
         if (processManager) {
             processManager.add(pid, command);
         }
@@ -40,11 +39,10 @@ async function spawnAsync(command, args, channel, processManager) {
         });
 
         // expose and return the exit code with which the process finished
-        newProcess.on('close', (code, signal) => {
+        newProcess.on('close', (code) => {
             if (channel) {
                 channel.appendLine(`process exited with code ${code}`);
             }
-            console.log('closed process ' + pid + ' with code ' + code + ', signal ' + signal);
             if (processManager) {
                 processManager.delete(pid);
             }
