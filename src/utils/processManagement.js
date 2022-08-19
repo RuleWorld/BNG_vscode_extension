@@ -222,55 +222,35 @@ class ProcessManager {
 
         return new Promise((resolve, reject) => {
             let processList = [];
-
-            // note: currently nothing is done if there happen to be issues with spawn; this will just return an empty list
+            let util;
 
             // windows
             if (process.platform === "win32") {
-                let util = cp.spawn('Get-WmiObject', ['Win32_Process', '|', 'Select-Object', 'ProcessID, ParentProcessId, Name'], {'shell':'powershell.exe'});
-
-                // parse stdout to get information about open processes
-                util.stdout.setEncoding('utf8'); // allows data to be passed as string; otherwise data is passed as buffer
-                util.stdout.on('data', (data) => {
-                    // assumptions:
-                    // - each process corresponds to one line of text
-                    // - no chunk of data will start/end in the middle of a line
-                    // - text contains process information iff it contains numbers (for PID, possibly also other info)
-
-                    // determine whether current chunk contains any process information
-                    if (/[0-9]/.test(data)) {
-                        // if it does, trim whitespace & split by newline
-                        let lines = data.trim().split(/\n/);
-                        // get only lines corresponding to processes
-                        lines = lines.filter(line => /[0-9]/.test(line));
-                        
-                        for (const line of lines) {
-                            // split each line by whitespace to get process information
-                            const processInfo = line.trim().split(/\s+/);
-                            processList.push({
-                                pid: parseInt(processInfo[0]),
-                                ppid: parseInt(processInfo[1]),
-                                name: processInfo[2]
-                            });
-                        }
-                    }
-                });
-                util.on('close', () => {
-                    resolve(processList);
-                });
+                util = cp.spawn('Get-WmiObject', ['Win32_Process', '|', 'Select-Object', 'ProcessID, ParentProcessId, Name'], {'shell':'powershell.exe'});
             }
             // mac & linux
             else {
-                let util = cp.spawn('ps', ['ax', '-o', 'pid,ppid,command']);
+                util = cp.spawn('ps', ['ax', '-o', 'pid,ppid,command']);
+            }
 
-                // parse stdout to get information about open processes
-                util.stdout.setEncoding('utf8'); // allows data to be passed as string; otherwise data is passed as buffer
-                util.stdout.on('data', (data) => {
-                    // assumptions:
-                    // - chunks of data provided by grep consist only of lines containing relevant process information
+            util.on('error', () => {
+                resolve([]);
+            });
 
-                    // trim whitespace & split by newline
+            // parse stdout to get information about open processes
+            util.stdout.setEncoding('utf8'); // allows data to be passed as string; otherwise data is passed as buffer
+            util.stdout.on('data', (data) => {
+                // assumptions:
+                // - each process corresponds to one line of text
+                // - no chunk of data will start/end in the middle of a line
+                // - text contains process information iff it contains numbers (for PID, PPID)
+
+                // determine whether current chunk contains any process information
+                if (/[0-9]/.test(data)) {
+                    // if it does, trim whitespace & split by newline
                     let lines = data.trim().split(/\n/);
+                    // get only lines corresponding to processes
+                    lines = lines.filter(line => /[0-9]/.test(line));
                     
                     for (const line of lines) {
                         // split each line by whitespace to get process information
@@ -281,11 +261,12 @@ class ProcessManager {
                             name: processInfo[2]
                         });
                     }
-                });
-                util.on('close', () => {
-                    resolve(processList);
-                });
-            }
+                }
+            });
+
+            util.on('close', () => {
+                resolve(processList);
+            });
         });
     }
 }
