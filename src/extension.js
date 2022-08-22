@@ -15,6 +15,9 @@ const path = require('path');
 const os = require('os');
 const { spawnAsync } = require('./utils/spawnAsync.js');
 const { getPythonPath } = require('./utils/getPythonPath.js');
+var { ProcessManager, ProcessManagerProvider } = require('./utils/processManagement.js');
+
+var processManager = new ProcessManager();
 
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
@@ -120,7 +123,7 @@ function activate(context) {
 		} else {
 			// run the command in the background
 			bngl_channel.appendLine(term_cmd);
-			const exitCode = await spawnAsync('bionetgen', ['-req', PYBNG_VERSION, 'run', '-i', copy_path.fsPath, '-o', new_fold_uri.fsPath, '-l', new_fold_uri.fsPath], bngl_channel);
+			const exitCode = await spawnAsync('bionetgen', ['-req', PYBNG_VERSION, 'run', '-i', copy_path.fsPath, '-o', new_fold_uri.fsPath, '-l', new_fold_uri.fsPath], bngl_channel, processManager);
 			if (exitCode) {
 				vscode.window.showInformationMessage("Something went wrong, see BNGL output channel for details");
 				bngl_channel.show();
@@ -184,7 +187,7 @@ function activate(context) {
 			term.sendText(term_cmd);
 		} else {
 			// run the command in the background
-			const exitCode = await spawnAsync('bionetgen', ['-req', PYBNG_VERSION, 'visualize', '-i', copy_path.fsPath, '-o', new_fold_uri.fsPath, '-t', 'all'], bngl_channel);
+			const exitCode = await spawnAsync('bionetgen', ['-req', PYBNG_VERSION, 'visualize', '-i', copy_path.fsPath, '-o', new_fold_uri.fsPath, '-t', 'all'], bngl_channel, processManager);
 			if (exitCode) {
 				vscode.window.showInformationMessage("Something went wrong, see BNGL output channel for details");
 				bngl_channel.show();
@@ -229,11 +232,11 @@ function activate(context) {
 			if (ext == "gdat" || ext == "scan") {
 				term_cmd = `bionetgen -d -req "${PYBNG_VERSION}" plot -i "${fpath}" -o "${outpath}" --legend`;
 				bngl_channel.appendLine(term_cmd);
-				exitCode = spawnAsync('bionetgen', ['-d', '-req', PYBNG_VERSION, 'plot', '-i', fpath, '-o', outpath, '--legend'], bngl_channel);
+				exitCode = spawnAsync('bionetgen', ['-d', '-req', PYBNG_VERSION, 'plot', '-i', fpath, '-o', outpath, '--legend'], bngl_channel, processManager);
 			} else {
 				term_cmd = `bionetgen -d -req "${PYBNG_VERSION}" plot -i "${fpath}" -o "${outpath}"`;
 				bngl_channel.appendLine(term_cmd);
-				exitCode = spawnAsync('bionetgen', ['-d', '-req', PYBNG_VERSION, 'plot', '-i', fpath, '-o', outpath], bngl_channel);
+				exitCode = spawnAsync('bionetgen', ['-d', '-req', PYBNG_VERSION, 'plot', '-i', fpath, '-o', outpath], bngl_channel, processManager);
 			}
 		}
 		// currently await spawnAsync is not used
@@ -256,7 +259,7 @@ function activate(context) {
 	// called when extension is activated
 	async function setupCommandHandler() {
 		bngl_channel.appendLine("Checking for perl.");
-		const perlCheckExitCode = await spawnAsync('perl', ['-v'], bngl_channel);
+		const perlCheckExitCode = await spawnAsync('perl', ['-v'], bngl_channel, processManager);
 		
 		// if perl is not installed (exit code is not 0), tell user to install it
 		if (perlCheckExitCode) {
@@ -274,7 +277,7 @@ function activate(context) {
 		bngl_channel.appendLine("Found python path: " + pythonPath);
 
 		bngl_channel.appendLine("Checking for bionetgen.");
-		const bngCheckExitCode = await spawnAsync(pythonPath, ['-m', 'pip', 'show', 'bionetgen'], bngl_channel);
+		const bngCheckExitCode = await spawnAsync(pythonPath, ['-m', 'pip', 'show', 'bionetgen'], bngl_channel, processManager);
 		// if spawnAsync() cannot run the python at pythonPath, it will log an error to bngl_channel
 		
 		// if bionetgen is not installed (exit code is not 0), proceed with setup
@@ -284,7 +287,7 @@ function activate(context) {
 			vscode.window.showInformationMessage("Setting up BNG for the following Python: " + pythonPath);
 			
 			// spawn child process to run pip install
-			const installExitCode = await spawnAsync(pythonPath, ['-m', 'pip', 'install', 'bionetgen', '--upgrade'], bngl_channel);
+			const installExitCode = await spawnAsync(pythonPath, ['-m', 'pip', 'install', 'bionetgen', '--upgrade'], bngl_channel, processManager);
 			
 			if (installExitCode) {
 				bngl_channel.appendLine("pip install failed for python: " + pythonPath);
@@ -312,7 +315,7 @@ function activate(context) {
 		vscode.window.showInformationMessage("Upgrading BNG for the following Python: " + pythonPath);
 					
 		// spawn child process to run pip upgrade
-		const upgradeExitCode = await spawnAsync(pythonPath, ['-m', 'pip', 'install', 'bionetgen', '--upgrade'], bngl_channel);
+		const upgradeExitCode = await spawnAsync(pythonPath, ['-m', 'pip', 'install', 'bionetgen', '--upgrade'], bngl_channel, processManager);
 		
 		if (upgradeExitCode) {
 			bngl_channel.appendLine("pip upgrade failed for python: " + pythonPath);
@@ -351,6 +354,15 @@ function activate(context) {
 	// this one upgrades bionetgen
 	let disposable6 = vscode.commands.registerCommand(upgradeCommandName, upgradeCommandHandler);
 	context.subscriptions.push(disposable6);
+
+	// commands for process management
+	// - kill_process is hidden from command palette (see package.json) because it can only work through tree view
+	context.subscriptions.push(vscode.commands.registerCommand('bng.process_cleanup', () => { processManager.killAllProcesses() }));
+	context.subscriptions.push(vscode.commands.registerCommand('bng.kill_process', (processObject) => { processManager.killProcess(processObject) }));
+
+	let processManagerTreeView = vscode.window.createTreeView('processManagerTreeView', {treeDataProvider: new ProcessManagerProvider(processManager)});
+	vscode.commands.executeCommand('setContext', 'bng.processManagerActive', true); // show process manager tree view only when extension is active
+	
 	// TODO make this work
 	// resurrect webview 
 	// if (vscode.window.registerWebviewPanelSerializer) {
@@ -902,7 +914,9 @@ function get_time_stamped_folder_name() {
 }
 
 // this method is called when your extension is deactivated
-function deactivate() { }
+function deactivate() {
+	vscode.commands.executeCommand('bng.process_cleanup');
+}
 
 module.exports = {
 	activate,
