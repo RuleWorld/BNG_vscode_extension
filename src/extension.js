@@ -82,81 +82,94 @@ function activate(context) {
 		await vscode.workspace.fs.createDirectory(new_fold_uri);
 		await vscode.workspace.fs.copy(curr_doc_uri, copy_path);
 
-		// run & let the user know
-		const process = spawnAsync('bionetgen', ['-req', PYBNG_VERSION, 'run', '-i', copy_path.fsPath, '-o', new_fold_uri.fsPath, '-l', new_fold_uri.fsPath], bngl_channel);
+		// run bngl file as specified in term_cmd
 		let term_cmd = `bionetgen -req "${PYBNG_VERSION}" run -i "${copy_path.fsPath}" -o "${new_fold_uri.fsPath}" -l "${new_fold_uri.fsPath}"`;
-		bngl_channel.appendLine(term_cmd);
+		// let the user know it is running
 		vscode.window.showInformationMessage(`Started running ${fname} in folder ${fname_noext}/${fold_name}`);
+		// use either terminal or spawn depending on user setting
+		if (config.general.enable_terminal_runner) {
+			// first we try to grab our terminal and create one if it doesn't exist
+			let term = vscode.window.terminals.find(i => i.name == "bngl_term");
+			if (term == undefined) {
+				term = vscode.window.createTerminal("bngl_term");
+			}
+			// focus on the terminal and run the command
+			term.show();
+			term.sendText(term_cmd);
 
-		// todo: remove this block after new stuff is complete, also remove checkGdat
-		/*
-		// start a watcher
-		// for now let's only check for model_name.gdat
-		let timeout_mili = 120000;
-		checkGdat(new_fold_uri.fsPath, timeout_mili).then(() => {
-			// we have a gdat in our folder, grab one and open
-			var files = fs.readdirSync(new_fold_uri.fsPath);
-			var outGdatPath;
-			for (var i = 0; i < files.length; i++) {
-				let ext = files[i].split(".").pop();
-				if (ext == "gdat") {
-					outGdatPath = path.join(new_fold_uri.fsPath, files[i]);
-					break
+			// if auto_open setting is enabled, try to open a gdat file (which?)
+			if (config.general.auto_open) {
+				// start a watcher
+				// for now let's only check for model_name.gdat
+				// todo: fix this
+				let timeout_mili = 120000;
+				checkGdat(new_fold_uri.fsPath, timeout_mili).then(() => {
+					// we have a gdat in our folder, grab one and open
+					var files = fs.readdirSync(new_fold_uri.fsPath);
+					var outGdatPath;
+					for (var i = 0; i < files.length; i++) {
+						let ext = files[i].split(".").pop();
+						if (ext == "gdat") {
+							outGdatPath = path.join(new_fold_uri.fsPath, files[i]);
+							break
+						}
+					}
+					let outGdatUri = vscode.Uri.file(outGdatPath);
+					vscode.commands.executeCommand('vscode.open', outGdatUri);
+					// .then(() => {
+					// // FIXME: find a way to check for the main process and open
+					// // after because this opens too quickly/set delay won't work
+					// setTimeout(() => {
+					// 	PlotPanel.create(context.extensionUri);
+					// }, 3000);
+					// });
+				}).catch(() => {
+					vscode.window.showInformationMessage(`Couldn't find a gdat in ${timeout_mili} miliseconds`);
+				});
+			}
+		} else {
+			bngl_channel.appendLine(term_cmd);
+			const process = spawnAsync('bionetgen', ['-req', PYBNG_VERSION, 'run', '-i', copy_path.fsPath, '-o', new_fold_uri.fsPath, '-l', new_fold_uri.fsPath], bngl_channel);
+			process.then((exitCode) => {
+				if (exitCode) {
+					vscode.window.showInformationMessage("Something went wrong, see BNGL output channel for details");
+					bngl_channel.show();
 				}
-			}
-			let outGdatUri = vscode.Uri.file(outGdatPath);
-			vscode.commands.executeCommand('vscode.open', outGdatUri);
-			// .then(() => {
-			// // FIXME: find a way to check for the main process and open
-			// // after because this opens too quickly/set delay won't work
-			// setTimeout(() => {
-			// 	PlotPanel.create(context.extensionUri);
-			// }, 3000);
-			// });
-		}).catch(() => {
-			vscode.window.showInformationMessage(`Couldn't find a gdat in ${timeout_mili} miliseconds`);
-		}
-		);
-		*/
-
-		process.then((exitCode) => {
-			if (exitCode) {
-				vscode.window.showInformationMessage("Something went wrong, see BNGL output channel for details");
-			}
-			else {
-				vscode.window.showInformationMessage("Finished running successfully");
-
-				// if auto_open setting is enabled, try to open a gdat file (which?)
-				if (config.general.auto_open) {
-					try {
-						// read from new directory
-						var files = fs.readdirSync(new_fold_uri.fsPath);
-						var outGdatPath;
-						for (var i = 0; i < files.length; i++) {
-							let ext = files[i].split(".").pop();
-							if (ext == "gdat") {
-								outGdatPath = path.join(new_fold_uri.fsPath, files[i]);
-								break
+				else {
+					vscode.window.showInformationMessage("Finished running successfully");
+	
+					// if auto_open setting is enabled, try to open a gdat file (which?)
+					if (config.general.auto_open) {
+						try {
+							// read from new directory
+							var files = fs.readdirSync(new_fold_uri.fsPath);
+							var outGdatPath;
+							for (var i = 0; i < files.length; i++) {
+								let ext = files[i].split(".").pop();
+								if (ext == "gdat") {
+									outGdatPath = path.join(new_fold_uri.fsPath, files[i]);
+									break
+								}
+							}
+							// check if a gdat file was found & open it if so
+							if (typeof outGdatPath !== 'undefined' && outGdatPath) {
+								let outGdatUri = vscode.Uri.file(outGdatPath);
+								vscode.commands.executeCommand('vscode.open', outGdatUri);
+							}
+							else {
+								// should anything be done if no gdat file was found?
 							}
 						}
-						// check if a gdat file was found & open it if so
-						if (typeof outGdatPath !== 'undefined' && outGdatPath) {
-							let outGdatUri = vscode.Uri.file(outGdatPath);
-							vscode.commands.executeCommand('vscode.open', outGdatUri);
+						catch (err) {
+							// in case reading from the new directory fails
+							bngl_channel.appendLine(err);
 						}
-						else {
-							// should anything be done if no gdat file was found?
-						}
-					}
-					catch (err) {
-						// in case reading from the new directory fails
-						bngl_channel.appendLine(err);
 					}
 				}
-			}
-		}).catch(() => {
-			// this promise is not expected to ever reject, even if exitCode is nonzero (see spawnAsync.js)
-		});
+			}).catch(() => {
+				// this promise is not expected to ever reject, even if exitCode is nonzero (see spawnAsync.js)
+			});
+		}
 	}
 	// function that deals with visualizing bngl files
 	async function vizCommandHandler() {
@@ -182,23 +195,37 @@ function activate(context) {
 		let curr_doc_uri = vscode.window.activeTextEditor.document.uri;
 		// set the path to be copied to
 		let copy_path = vscode.Uri.joinPath(new_fold_uri, fname);
+		
 		// Create new directory and copy the file into our new folder
 		// FIXME: if a file of the same name as the folder exists
 		// this command fails to run. At least let the user know
-		vscode.workspace.fs.createDirectory(new_fold_uri).then(() => {
-			vscode.workspace.fs.copy(curr_doc_uri, copy_path);
-		});
+		await vscode.workspace.fs.createDirectory(new_fold_uri);
+		await vscode.workspace.fs.copy(curr_doc_uri, copy_path);
 
-		// run & let the user know
+		// run visualization as specified in term_cmd
 		let term_cmd = `bionetgen -req "${PYBNG_VERSION}" visualize -i "${copy_path.fsPath}" -o "${new_fold_uri.fsPath}" -t "all"`;
-		bngl_channel.appendLine(term_cmd);
+		// let the user know it is running
 		vscode.window.showInformationMessage(`Started visualizing ${fname} in folder ${fname_noext}/${fold_name}`);
-		const exitCode = await spawnAsync('bionetgen', ['-req', PYBNG_VERSION, 'visualize', '-i', copy_path.fsPath, '-o', new_fold_uri.fsPath, '-t', 'all'], bngl_channel);
-		if (exitCode) {
-			vscode.window.showInformationMessage("Something went wrong, see BNGL output channel for details");
-		}
-		else {
-			vscode.window.showInformationMessage("Finished visualizing successfully");
+		// use either terminal or spawn depending on user setting
+		if (config.general.enable_terminal_runner) {
+			// first we try to grab our terminal and create one if it doesn't exist
+			let term = vscode.window.terminals.find(i => i.name == "bngl_term");
+			if (term == undefined) {
+				term = vscode.window.createTerminal("bngl_term");
+			}
+			// focus on the terminal and run the command
+			term.show();
+			term.sendText(term_cmd);
+		} else {
+			bngl_channel.appendLine(term_cmd);
+			const exitCode = await spawnAsync('bionetgen', ['-req', PYBNG_VERSION, 'visualize', '-i', copy_path.fsPath, '-o', new_fold_uri.fsPath, '-t', 'all'], bngl_channel);
+			if (exitCode) {
+				vscode.window.showInformationMessage("Something went wrong, see BNGL output channel for details");
+				bngl_channel.show();
+			}
+			else {
+				vscode.window.showInformationMessage("Finished visualizing successfully");
+			}
 		}
 	}
 	// one function for plotting gdat/cdat/scan files
@@ -214,40 +241,69 @@ function activate(context) {
 		// set the path to be copied to
 		let outpath = fpath.replace(fname, `${fname_noext}_${ext}.png`);
 		
-		// run & let the user know
+		// run plotting as specified in term_cmd (set below, depends on extension of file)
 		let term_cmd;
-		let process;
-		if (ext == "gdat" || ext == "scan") {
-			term_cmd = `bionetgen -d -req "${PYBNG_VERSION}" plot -i "${fpath}" -o "${outpath}" --legend`;
-			process = spawnAsync('bionetgen', ['-d', '-req', PYBNG_VERSION, 'plot', '-i', fpath, '-o', outpath, '--legend'], bngl_channel);
-		} else {
-			term_cmd = `bionetgen -d -req "${PYBNG_VERSION}" plot -i "${fpath}" -o "${outpath}"`;
-			process = spawnAsync('bionetgen', ['-d', '-req', PYBNG_VERSION, 'plot', '-i', fpath, '-o', outpath], bngl_channel);
-		}
-		bngl_channel.appendLine(term_cmd);
+		// let the user know it is running
 		vscode.window.showInformationMessage(`Started plotting ${fpath} to ${outpath}`);
+		// use either terminal or spawn depending on user setting
+		if (config.general.enable_terminal_runner) {
+			// first we try to grab our terminal and create one if it doesn't exist
+			let term = vscode.window.terminals.find(i => i.name == "bngl_term");
+			if (term == undefined) {
+				term = vscode.window.createTerminal("bngl_term");
+			}
+			// focus on the terminal and run the command
+			term.show();
+			if (ext == "gdat" || ext == "scan") {
+				term_cmd = `bionetgen -d -req "${PYBNG_VERSION}" plot -i "${fpath}" -o "${outpath}" --legend`;
+				term.sendText(term_cmd);
+			} else {
+				term_cmd = `bionetgen -d -req "${PYBNG_VERSION}" plot -i "${fpath}" -o "${outpath}"`;
+				term.sendText(term_cmd);
+			}
 
-		// once plotting process has closed, check whether the image file has been created & open it if so
-		process.then((exitCode) => {
-			if (exitCode) {
-				vscode.window.showInformationMessage("Plotting failed, see BNGL output channel for details");
+			// let's check to see if our image file is created within 10s & open it if so
+			let outUri = vscode.Uri.file(outpath);
+			let timeout_mili = 10000;
+			checkImage(outpath, timeout_mili).then(() => {
+				vscode.window.showInformationMessage(`Done plotting ${fpath} to ${outpath}`);
+				vscode.commands.executeCommand('vscode.open', outUri);
+			}).catch(() => {
+				vscode.window.showInformationMessage(`Plotting didn't finish within ${timeout_mili} miliseconds`);
+			});
+		} else {
+			let process;
+			if (ext == "gdat" || ext == "scan") {
+				term_cmd = `bionetgen -d -req "${PYBNG_VERSION}" plot -i "${fpath}" -o "${outpath}" --legend`;
+				process = spawnAsync('bionetgen', ['-d', '-req', PYBNG_VERSION, 'plot', '-i', fpath, '-o', outpath, '--legend'], bngl_channel);
+			} else {
+				term_cmd = `bionetgen -d -req "${PYBNG_VERSION}" plot -i "${fpath}" -o "${outpath}"`;
+				process = spawnAsync('bionetgen', ['-d', '-req', PYBNG_VERSION, 'plot', '-i', fpath, '-o', outpath], bngl_channel);
 			}
-			else {
-				vscode.window.showInformationMessage("Done plotting");
-				let outUri = vscode.Uri.file(outpath);
-				fs.access(outpath, fs.constants.F_OK, function (err) {
-					if (!err) {
-						vscode.commands.executeCommand('vscode.open', outUri);
-					}
-					else {
-						vscode.window.showInformationMessage("Could not open plot image file, see BNGL output channel for details");
-						bngl_channel.appendLine(err.toString());
-					}
-				});
-			}
-		}).catch(() => {
-			// this promise is not expected to ever reject, even if exitCode is nonzero (see spawnAsync.js)
-		});
+			bngl_channel.appendLine(term_cmd);
+
+			// once plotting process has closed, check whether the image file has been created & open it if so
+			process.then((exitCode) => {
+				if (exitCode) {
+					vscode.window.showInformationMessage("Plotting failed, see BNGL output channel for details");
+				}
+				else {
+					vscode.window.showInformationMessage("Done plotting");
+					let outUri = vscode.Uri.file(outpath);
+					fs.access(outpath, fs.constants.F_OK, function (err) {
+						if (!err) {
+							vscode.commands.executeCommand('vscode.open', outUri);
+						}
+						else {
+							vscode.window.showInformationMessage("Could not open plot image file, see BNGL output channel for details");
+							bngl_channel.appendLine(err.toString());
+						}
+					});
+				}
+			}).catch(() => {
+				// this promise is not expected to ever reject, even if exitCode is nonzero (see spawnAsync.js)
+			});
+		}
 	}
 	// command to handle installation of bionetgen
 	// called when extension is activated
@@ -360,6 +416,44 @@ function activate(context) {
 	// 		}
 	// 	});
 	// }
+}
+
+/**
+ * @param {string} outpath
+ * @param {number} [timeout]
+ */
+ function checkImage(outpath, timeout) {
+	// this returns a promise that will wait until 
+	// a file given by outpath is found or a timeout
+	// limit is reached
+	return new Promise(function (resolve, reject) {
+		// timer that closes watcher if timeout is reached
+		var timer = setTimeout(function () {
+			watcher.close();
+			reject();
+		}, timeout);
+		// checks a path to see if it returns F_OK which 
+		// indicates that the file is visible/exists
+		fs.access(outpath, fs.constants.F_OK, function (err) {
+			if (!err) {
+				clearTimeout(timer);
+				watcher.close();
+				resolve();
+			}
+		});
+		// checks a folder to see if a file is renamed 
+		// into the file we are watching out for
+		var dir = path.dirname(outpath);
+		var basename = path.basename(outpath);
+		var watcher = fs.watch(dir, function (eventType, filename) {
+			if (eventType == "rename" && filename == basename) {
+				clearTimeout(timer);
+				watcher.close();
+				resolve();
+			}
+		});
+	}
+	)
 }
 
 /**
