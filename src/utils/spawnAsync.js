@@ -4,14 +4,19 @@
 // https://github.com/microsoft/vscode-docker/blob/main/src/utils/spawnAsync.ts
 
 const cp = require('child_process');
+var { ProcessManager } = require('./processManagement.js');
 
 // spawn child process to run the given command, write results to output channel
-async function spawnAsync(command, args, channel) {
+async function spawnAsync(command, args, channel, processManager) {
 
     // expect this promise to resolve; reject is not used because this seems to cause strange behavior in VS Code
     return new Promise((resolve, reject) => {
         const newProcess = cp.spawn(command, args);
-        
+        const pid = newProcess.pid;
+        if (processManager) {
+            processManager.add(pid, command);
+        }
+            
         // expose errors with the process itself
         newProcess.on('error', (err) => {
             if (channel) {
@@ -37,6 +42,9 @@ async function spawnAsync(command, args, channel) {
         newProcess.on('close', (code) => {
             if (channel) {
                 channel.appendLine(`process exited with code ${code}`);
+            }
+            if (processManager) {
+                processManager.delete(pid);
             }
             resolve(code);
         });
