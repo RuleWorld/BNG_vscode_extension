@@ -15,22 +15,23 @@ const path = require('path');
 const os = require('os');
 const { spawnAsync } = require('./utils/spawnAsync.js');
 const { getPythonPath } = require('./utils/getPythonPath.js');
-var { ProcessManager, ProcessManagerProvider } = require('./utils/processManagement.js');
-
-var processManager = new ProcessManager();
+const { ProcessManager, ProcessManagerProvider } = require('./utils/processManagement.js');
 
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
-
 /**
  * @param {vscode.ExtensionContext} context
  */
 function activate(context) {
 	// TODO: Re-write this as TypeScript and use the compiler instead
+
+	// Initialize process manager
+	var processManager = new ProcessManager();
+
 	// Get an ouput channel
 	var bngl_channel = vscode.window.createOutputChannel("BNGL");
-	// This line of code will only be executed once when your extension is activated
-	// check if the auto-setup configuration option is turned on
+
+	// Check if the auto-setup configuration option is turned on
 	var config = vscode.workspace.getConfiguration("bngl");
 	if (config.general.auto_install) {
 		bngl_channel.appendLine("Running BNG auto-install ...");
@@ -41,13 +42,12 @@ function activate(context) {
 
 	// function that deals with running bngl files
 	async function runCommandHandler() {
-		const fold_name = get_time_stamped_folder_name();
-		// pull configuration
-		var config = vscode.workspace.getConfiguration("bngl");
 		// find basename of the file we are working with
 		let fname = vscode.window.activeTextEditor.document.fileName;
-		// get base name
 		fname = path.basename(fname);
+
+		// pull configuration
+		var config = vscode.workspace.getConfiguration("bngl");
 		// always dump the results in the same folder as the bngl
 		// unless the user has specified a folder in settings
 		let def_folder = config.general.result_folder;
@@ -58,15 +58,16 @@ function activate(context) {
 			// Gets the folder the file is in and uses that for results
 			var curr_workspace_uri = vscode.Uri.file(vscode.window.activeTextEditor.document.uri.fsPath.replace(fname, ""));
 		}
-		// remove extension
-		// TODO: Do a check here to make sure extension exists
+
+		// remove extension of file (TODO: check to make sure extension exists)
 		let fname_noext = fname.replace(".bngl", "");
-		// Get folder URI to make the new folder
+		// get folder URI to make the new folder
+		const fold_name = get_time_stamped_folder_name();
 		let new_fold_uri = vscode.Uri.joinPath(curr_workspace_uri, fname_noext, fold_name);
-		// get current file path
-		let curr_doc_uri = vscode.window.activeTextEditor.document.uri;
 		// set the path to be copied to
 		let copy_path = vscode.Uri.joinPath(new_fold_uri, fname);
+		// get current file path
+		let curr_doc_uri = vscode.window.activeTextEditor.document.uri;
 
 		// create new directory and copy the file into our new folder
 		// FIXME: if a file of the same name as the folder exists
@@ -121,7 +122,7 @@ function activate(context) {
 			}
 		} else {
 			bngl_channel.appendLine(term_cmd);
-			const process = spawnAsync('bionetgen', ['-req', PYBNG_VERSION, 'run', '-i', copy_path.fsPath, '-o', new_fold_uri.fsPath, '-l', new_fold_uri.fsPath], bngl_channel);
+			const process = spawnAsync('bionetgen', ['-req', PYBNG_VERSION, 'run', '-i', copy_path.fsPath, '-o', new_fold_uri.fsPath, '-l', new_fold_uri.fsPath], bngl_channel, processManager);
 			process.then((exitCode) => {
 				if (exitCode) {
 					vscode.window.showInformationMessage("Something went wrong, see BNGL output channel for details");
@@ -163,15 +164,15 @@ function activate(context) {
 			});
 		}
 	}
+
 	// function that deals with visualizing bngl files
 	async function vizCommandHandler() {
-		const fold_name = get_time_stamped_folder_name();
-		// pull configuration
-		var config = vscode.workspace.getConfiguration("bngl");
 		// find basename of the file we are working with
 		let fname = vscode.window.activeTextEditor.document.fileName;
-		// get base name
 		fname = path.basename(fname);
+
+		// pull configuration
+		var config = vscode.workspace.getConfiguration("bngl");
 		// always dump the results in the same folder as the bngl
 		// unless the user has specified a folder in settings
 		let def_folder = config.general.result_folder;
@@ -182,15 +183,16 @@ function activate(context) {
 			// Gets the folder the file is in and uses that for results
 			var curr_workspace_uri = vscode.Uri.file(vscode.window.activeTextEditor.document.uri.fsPath.replace(fname, ""));
 		}
-		// remove extension
-		// TODO: Do a check here to make sure extension exists
+		
+		// remove extension of file (TODO: check to make sure extension exists)
 		let fname_noext = fname.replace(".bngl", "");
-		// Get folder URI to make the new folder
+		// get folder URI to make the new folder
+		const fold_name = get_time_stamped_folder_name();
 		let new_fold_uri = vscode.Uri.joinPath(curr_workspace_uri, fname_noext, fold_name);
-		// get current file path
-		let curr_doc_uri = vscode.window.activeTextEditor.document.uri;
 		// set the path to be copied to
 		let copy_path = vscode.Uri.joinPath(new_fold_uri, fname);
+		// get current file path
+		let curr_doc_uri = vscode.window.activeTextEditor.document.uri;
 		
 		// Create new directory and copy the file into our new folder
 		// FIXME: if a file of the same name as the folder exists
@@ -214,7 +216,7 @@ function activate(context) {
 			term.sendText(term_cmd);
 		} else {
 			bngl_channel.appendLine(term_cmd);
-			const exitCode = await spawnAsync('bionetgen', ['-req', PYBNG_VERSION, 'visualize', '-i', copy_path.fsPath, '-o', new_fold_uri.fsPath, '-t', 'all'], bngl_channel);
+			const exitCode = await spawnAsync('bionetgen', ['-req', PYBNG_VERSION, 'visualize', '-i', copy_path.fsPath, '-o', new_fold_uri.fsPath, '-t', 'all'], bngl_channel, processManager);
 			if (exitCode) {
 				vscode.window.showInformationMessage("Something went wrong, see BNGL output channel for details");
 				bngl_channel.show();
@@ -224,8 +226,12 @@ function activate(context) {
 			}
 		}
 	}
+
 	// one function for plotting gdat/cdat/scan files
 	async function plotDatCommandHandler() {
+		// pull configuration
+		var config = vscode.workspace.getConfiguration("bngl");
+		
 		// find basename of the file we are working with
 		let fpath = vscode.window.activeTextEditor.document.fileName;
 		let fname = path.basename(fpath);
@@ -271,10 +277,10 @@ function activate(context) {
 			let process;
 			if (ext == "gdat" || ext == "scan") {
 				term_cmd = `bionetgen -d -req "${PYBNG_VERSION}" plot -i "${fpath}" -o "${outpath}" --legend`;
-				process = spawnAsync('bionetgen', ['-d', '-req', PYBNG_VERSION, 'plot', '-i', fpath, '-o', outpath, '--legend'], bngl_channel);
+				process = spawnAsync('bionetgen', ['-d', '-req', PYBNG_VERSION, 'plot', '-i', fpath, '-o', outpath, '--legend'], bngl_channel, processManager);
 			} else {
 				term_cmd = `bionetgen -d -req "${PYBNG_VERSION}" plot -i "${fpath}" -o "${outpath}"`;
-				process = spawnAsync('bionetgen', ['-d', '-req', PYBNG_VERSION, 'plot', '-i', fpath, '-o', outpath], bngl_channel);
+				process = spawnAsync('bionetgen', ['-d', '-req', PYBNG_VERSION, 'plot', '-i', fpath, '-o', outpath], bngl_channel, processManager);
 			}
 			bngl_channel.appendLine(term_cmd);
 
@@ -282,9 +288,12 @@ function activate(context) {
 			process.then((exitCode) => {
 				if (exitCode) {
 					vscode.window.showInformationMessage("Plotting failed, see BNGL output channel for details");
+					bngl_channel.show();
 				}
 				else {
 					vscode.window.showInformationMessage("Done plotting");
+
+					// auto-open
 					let outUri = vscode.Uri.file(outpath);
 					fs.access(outpath, fs.constants.F_OK, function (err) {
 						if (!err) {
@@ -301,6 +310,7 @@ function activate(context) {
 			});
 		}
 	}
+
 	// command to handle installation of bionetgen
 	// called when extension is activated
 	async function setupCommandHandler() {
@@ -338,6 +348,7 @@ function activate(context) {
 			if (installExitCode) {
 				bngl_channel.appendLine("pip install failed for python: " + pythonPath);
 				vscode.window.showInformationMessage("BNG setup failed, see BNGL output channel for details.");
+				bngl_channel.show();
 			}
 			else {
 				bngl_channel.appendLine("pip install succeeded for python: " + pythonPath);
@@ -349,6 +360,7 @@ function activate(context) {
 			// todo: check version of bionetgen? prompt user to upgrade?
 		}
 	}
+
 	// command to manually upgrade bionetgen
 	async function upgradeCommandHandler() {
 		bngl_channel.appendLine("Running BNG upgrade ...");
@@ -373,6 +385,7 @@ function activate(context) {
 			vscode.window.showInformationMessage("BNG upgrade complete.");
 		}
 	}
+
 	// names of the commands we want to register
 	const runCommandName = 'bng.run_bngl';
 	const vizCommandName = 'bng.run_viz';
