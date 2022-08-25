@@ -137,3 +137,6 @@ Plotting and graph visualizing now correctly respects the terminal runner option
 
 - 0.7.0
 When there is an error with the spawn runner, output channel will automatically pop up. Calling BNG upgrade will automatically activate the extension. 
+
+- 0.7.1
+A process manager is added for bionetgen and all related processes. Now when you open a BNGL file you should notice a BNGL process tree tab in one corner and once you start a BNGL process with the run button you should see processes pop up there. You can right click them to send a kill signal to any one of them. 
