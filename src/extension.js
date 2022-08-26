@@ -90,34 +90,15 @@ function activate(context) {
 			term.show();
 			term.sendText(term_cmd);
 
-			// if auto_open setting is enabled, try to open a gdat file (which?)
+			// if auto_open setting is enabled, try to open a gdat file
 			if (config.general.auto_open) {
 				// start a watcher
-				// for now let's only check for model_name.gdat
-				// todo: fix this
 				let timeout_mili = 120000;
 				checkGdat(new_fold_uri.fsPath, timeout_mili).then(() => {
 					// we have a gdat in our folder, grab one and open
-					var files = fs.readdirSync(new_fold_uri.fsPath);
-					var outGdatPath;
-					for (var i = 0; i < files.length; i++) {
-						let ext = files[i].split(".").pop();
-						if (ext == "gdat") {
-							outGdatPath = path.join(new_fold_uri.fsPath, files[i]);
-							break
-						}
-					}
-					let outGdatUri = vscode.Uri.file(outGdatPath);
-					vscode.commands.executeCommand('vscode.open', outGdatUri);
-					// .then(() => {
-					// // FIXME: find a way to check for the main process and open
-					// // after because this opens too quickly/set delay won't work
-					// setTimeout(() => {
-					// 	PlotPanel.create(context.extensionUri);
-					// }, 3000);
-					// });
+					openGdat();
 				}).catch(() => {
-					vscode.window.showInformationMessage(`Couldn't find a gdat in ${timeout_mili} miliseconds`);
+					// if checkGdat() cannot find a gdat file before timeout, do nothing
 				});
 			}
 		} else {
@@ -125,33 +106,16 @@ function activate(context) {
 			const process = spawnAsync('bionetgen', ['-req', PYBNG_VERSION, 'run', '-i', copy_path.fsPath, '-o', new_fold_uri.fsPath, '-l', new_fold_uri.fsPath], bngl_channel, processManager);
 			process.then((exitCode) => {
 				if (exitCode) {
-					vscode.window.showInformationMessage("Something went wrong, see BNGL output channel for details");
+					vscode.window.showInformationMessage("Something went wrong, see BNGL output channel for details.");
 					bngl_channel.show();
 				}
 				else {
-					vscode.window.showInformationMessage("Finished running successfully");
+					vscode.window.showInformationMessage("Finished running successfully.");
 	
-					// if auto_open setting is enabled, try to open a gdat file (which?)
+					// if auto_open setting is enabled, try to open a gdat file
 					if (config.general.auto_open) {
 						try {
-							// read from new directory
-							var files = fs.readdirSync(new_fold_uri.fsPath);
-							var outGdatPath;
-							for (var i = 0; i < files.length; i++) {
-								let ext = files[i].split(".").pop();
-								if (ext == "gdat") {
-									outGdatPath = path.join(new_fold_uri.fsPath, files[i]);
-									break
-								}
-							}
-							// check if a gdat file was found & open it if so
-							if (typeof outGdatPath !== 'undefined' && outGdatPath) {
-								let outGdatUri = vscode.Uri.file(outGdatPath);
-								vscode.commands.executeCommand('vscode.open', outGdatUri);
-							}
-							else {
-								// should anything be done if no gdat file was found?
-							}
+							openGdat();
 						}
 						catch (err) {
 							// in case reading from the new directory fails
@@ -162,6 +126,42 @@ function activate(context) {
 			}).catch(() => {
 				// this promise is not expected to ever reject, even if exitCode is nonzero (see spawnAsync.js)
 			});
+		}
+
+		// look for & open a gdat file
+		// (preferably model_name.gdat, if that doesn't exist then use first gdat found)
+		function openGdat() {
+			var files = fs.readdirSync(new_fold_uri.fsPath); // read from new directory
+			var outGdatPath;
+			// look for gdat file
+			for (var i = 0; i < files.length; i++) {
+				let fileInfo = files[i].split("."); // array containing filename, extension
+				let ext = fileInfo.pop();
+				let name = fileInfo.pop();
+				// if it exists, save the path of model_name.gdat
+				if (name == fname_noext && ext == "gdat") {
+					outGdatPath = path.join(new_fold_uri.fsPath, files[i]);
+					break
+				}
+				// otherwise, save the path of the first gdat found and keep looking for model_name.gdat
+				if (outGdatPath == undefined && ext == "gdat") {
+					outGdatPath = path.join(new_fold_uri.fsPath, files[i]);
+				}
+			}
+			// check if gdat file was found & open it if so
+			if (typeof outGdatPath !== 'undefined' && outGdatPath) {
+				let outGdatUri = vscode.Uri.file(outGdatPath);
+				// should open in webview
+				vscode.commands.executeCommand('vscode.open', outGdatUri).then(() => {
+					PlotPanel.create(context.extensionUri);
+					// might be nice to only show the webview and not the gdat itself?
+					// not sure if it's possible to open webview without having the gdat open
+					// or how to close the gdat tab after it's no longer the active one
+				});
+			}
+			else {
+				bngl_channel.appendLine("Did not auto-open gdat file.");
+			}
 		}
 	}
 
@@ -218,11 +218,11 @@ function activate(context) {
 			bngl_channel.appendLine(term_cmd);
 			const exitCode = await spawnAsync('bionetgen', ['-req', PYBNG_VERSION, 'visualize', '-i', copy_path.fsPath, '-o', new_fold_uri.fsPath, '-t', 'all'], bngl_channel, processManager);
 			if (exitCode) {
-				vscode.window.showInformationMessage("Something went wrong, see BNGL output channel for details");
+				vscode.window.showInformationMessage("Something went wrong, see BNGL output channel for details.");
 				bngl_channel.show();
 			}
 			else {
-				vscode.window.showInformationMessage("Finished visualizing successfully");
+				vscode.window.showInformationMessage("Finished visualizing successfully.");
 			}
 		}
 	}
@@ -271,7 +271,7 @@ function activate(context) {
 				vscode.window.showInformationMessage(`Done plotting ${fpath} to ${outpath}`);
 				vscode.commands.executeCommand('vscode.open', outUri);
 			}).catch(() => {
-				vscode.window.showInformationMessage(`Plotting didn't finish within ${timeout_mili} miliseconds`);
+				vscode.window.showInformationMessage(`Plotting didn't finish within ${timeout_mili} miliseconds.`);
 			});
 		} else {
 			let process;
@@ -287,21 +287,22 @@ function activate(context) {
 			// once plotting process has closed, check whether the image file has been created & open it if so
 			process.then((exitCode) => {
 				if (exitCode) {
-					vscode.window.showInformationMessage("Plotting failed, see BNGL output channel for details");
+					vscode.window.showInformationMessage("Plotting failed, see BNGL output channel for details.");
 					bngl_channel.show();
 				}
 				else {
-					vscode.window.showInformationMessage("Done plotting");
+					vscode.window.showInformationMessage("Done plotting.");
 
-					// auto-open
+					// try to open image file
 					let outUri = vscode.Uri.file(outpath);
 					fs.access(outpath, fs.constants.F_OK, function (err) {
 						if (!err) {
 							vscode.commands.executeCommand('vscode.open', outUri);
 						}
 						else {
-							vscode.window.showInformationMessage("Could not open plot image file, see BNGL output channel for details");
 							bngl_channel.appendLine(err.toString());
+							vscode.window.showInformationMessage("Could not open plot image file, see BNGL output channel for details.");
+							bngl_channel.show();
 						}
 					});
 				}
