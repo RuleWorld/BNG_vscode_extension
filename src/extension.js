@@ -443,7 +443,7 @@ function activate(context) {
  * @param {string} outpath
  * @param {number} [timeout]
  */
- function checkImage(outpath, timeout) {
+function checkImage(outpath, timeout) {
 	// this returns a promise that will wait until 
 	// a file given by outpath is found or a timeout
 	// limit is reached
