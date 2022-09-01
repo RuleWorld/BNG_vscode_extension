@@ -226,6 +226,7 @@
                 // -- <y:BorderStyle> w/ XML-attributes "width", "color"
                 // -- <y:Shape> (not currently used)
                 // -- <y:NodeLabel> w/ text content & XML-attributes "textColor", "fontStyle"
+                // -- <y:Geometry> w/ XML-attributes "x", "y"
                 // - when retrieving features of group nodes, note that they contain multiple
                 //   instances of these elements (corresponding to each of the nested nodes
                 //   in the group); assume that the elements describing the group node occur first
@@ -279,7 +280,26 @@
                     let labelWeight = (label) ? label.getAttribute("fontStyle") : null;
                     labelColor = (labelColor) ? labelColor : "#000000";
                     labelWeight = (labelWeight && (labelWeight == "bold")) ? "bold" : "normal";
-                    
+                    // layout
+                    let layout = node.getElementsByTagName("y:Geometry").item(0);
+                    // - specifiedPosition object stores node position specified by graphml (undefined if not specified)
+                    let specifiedPosition = undefined;
+                    if (layout) {
+                        specifiedPosition = {
+                            x: parseInt(layout.getAttribute("x")),
+                            y: parseInt(layout.getAttribute("y"))
+                        };
+                    }
+                    // - graph will be rendered with preset positions upon initialization
+                    // - if node position is specified by graphml, use that, otherwise default to (0,0)
+                    // - note: after initialization, a layout will be applied to nodes which do not have specified positions
+                    // - position object stores current model position of node;
+                    //   this is used for rendering and is updated by cytoscape to reflect current layout
+                    let position = {
+                        x: (specifiedPosition) ? specifiedPosition["x"] : 0,
+                        y: (specifiedPosition) ? specifiedPosition["y"] : 0
+                    };
+
                     // add the node to the collection
                     cytoElements["nodes"].push(
                         {data: {id: node.id,
@@ -289,7 +309,9 @@
                                 borderColor: borderColor,
                                 labelText: labelText,
                                 labelColor: labelColor,
-                                labelWeight: labelWeight}}
+                                labelWeight: labelWeight,
+                                specifiedPosition: specifiedPosition},
+                        position: position}
                     );
                 }
 
@@ -404,7 +426,8 @@
 
                 // --- set up graph ---
 
-                let style = [ // the stylesheet for the graph
+                // stylesheet
+                let style = [
                     {
                         selector: 'node',
                         style: {
@@ -430,23 +453,52 @@
                         }
                     }
                 ];
-                let layout_opts = {
-                    name: 'breadthfirst',
-                    fit: true,
-                    animate: "end"
+
+                // layout specifications
+                let preset_layout_opts = {
+                    name: 'preset',
+                    fit: true
                 };
+                let basic_layout_opts = {
+                    name: 'breadthfirst',
+                    fit: true
+                }
+
+                // initialize graph
                 var cy = cytoscape({
                     container: network,
                     elements: cytoElements,
                     style: style,
-                    layout: layout_opts
+                    layout: preset_layout_opts
                 });
-                var layout = cy.layout(layout_opts);
-                layout.run();
+
+                // get collection of elements (nodes for now) that do not have specified positions
+                let eles_to_layout = cy.nodes().filter(
+                    function(ele) {
+                        return (typeof ele.data('specifiedPosition') === 'undefined');
+                    }
+                );
+
+                // apply basic layout to this collection
+                var eles_basic_layout = eles_to_layout.layout(basic_layout_opts);
+                eles_basic_layout.run();
+
+                // create reference to basic layout associated with entire graph
+                var graph_basic_layout = cy.layout(basic_layout_opts);
+
+                // todo: why do the results of rendering eles_basic_layout & graph_basic_layout not match?
+                // - is this because we haven't included edges in eles?
+
+                // todo: consider testing on graph with some node positions specified & some not
+                
+                // --- buttons ---
+
                 // button: redo layout
                 $("#layout_button").click(function () {
-                    layout.run();
+                    // apply basic layout to entire graph
+                    graph_basic_layout.run();
                 });
+
                 // button: save as png
                 $("#png_button").click(function () {
                     // cytoscape will export current view of graph
@@ -465,7 +517,7 @@
                         text: uri
                     });
                 });
-                cy.mount(network);
+
                 break;
         }
     });

@@ -592,6 +592,10 @@ class PlotPanel {
 		this._panel.webview.onDidReceiveMessage(
 			message => {
 				switch (message.command) {
+					// just for debugging
+					case 'debug':
+						console.log(message.text);
+						return;
 					// this is just for webpanel to send msg to the user
 					case 'alert':
 						vscode.window.showInformationMessage(message.text);
