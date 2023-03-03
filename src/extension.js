@@ -972,8 +972,10 @@ function get_time_stamped_folder_name() {
 	const year = date.getFullYear();
 	const month = `${date.getMonth() + 1}`.padStart(2, '0');
 	const day = `${date.getDate()}`.padStart(2, '0');
+	const hours = `${date.getHours()}`.padStart(2, '0');
+	const minutes = `${date.getMinutes()}`.padStart(2, '0');
 	const seconds = `${date.getSeconds()}`.padStart(2, '0');
-	const fold_name = `${year}_${month}_${day}__${date.getHours()}_${date.getMinutes()}_${seconds}`
+	const fold_name = `${year}_${month}_${day}__${hours}_${minutes}_${seconds}`
 	return fold_name;
 }
 
