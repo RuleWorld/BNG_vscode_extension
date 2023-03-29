@@ -1,3 +1,5 @@
+[![Documentation Status](https://readthedocs.org/projects/bng-vs-code-extension/badge/?version=latest)](https://bng-vs-code-extension.readthedocs.io/en/latest/?badge=latest)
+
 # BioNetGen VS Code extension
 
 This is a [VS Code](https://code.visualstudio.com/) language extension for [BioNetGen modeling language](http://bionetgen.org/). Please read the [installation instructions](https://github.com/RuleWorld/BNG_vscode_extension#installation) and see [here](https://bng-vscode-extension.readthedocs.io/en/latest/) for a starter guide.
