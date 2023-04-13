@@ -250,7 +250,7 @@
                 "bngl.general.auto_open": {
                     "markdownDescription": "(WIP) Enable or disable automated opening of result files like gdat.",
                     "type": "boolean",
-                    "default": false
+                    "default": true
                 },
                 "bngl.general.result_folder": {
                     "markdownDescription": "Set default folder for results in case a workspace is not open (use absolute path).",
