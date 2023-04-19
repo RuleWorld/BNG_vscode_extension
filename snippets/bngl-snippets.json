@@ -219,7 +219,7 @@
         "scope": "bngl",
         "prefix": "writeMexfile",
         "body": [
-            "writeMfile({t_start=>$1,t_end=>$2,n_steps=>$3$0})"
+            "writeMexfile({})"
         ]
     },
     "writeMDL": {
