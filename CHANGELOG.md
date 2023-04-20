@@ -140,3 +140,6 @@ When there is an error with the spawn runner, output channel will automatically 
 
 - 0.7.1
 A process manager is added for bionetgen and all related processes. Now when you open a BNGL file you should notice a BNGL process tree tab in one corner and once you start a BNGL process with the run button you should see processes pop up there. You can right click them to send a kill signal to any one of them. 
+
+- 0.7.2
+Minor bugfixes and documentation updates. Auto-opening of files is now on by default, fixed the `writeMexFile` snippet. 
