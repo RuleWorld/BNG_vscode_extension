@@ -1,0 +1,152 @@
+begin model
+
+#@title: Genetic toggle switch (Gardner et al., 2000)
+
+#@description: |
+#  De-dimensionalized model of two mutually repressive gene products
+#  with Hill-type repression and first-order degradation, forming a
+#  bistable genetic toggle switch. ODE only — dimensionless variables
+#  are incompatible with stochastic simulation.
+#
+#  Equations (Eq. 1 in Gardner et al., 2000):
+#    du/dt = alpha_1 / (1 + v^beta) - u
+#    dv/dt = alpha_2 / (1 + u^gamma) - v
+#  where u, v are concentrations normalized by the repression threshold
+#  (dissociation constant K_d), and time is in units of protein lifetime
+#  (1/k_deg). All parameters and variables are therefore dimensionless.
+#
+#  Steady-state analysis: at steady state, du/dt = dv/dt = 0, giving:
+#    u* = alpha_1 / (1 + v*^beta)     (u-nullcline)
+#    v* = alpha_2 / (1 + u*^gamma)    (v-nullcline)
+#  These nullclines intersect at three points for the default
+#  parameters, yielding two stable fixed points and one unstable
+#  saddle:
+#    - u-dominant:  (u ~ 155.8, v ~ 0.10)  — stable
+#    - v-dominant:  (u ~ 0.33,  v ~ 11.7)  — stable
+#    - saddle:      (u ~ 1.32,  v ~ 6.73)  — unstable
+#  The separatrix (boundary between basins of attraction) passes
+#  through the saddle point. Initial conditions below and to the right
+#  of the separatrix converge to the u-dominant state; above and to
+#  the left, to the v-dominant state. From the origin (0, 0), the
+#  system converges to the u-dominant state because alpha_1 >> alpha_2.
+#
+#  Bistability requires at least one Hill coefficient > 1. With
+#  gamma = 1 (no cooperativity for repression of v by u), beta must be
+#  sufficiently large. The bistability region in (alpha_1, alpha_2)
+#  space is shown in Fig. 2c in Gardner et al. (2000).
+
+#@keyword: |
+#  gene regulation, bistable, mutual inhibition, Hill kinetics,
+#  synthetic biology, Escherichia coli, toggle switch, dimensionless
+
+#@reference: |
+#  Gardner TS, Cantor CR, Collins JJ (2000). Construction of a genetic
+#  toggle switch in Escherichia coli. Nature 403:339-342.
+#  doi:10.1038/35002131
+#  BioModels: BIOMD0000000507
+
+begin parameters
+
+  #@note: |
+  #  Dimensionless units (nondimensionalized model):
+  #  concentration unit = K_d (repression threshold)
+  #  time unit = 1/k_deg (protein lifetime, ~30-60 min in
+  #  Escherichia coli)
+
+  # Max synthesis rate of u; see Eq. 1 in Gardner et al. (2000)
+  alpha_1  156.25  # dimensionless
+  # Max synthesis rate of v; see Eq. 1 in Gardner et al. (2000)
+  alpha_2  15.6    # dimensionless
+  # Hill coefficients for mutual repression
+  beta     2.5     # dimensionless
+  gamma    1.0     # dimensionless
+  # Normalized degradation rate (= 1 by construction of the nondimensionalization)
+  k_deg    1.0     # dimensionless
+end parameters
+
+begin molecule types
+  # Repressor 1 (u in Gardner et al., 2000)
+  R1()
+  # Repressor 2 (v in Gardner et al., 2000)
+  R2()
+end molecule types
+
+begin seed species
+  R1()  0  # dimensionless
+  R2()  0  # dimensionless
+end seed species
+
+begin observables
+  # Total repressor levels (dimensionless, in units of K_d)
+  Molecules  Obs_Tot_R1  R1()
+  Molecules  Obs_Tot_R2  R2()
+end observables
+
+begin functions
+  # Hill-repressed synthesis rates (dimensionless propensities);
+  # see Eq. 1 in Gardner et al. (2000). Degradation term is in reaction rules.
+  syn_R1() = alpha_1 / (1 + Obs_Tot_R2^beta)
+  syn_R2() = alpha_2 / (1 + Obs_Tot_R1^gamma)
+end functions
+
+begin reaction rules
+  # Synthesis with Hill-type mutual repression
+  0 -> R1()  syn_R1()
+  0 -> R2()  syn_R2()
+
+  # First-order degradation (k_deg = 1 by nondimensionalization)
+  R1() -> 0  k_deg
+  R2() -> 0  k_deg
+end reaction rules
+
+end model
+
+begin actions
+  generate_network({overwrite=>1})  # 2 species, 4 reactions
+
+  #@note: |
+  #  Three protocols: (1) bistability demo, (2) bifurcation
+  #  scan, (3) simple relaxation. Protocols 1 and 2 are active
+  #  (figure-linked); protocol 3 is commented out.
+
+  # Bistability demonstration
+
+  #@protocol: |
+  #  Phase 1: Relax from (0, 0) to the u-dominant steady state
+  #  (~8 protein lifetimes).
+  #  Phase 2: Increase alpha_2 to 600 (simulating IPTG
+  #  induction), pushing the system across the separatrix into
+  #  the v-dominant basin.
+  #  Phase 3: Restore alpha_2 to 15.6. System remains in the
+  #  v-dominant state, confirming bistability.
+
+  #@figure: |
+  #  Theoretical curves in Fig. 5a in Gardner et al. (2000).
+  #  Our simulation demonstrates the switching behavior that
+  #  underlies the experimental data in Fig. 4a.
+
+  simulate({method=>"ode",suffix=>"ode",t_start=>0,t_end=>8,n_steps=>400})
+  setParameter("alpha_2",600.0)
+  simulate({method=>"ode",suffix=>"ode",t_start=>8,t_end=>12,n_steps=>200,continue=>1})
+  setParameter("alpha_2",15.6)
+  simulate({method=>"ode",suffix=>"ode",t_start=>12,t_end=>20,n_steps=>400,continue=>1})
+
+  # Bifurcation boundary scan
+
+  #@protocol: |
+  #  Scan alpha_2 at fixed alpha_1 across the
+  #  bistable-to-monostable transition.
+
+  #@figure: Fig. 2c in Gardner et al. (2000)
+
+  parameter_scan({method=>"ode",parameter=>"alpha_2",\
+    par_min=>1,par_max=>500,n_scan_pts=>100,\
+    t_start=>0,t_end=>20,n_steps=>200,suffix=>"scan"})
+
+  # Simple relaxation
+
+  #@protocol: Single trajectory from the origin without induction.
+
+#  simulate({method=>"ode",suffix=>"ode",t_start=>0,t_end=>20,\
+#    n_steps=>500})
+end actions
