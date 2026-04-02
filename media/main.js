@@ -13,207 +13,129 @@
                         "#8c564b", "#e377c2", "#7f7f7f", "#bcbd22", "#17becf"];
     const clr_cnt = def_colors.length;
 
+    let plot_initialized = false;
+    let current_plot_data = [];
+    let current_plot_names = [];
+    let current_colors = [];
+
     // Handle messages sent from the extension to the webview
     window.addEventListener('message', event => {
         const message = event.data; // The json data that the extension sent
         switch (message.command) {
             case 'plot':
-                // message.data will contain the data
-                // message.names will contain the names of time series
-                let colors = []
-                let plot_data = [];
-                for (let i = 0; i < message.names.length; i++) {
-                    if (i == 0) {
-                        continue;
-                    }
-                    if (i > message.max_series) {
-                        break;
-                    }
+                current_plot_names = message.names;
+                current_colors = [];
+                current_plot_data = [];
+
+                const varList = document.getElementById('var-list');
+                varList.innerHTML = '';
+
+                for (let i = 1; i < message.names.length; i++) {
+                    let color = def_colors[(i - 1) % clr_cnt];
+                    current_colors.push(color);
+
+                    let is_visible = i <= message.max_series;
+
                     let this_data = {
                         x: message.data[0],
                         y: message.data[i],
-                        name: message.names[i]
-                    }
-                    plot_data.push(this_data);
-                    colors.push(def_colors[(i-1)%clr_cnt]);
+                        name: message.names[i],
+                        visible: is_visible,
+                        line: { color: color }
+                    };
+                    current_plot_data.push(this_data);
+
+                    // Add to sidebar
+                    const item = document.createElement('div');
+                    item.className = 'var-item';
+                    item.innerHTML = `
+                        <input type="checkbox" id="var-${i}" ${is_visible ? 'checked' : ''}>
+                        <span style="color: ${color}; font-weight: bold;">—</span>
+                        <label for="var-${i}">${message.names[i]}</label>
+                    `;
+                    item.onclick = (e) => {
+                        if (e.target.tagName !== 'INPUT') {
+                            const cb = item.querySelector('input');
+                            cb.checked = !cb.checked;
+                            updateVisibility(i - 1, cb.checked);
+                        }
+                    };
+                    item.querySelector('input').onchange = (e) => {
+                        updateVisibility(i - 1, e.target.checked);
+                    };
+                    varList.appendChild(item);
                 }
-                let legend_status = message.legend;
-                let legend_buttons = [{
-                        method: 'relayout',
-                        args: ['showlegend', true],
-                        label: 'legend on'
-                    },
-                    {
-                        method: 'relayout',
-                        args: ['showlegend', false],
-                        label: 'legend off'
-                    }
-                ]
-                if (!legend_status) {
-                    legend_buttons.reverse()
+
+                function updateVisibility(index, visible) {
+                    current_plot_data[index].visible = visible;
+                    Plotly.restyle('plot', { visible: visible }, [index]);
                 }
-                let updatemenus_list = [];
-                if (message.menus) {
-                    updatemenus_list = [{
-                        pad: { 'r': 10, 't': 10 },
-                        showactive: true,
-                        yanchor: 'top',
-                        xanchor: "left",
-                        y: 1.18,
-                        x: 0.1,
-                        buttons: legend_buttons
-                    },
-                    {
-                        pad: { 'r': 10, 't': 10 },
-                        showactive: true,
-                        yanchor: 'top',
-                        xanchor: "left",
-                        y: 1.18,
-                        x: -0.1,
-                        buttons: [{
-                            method: 'restyle',
-                            args: ['mode', 'lines'],
-                            label: 'lines'
-                        },
-                        {
-                            method: 'restyle',
-                            args: ['mode', 'markers'],
-                            label: 'markers'
-                        },
-                        {
-                            method: 'restyle',
-                            args: ['mode', 'lines+markers'],
-                            label: 'lines+markers'
-                        }]
-                    },
-                    {
-                        pad: { 'r': 10, 't': 10 },
-                        showactive: true,
-                        yanchor: 'top',
-                        xanchor: "left",
-                        y: 1.18,
-                        x: 0.265,
-                        buttons: [{
-                            method: 'relayout',
-                            args: ['xaxis.type', 'linear'],
-                            label: 'linear x'
-                        },
-                        {
-                            method: 'relayout',
-                            args: ['xaxis.type', 'log'],
-                            label: 'logx'
-                        }]
-                    },
-                    {
-                        pad: { 'r': 10, 't': 10 },
-                        showactive: true,
-                        yanchor: 'top',
-                        xanchor: "left",
-                        y: 1.18,
-                        x: 0.41,
-                        buttons: [{
-                            method: 'relayout',
-                            args: ['yaxis.type', 'linear'],
-                            label: 'linear y'
-                        },
-                        {
-                            method: 'relayout',
-                            args: ['yaxis.type', 'log'],
-                            label: 'logy'
-                        }]
-                    }]
+
+                // Sidebar Filter
+                document.getElementById('var-filter').oninput = (e) => {
+                    const filter = e.target.value.toLowerCase();
+                    document.querySelectorAll('.var-item').forEach(item => {
+                        const label = item.querySelector('label').innerText.toLowerCase();
+                        item.style.display = label.includes(filter) ? 'flex' : 'none';
+                    });
+                };
+
+                // Show All / None
+                document.getElementById('show-all').onclick = () => {
+                    const updates = current_plot_data.map(() => true);
+                    const indices = current_plot_data.map((_, i) => i);
+                    Plotly.restyle('plot', { visible: true }, indices);
+                    document.querySelectorAll('.var-item input').forEach(cb => cb.checked = true);
+                };
+                document.getElementById('show-none').onclick = () => {
+                    const indices = current_plot_data.map((_, i) => i);
+                    Plotly.restyle('plot', { visible: false }, indices);
+                    document.querySelectorAll('.var-item input').forEach(cb => cb.checked = false);
+                };
+
+                // Export buttons
+                document.getElementById('export-png').onclick = () => exportImage('png');
+                document.getElementById('export-svg').onclick = () => exportImage('svg');
+
+                function exportImage(format) {
+                    const gd = document.getElementById('plot');
+                    Plotly.toImage(gd, {
+                        format: format,
+                        width: gd._fullLayout.width,
+                        height: gd._fullLayout.height
+                    }).then(url => {
+                        vscode.postMessage({
+                            command: 'image',
+                            type: format,
+                            title: page_title,
+                            folder: page_folder,
+                            text: url
+                        });
+                    });
                 }
+
                 let plot_options = {
-                    showlegend: legend_status,
+                    showlegend: message.legend,
                     hovermode: 'closest',
-                    margin: { t: 0 },
+                    margin: { t: 30, r: 30, b: 50, l: 60 },
                     autosize: true,
                     xaxis: { title: message.names[0] },
-                    yaxis: { title: 'concentration' },
+                    yaxis: { title: 'Concentration' },
                     legend: {
-                        y: 0.1,
-                        font: {
-                            size: 12
-                        }
-                    },
-                    updatemenus: updatemenus_list,
+                        orientation: 'h',
+                        y: -0.2
+                    }
                 };
+
                 let config = {
-                    modeBarButtonsToAdd: [
-                        {
-                            name: 'save png',
-                            icon: Plotly.Icons.camera,
-                            click: function (gd) {
-                                let img = Plotly.toImage(gd, {
-                                    format: 'png',
-                                    width: gd._fullLayout.width,
-                                    height: gd._fullLayout.height
-                                }).then(
-                                    function (url) {
-                                        vscode.postMessage({
-                                            command: 'image',
-                                            type: 'png',
-                                            title: page_title,
-                                            folder: page_folder,
-                                            text: url
-                                        })
-                                    }
-                                );
-                            }
-                        },
-                        {
-                            name: 'save svg',
-                            icon: Plotly.Icons.camera,
-                            click: function (gd) {
-                                let img = Plotly.toImage(gd, {
-                                    format: 'svg',
-                                    width: gd._fullLayout.width,
-                                    height: gd._fullLayout.height
-                                }).then(
-                                    function (url) {
-                                        vscode.postMessage({
-                                            command: 'image',
-                                            type: 'svg',
-                                            title: page_title,
-                                            folder: page_folder,
-                                            text: url
-                                        })
-                                    }
-                                );
-                            }
-                        }
-                    ],
+                    responsive: true,
+                    displaylogo: false,
                     modeBarButtonsToRemove: ['toImage']
                 };
-                var plot = document.getElementById('plot');
-                Plotly.newPlot(plot, plot_data, plot_options, config)
-                plot.on('plotly_selected', function (eventData) {
-                    var curve_set = new Set();
-                    eventData.points.forEach(function (pt) {
-                        curve_set.add(pt.curveNumber);
-                    });
-                    if (curve_set.size > 0) {
-                        Plotly.restyle(plot, {
-                            visible: false
-                        });
-                        // gotta recolor 
-                        let new_colors = []
-                        for (let i = 0; i < curve_set.size; i++) {
-                            new_colors.push(colors[curve_set[i]])
-                        }
-                        Plotly.restyle(plot, {
-                            visible: true,
-                            'line.color': new_colors,
-                            'marker.color': new_colors
-                        }, Array.from(curve_set));
-                    } else if (curve_set.size == 0) {
-                        Plotly.restyle(plot, {
-                            visible: true,
-                            'line.color': colors,
-                            'marker.color': colors
-                        });
-                    }
-                });
+
+                Plotly.newPlot('plot', current_plot_data, plot_options, config);
+                plot_initialized = true;
+                break;
             case 'network':
                 // parse GraphML & render with cytoscape.js
 

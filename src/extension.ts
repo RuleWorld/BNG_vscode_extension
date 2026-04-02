@@ -129,75 +129,6 @@ export function activate(context: vscode.ExtensionContext) {
 		}
 	}
 
-	async function plotDatCommandHandler() {
-		const editor = vscode.window.activeTextEditor;
-		if (!editor) return;
-		const config = vscode.workspace.getConfiguration("bngl");
-
-		const docUri = editor.document.uri;
-		const fpath = docUri.fsPath;
-		const fname = path.basename(fpath);
-		const ext = path.extname(fpath).substring(1);
-		const fname_noext = path.basename(fpath, path.extname(fpath));
-		const outpath = path.join(path.dirname(fpath), `${fname_noext}_${ext}.png`);
-
-		vscode.window.showInformationMessage(`Started plotting ${fpath} to ${outpath}`);
-
-		if (config.get<boolean>("general.enable_terminal_runner")) {
-			let term = vscode.window.terminals.find(i => i.name === "bngl_term");
-			if (!term) {
-				term = vscode.window.createTerminal("bngl_term");
-			}
-			term.show();
-			let term_cmd: string;
-			if (ext === "gdat" || ext === "scan") {
-				term_cmd = `bionetgen -d -req "${PYBNG_VERSION}" plot -i "${fpath}" -o "${outpath}" --legend`;
-			} else {
-				term_cmd = `bionetgen -d -req "${PYBNG_VERSION}" plot -i "${fpath}" -o "${outpath}"`;
-			}
-			term.sendText(term_cmd);
-
-			let outUri = vscode.Uri.file(outpath);
-			let timeout_mili = 10000;
-			checkImage(outpath, timeout_mili).then(() => {
-				vscode.window.showInformationMessage(`Done plotting ${fpath} to ${outpath}`);
-				vscode.commands.executeCommand('vscode.open', outUri);
-			}).catch((err) => {
-				bngl_channel.appendLine(`Plot check error: ${err}`);
-				vscode.window.showInformationMessage(`Plotting didn't finish within ${timeout_mili} miliseconds.`);
-			});
-		} else {
-			let process: Promise<number | null>;
-			let term_cmd: string;
-			if (ext === "gdat" || ext === "scan") {
-				term_cmd = `bionetgen -d -req "${PYBNG_VERSION}" plot -i "${fpath}" -o "${outpath}" --legend`;
-				process = spawnAsync('bionetgen', ['-d', '-req', PYBNG_VERSION, 'plot', '-i', fpath, '-o', outpath, '--legend'], bngl_channel, processManager);
-			} else {
-				term_cmd = `bionetgen -d -req "${PYBNG_VERSION}" plot -i "${fpath}" -o "${outpath}"`;
-				process = spawnAsync('bionetgen', ['-d', '-req', PYBNG_VERSION, 'plot', '-i', fpath, '-o', outpath], bngl_channel, processManager);
-			}
-			bngl_channel.appendLine(term_cmd);
-
-			process.then((exitCode) => {
-				if (exitCode) {
-					vscode.window.showInformationMessage("Plotting failed, see BNGL output channel for details.");
-					bngl_channel.show();
-				}
-				else {
-					vscode.window.showInformationMessage("Done plotting.");
-					let outUri = vscode.Uri.file(outpath);
-					if (fs.existsSync(outpath)) {
-						vscode.commands.executeCommand('vscode.open', outUri);
-					} else {
-						vscode.window.showInformationMessage("Could not open plot image file, see BNGL output channel for details.");
-						bngl_channel.show();
-					}
-				}
-			}).catch((err) => {
-				bngl_channel.appendLine(`Plotting process error: ${err}`);
-			});
-		}
-	}
 
 	async function setupCommandHandler() {
 		bngl_channel.appendLine("Checking for perl.");
@@ -253,7 +184,7 @@ export function activate(context: vscode.ExtensionContext) {
 
 	context.subscriptions.push(vscode.commands.registerCommand('bng.run_bngl', runCommandHandler));
 	context.subscriptions.push(vscode.commands.registerCommand('bng.run_viz', vizCommandHandler));
-	context.subscriptions.push(vscode.commands.registerCommand('bng.plot_dat', plotDatCommandHandler));
+	context.subscriptions.push(vscode.commands.registerCommand('bng.plot_dat', () => { PlotPanel.create(context.extensionUri) }));
 	context.subscriptions.push(vscode.commands.registerCommand('bng.webview', () => { PlotPanel.create(context.extensionUri) }));
 	context.subscriptions.push(vscode.commands.registerCommand('bng.setup', setupCommandHandler));
 	context.subscriptions.push(vscode.commands.registerCommand('bng.upgrade', upgradeCommandHandler));
@@ -346,28 +277,6 @@ async function openGdat(new_fold_uri: vscode.Uri, fname_noext: string, context: 
 		await vscode.commands.executeCommand('vscode.open', outGdatUri);
 		PlotPanel.create(context.extensionUri);
 	}
-}
-
-function checkImage(outpath: string, timeout: number): Promise<void> {
-	return new Promise((resolve, reject) => {
-		const timer = setTimeout(() => {
-			watcher.dispose();
-			reject(new Error("Timeout waiting for image"));
-		}, timeout);
-
-		if (fs.existsSync(outpath)) {
-			clearTimeout(timer);
-			resolve();
-			return;
-		}
-
-		const watcher = vscode.workspace.createFileSystemWatcher(new vscode.RelativePattern(path.dirname(outpath), path.basename(outpath)));
-		watcher.onDidCreate(() => {
-			clearTimeout(timer);
-			watcher.dispose();
-			resolve();
-		});
-	});
 }
 
 function checkGdat(outDir: string, timeout: number): Promise<void> {
@@ -479,7 +388,24 @@ class PlotPanel {
 			`;
 		} else {
 			content = `
-				<div id="plot"></div>
+				<div id="sidebar">
+					<div class="sidebar-header">
+						<h3>Variables</h3>
+						<div class="sidebar-actions">
+							<button id="show-all" class="secondary">All</button>
+							<button id="show-none" class="secondary">None</button>
+						</div>
+						<input type="text" id="var-filter" placeholder="Filter variables...">
+					</div>
+					<div id="var-list"></div>
+					<div class="sidebar-footer">
+						<button id="export-png">Export PNG</button>
+						<button id="export-svg" class="secondary">Export SVG</button>
+					</div>
+				</div>
+				<div id="plot-container">
+					<div id="plot"></div>
+				</div>
 				<script nonce="${nonce}" src="${jqUri}"></script>
 				<script nonce="${nonce}" src="${plotlyUri}"></script>
 			`;
@@ -534,7 +460,7 @@ class PlotPanel {
 
 	private _save_image(message: any) {
 		const folder = vscode.Uri.file(message.folder);
-		const uri = vscode.Uri.joinPath(folder, `${message.title}.${message.type}`);
+		const uri = vscode.Uri.joinPath(folder, `${message.title}_${message.type}.${message.type === 'png' ? 'png' : 'svg'}`);
 		let data: Buffer;
 		if (message.type === 'png') {
 			data = Buffer.from(message.text.replace("data:image/png;base64,", ""), 'base64');

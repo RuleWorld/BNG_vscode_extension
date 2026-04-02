@@ -418,69 +418,6 @@ function activate(context) {
       }
     }
   }
-  async function plotDatCommandHandler() {
-    const editor = vscode3.window.activeTextEditor;
-    if (!editor) return;
-    const config2 = vscode3.workspace.getConfiguration("bngl");
-    const docUri = editor.document.uri;
-    const fpath = docUri.fsPath;
-    const fname = path.basename(fpath);
-    const ext = path.extname(fpath).substring(1);
-    const fname_noext = path.basename(fpath, path.extname(fpath));
-    const outpath = path.join(path.dirname(fpath), `${fname_noext}_${ext}.png`);
-    vscode3.window.showInformationMessage(`Started plotting ${fpath} to ${outpath}`);
-    if (config2.get("general.enable_terminal_runner")) {
-      let term = vscode3.window.terminals.find((i) => i.name === "bngl_term");
-      if (!term) {
-        term = vscode3.window.createTerminal("bngl_term");
-      }
-      term.show();
-      let term_cmd;
-      if (ext === "gdat" || ext === "scan") {
-        term_cmd = `bionetgen -d -req "${PYBNG_VERSION}" plot -i "${fpath}" -o "${outpath}" --legend`;
-      } else {
-        term_cmd = `bionetgen -d -req "${PYBNG_VERSION}" plot -i "${fpath}" -o "${outpath}"`;
-      }
-      term.sendText(term_cmd);
-      let outUri = vscode3.Uri.file(outpath);
-      let timeout_mili = 1e4;
-      checkImage(outpath, timeout_mili).then(() => {
-        vscode3.window.showInformationMessage(`Done plotting ${fpath} to ${outpath}`);
-        vscode3.commands.executeCommand("vscode.open", outUri);
-      }).catch((err) => {
-        bngl_channel.appendLine(`Plot check error: ${err}`);
-        vscode3.window.showInformationMessage(`Plotting didn't finish within ${timeout_mili} miliseconds.`);
-      });
-    } else {
-      let process2;
-      let term_cmd;
-      if (ext === "gdat" || ext === "scan") {
-        term_cmd = `bionetgen -d -req "${PYBNG_VERSION}" plot -i "${fpath}" -o "${outpath}" --legend`;
-        process2 = spawnAsync("bionetgen", ["-d", "-req", PYBNG_VERSION, "plot", "-i", fpath, "-o", outpath, "--legend"], bngl_channel, processManager);
-      } else {
-        term_cmd = `bionetgen -d -req "${PYBNG_VERSION}" plot -i "${fpath}" -o "${outpath}"`;
-        process2 = spawnAsync("bionetgen", ["-d", "-req", PYBNG_VERSION, "plot", "-i", fpath, "-o", outpath], bngl_channel, processManager);
-      }
-      bngl_channel.appendLine(term_cmd);
-      process2.then((exitCode) => {
-        if (exitCode) {
-          vscode3.window.showInformationMessage("Plotting failed, see BNGL output channel for details.");
-          bngl_channel.show();
-        } else {
-          vscode3.window.showInformationMessage("Done plotting.");
-          let outUri = vscode3.Uri.file(outpath);
-          if (fs.existsSync(outpath)) {
-            vscode3.commands.executeCommand("vscode.open", outUri);
-          } else {
-            vscode3.window.showInformationMessage("Could not open plot image file, see BNGL output channel for details.");
-            bngl_channel.show();
-          }
-        }
-      }).catch((err) => {
-        bngl_channel.appendLine(`Plotting process error: ${err}`);
-      });
-    }
-  }
   async function setupCommandHandler() {
     bngl_channel.appendLine("Checking for perl.");
     const perlCheckExitCode = await spawnAsync("perl", ["-v"], bngl_channel, processManager);
@@ -529,7 +466,9 @@ function activate(context) {
   }
   context.subscriptions.push(vscode3.commands.registerCommand("bng.run_bngl", runCommandHandler));
   context.subscriptions.push(vscode3.commands.registerCommand("bng.run_viz", vizCommandHandler));
-  context.subscriptions.push(vscode3.commands.registerCommand("bng.plot_dat", plotDatCommandHandler));
+  context.subscriptions.push(vscode3.commands.registerCommand("bng.plot_dat", () => {
+    PlotPanel.create(context.extensionUri);
+  }));
   context.subscriptions.push(vscode3.commands.registerCommand("bng.webview", () => {
     PlotPanel.create(context.extensionUri);
   }));
@@ -617,25 +556,6 @@ async function openGdat(new_fold_uri, fname_noext, context) {
     await vscode3.commands.executeCommand("vscode.open", outGdatUri);
     PlotPanel.create(context.extensionUri);
   }
-}
-function checkImage(outpath, timeout) {
-  return new Promise((resolve, reject) => {
-    const timer = setTimeout(() => {
-      watcher.dispose();
-      reject(new Error("Timeout waiting for image"));
-    }, timeout);
-    if (fs.existsSync(outpath)) {
-      clearTimeout(timer);
-      resolve();
-      return;
-    }
-    const watcher = vscode3.workspace.createFileSystemWatcher(new vscode3.RelativePattern(path.dirname(outpath), path.basename(outpath)));
-    watcher.onDidCreate(() => {
-      clearTimeout(timer);
-      watcher.dispose();
-      resolve();
-    });
-  });
 }
 function checkGdat(outDir, timeout) {
   return new Promise((resolve, reject) => {
@@ -732,7 +652,24 @@ var PlotPanel = class _PlotPanel {
 			`;
     } else {
       content = `
-				<div id="plot"></div>
+				<div id="sidebar">
+					<div class="sidebar-header">
+						<h3>Variables</h3>
+						<div class="sidebar-actions">
+							<button id="show-all" class="secondary">All</button>
+							<button id="show-none" class="secondary">None</button>
+						</div>
+						<input type="text" id="var-filter" placeholder="Filter variables...">
+					</div>
+					<div id="var-list"></div>
+					<div class="sidebar-footer">
+						<button id="export-png">Export PNG</button>
+						<button id="export-svg" class="secondary">Export SVG</button>
+					</div>
+				</div>
+				<div id="plot-container">
+					<div id="plot"></div>
+				</div>
 				<script nonce="${nonce}" src="${jqUri}"></script>
 				<script nonce="${nonce}" src="${plotlyUri}"></script>
 			`;
@@ -782,7 +719,7 @@ var PlotPanel = class _PlotPanel {
   }
   _save_image(message) {
     const folder = vscode3.Uri.file(message.folder);
-    const uri = vscode3.Uri.joinPath(folder, `${message.title}.${message.type}`);
+    const uri = vscode3.Uri.joinPath(folder, `${message.title}_${message.type}.${message.type === "png" ? "png" : "svg"}`);
     let data;
     if (message.type === "png") {
       data = Buffer.from(message.text.replace("data:image/png;base64,", ""), "base64");

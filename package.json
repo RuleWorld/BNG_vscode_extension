@@ -69,35 +69,23 @@
         "commands": [
             {
                 "command": "bng.run_bngl",
-                "title": "Run BNG",
-                "icon": {
-                    "dark": "./assets/flagman.png",
-                    "light": "./assets/flagman.png"
-                }
-            },
-            {
-                "command": "bng.plot_dat",
-                "title": "CLI Plotting",
-                "icon": {
-                    "dark": "./assets/plot_icon_dark.svg",
-                    "light": "./assets/plot_icon_light.svg"
-                }
+                "title": "Run Simulation",
+                "icon": "$(play)"
             },
             {
                 "command": "bng.run_viz",
-                "title": "Make model visualizations",
-                "icon": {
-                    "dark": "./assets/network.svg",
-                    "light": "./assets/network.svg"
-                }
+                "title": "Visualize Network",
+                "icon": "$(graph)"
+            },
+            {
+                "command": "bng.plot_dat",
+                "title": "Export Data Plot",
+                "icon": "$(save)"
             },
             {
                 "command": "bng.webview",
-                "title": "Built-in plotting",
-                "icon": {
-                    "dark": "./assets/for_plotly_dark.svg",
-                    "light": "./assets/for_plotly_light.svg"
-                }
+                "title": "Open BioNetGen View",
+                "icon": "$(pulse)"
             },
             {
                 "command": "bng.setup",
@@ -130,55 +118,16 @@
                 {
                     "when": "resourceLangId == bngl && resourceExtname == .bngl",
                     "group": "navigation",
-                    "title": "Run BNG",
                     "command": "bng.run_bngl"
                 },
                 {
                     "when": "resourceLangId == bngl && resourceExtname == .bngl",
                     "group": "navigation",
-                    "title": "Run visualization",
                     "command": "bng.run_viz"
                 },
                 {
-                    "when": "resourceLangId == bngl && resourceExtname == .gdat",
+                    "when": "resourceExtname == .gdat || resourceExtname == .cdat || resourceExtname == .scan || resourceExtname == .graphml",
                     "group": "navigation",
-                    "title": "Plot gdat",
-                    "command": "bng.plot_dat"
-                },
-                {
-                    "when": "resourceLangId == bngl && resourceExtname == .gdat",
-                    "group": "navigation",
-                    "title": "Plotly",
-                    "command": "bng.webview"
-                },
-                {
-                    "when": "resourceLangId == bngl && resourceExtname == .cdat",
-                    "group": "navigation",
-                    "title": "Plot cdat",
-                    "command": "bng.plot_dat"
-                },
-                {
-                    "when": "resourceLangId == bngl && resourceExtname == .cdat",
-                    "group": "navigation",
-                    "title": "Plotly",
-                    "command": "bng.webview"
-                },
-                {
-                    "when": "resourceLangId == bngl && resourceExtname == .scan",
-                    "group": "navigation",
-                    "title": "Plot scan",
-                    "command": "bng.plot_dat"
-                },
-                {
-                    "when": "resourceLangId == bngl && resourceExtname == .scan",
-                    "group": "navigation",
-                    "title": "Plotly",
-                    "command": "bng.webview"
-                },
-                {
-                    "when": "resourceLangId == bngl && resourceExtname == .graphml",
-                    "group": "navigation",
-                    "title": "GraphML View",
                     "command": "bng.webview"
                 }
             ],
