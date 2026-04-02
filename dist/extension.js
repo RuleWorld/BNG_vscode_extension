@@ -324,18 +324,19 @@ function activate(context) {
   async function runCommandHandler() {
     const editor = vscode3.window.activeTextEditor;
     if (!editor) return;
-    let fname = path.basename(editor.document.fileName);
+    const docUri = editor.document.uri;
+    const fname = path.basename(docUri.fsPath);
     const config2 = vscode3.workspace.getConfiguration("bngl");
     const def_folder = config2.get("general.result_folder");
     let curr_workspace_uri;
     if (def_folder) {
       curr_workspace_uri = vscode3.Uri.file(def_folder);
     } else {
-      curr_workspace_uri = vscode3.Uri.file(path.dirname(editor.document.uri.fsPath));
+      curr_workspace_uri = vscode3.Uri.file(path.dirname(docUri.fsPath));
     }
-    let fname_noext = fname.replace(".bngl", "");
+    const fname_noext = fname.endsWith(".bngl") ? fname.slice(0, -5) : fname;
     const fold_name = get_time_stamped_folder_name();
-    let new_fold_uri = vscode3.Uri.joinPath(curr_workspace_uri, fname_noext, fold_name);
+    const new_fold_uri = vscode3.Uri.joinPath(curr_workspace_uri, fname_noext, fold_name);
     let copy_path = vscode3.Uri.joinPath(new_fold_uri, fname);
     let curr_doc_uri = editor.document.uri;
     await vscode3.workspace.fs.createDirectory(new_fold_uri);
@@ -353,7 +354,8 @@ function activate(context) {
         let timeout_mili = 12e4;
         checkGdat(new_fold_uri.fsPath, timeout_mili).then(() => {
           openGdat(new_fold_uri, fname_noext, context);
-        }).catch(() => {
+        }).catch((err) => {
+          bngl_channel.appendLine(`Error auto-opening GDAT: ${err}`);
         });
       }
     } else {
@@ -366,32 +368,32 @@ function activate(context) {
         } else {
           vscode3.window.showInformationMessage("Finished running successfully.");
           if (config2.get("general.auto_open")) {
-            try {
-              openGdat(new_fold_uri, fname_noext, context);
-            } catch (err) {
-              bngl_channel.appendLine(err);
-            }
+            openGdat(new_fold_uri, fname_noext, context).catch((err) => {
+              bngl_channel.appendLine(`Error auto-opening GDAT: ${err}`);
+            });
           }
         }
-      }).catch(() => {
+      }).catch((err) => {
+        bngl_channel.appendLine(`Process execution error: ${err}`);
       });
     }
   }
   async function vizCommandHandler() {
     const editor = vscode3.window.activeTextEditor;
     if (!editor) return;
-    let fname = path.basename(editor.document.fileName);
+    const docUri = editor.document.uri;
+    const fname = path.basename(docUri.fsPath);
     const config2 = vscode3.workspace.getConfiguration("bngl");
     const def_folder = config2.get("general.result_folder");
     let curr_workspace_uri;
     if (def_folder) {
       curr_workspace_uri = vscode3.Uri.file(def_folder);
     } else {
-      curr_workspace_uri = vscode3.Uri.file(path.dirname(editor.document.uri.fsPath));
+      curr_workspace_uri = vscode3.Uri.file(path.dirname(docUri.fsPath));
     }
-    let fname_noext = fname.replace(".bngl", "");
+    const fname_noext = fname.endsWith(".bngl") ? fname.slice(0, -5) : fname;
     const fold_name = get_time_stamped_folder_name();
-    let new_fold_uri = vscode3.Uri.joinPath(curr_workspace_uri, fname_noext, fold_name);
+    const new_fold_uri = vscode3.Uri.joinPath(curr_workspace_uri, fname_noext, fold_name);
     let copy_path = vscode3.Uri.joinPath(new_fold_uri, fname);
     let curr_doc_uri = editor.document.uri;
     await vscode3.workspace.fs.createDirectory(new_fold_uri);
@@ -420,12 +422,12 @@ function activate(context) {
     const editor = vscode3.window.activeTextEditor;
     if (!editor) return;
     const config2 = vscode3.workspace.getConfiguration("bngl");
-    let fpath = editor.document.fileName;
-    let fname = path.basename(fpath);
-    let split = fname.split(".");
-    let ext = split.pop();
-    let fname_noext = split.join(".");
-    let outpath = fpath.replace(fname, `${fname_noext}_${ext}.png`);
+    const docUri = editor.document.uri;
+    const fpath = docUri.fsPath;
+    const fname = path.basename(fpath);
+    const ext = path.extname(fpath).substring(1);
+    const fname_noext = path.basename(fpath, path.extname(fpath));
+    const outpath = path.join(path.dirname(fpath), `${fname_noext}_${ext}.png`);
     vscode3.window.showInformationMessage(`Started plotting ${fpath} to ${outpath}`);
     if (config2.get("general.enable_terminal_runner")) {
       let term = vscode3.window.terminals.find((i) => i.name === "bngl_term");
@@ -445,7 +447,8 @@ function activate(context) {
       checkImage(outpath, timeout_mili).then(() => {
         vscode3.window.showInformationMessage(`Done plotting ${fpath} to ${outpath}`);
         vscode3.commands.executeCommand("vscode.open", outUri);
-      }).catch(() => {
+      }).catch((err) => {
+        bngl_channel.appendLine(`Plot check error: ${err}`);
         vscode3.window.showInformationMessage(`Plotting didn't finish within ${timeout_mili} miliseconds.`);
       });
     } else {
@@ -473,7 +476,8 @@ function activate(context) {
             bngl_channel.show();
           }
         }
-      }).catch(() => {
+      }).catch((err) => {
+        bngl_channel.appendLine(`Plotting process error: ${err}`);
       });
     }
   }
@@ -537,7 +541,8 @@ function activate(context) {
   context.subscriptions.push(vscode3.commands.registerCommand("bng.kill_process", (processObject) => {
     processManager.killProcess(processObject);
   }));
-  vscode3.window.createTreeView("processManagerTreeView", { treeDataProvider: new ProcessManagerProvider(processManager) });
+  const treeView = vscode3.window.createTreeView("processManagerTreeView", { treeDataProvider: new ProcessManagerProvider(processManager) });
+  context.subscriptions.push(treeView);
   vscode3.commands.executeCommand("setContext", "bng.processManagerActive", true);
   context.subscriptions.push(
     vscode3.languages.registerFoldingRangeProvider({ language: "bngl" }, {
@@ -593,64 +598,56 @@ function activate(context) {
     })
   );
 }
-function openGdat(new_fold_uri, fname_noext, context) {
-  var files = fs.readdirSync(new_fold_uri.fsPath);
-  var outGdatPath;
-  for (var i = 0; i < files.length; i++) {
-    let fileInfo = files[i].split(".");
-    let ext = fileInfo.pop();
-    let name = fileInfo.pop();
-    if (name === fname_noext && ext === "gdat") {
-      outGdatPath = path.join(new_fold_uri.fsPath, files[i]);
+async function openGdat(new_fold_uri, fname_noext, context) {
+  const files = await vscode3.workspace.fs.readDirectory(new_fold_uri);
+  let outGdatUri;
+  for (const [name, type] of files) {
+    if (type !== vscode3.FileType.File) continue;
+    const ext = path.extname(name).substring(1);
+    const base = path.basename(name, path.extname(name));
+    if (base === fname_noext && ext === "gdat") {
+      outGdatUri = vscode3.Uri.joinPath(new_fold_uri, name);
       break;
     }
-    if (outGdatPath === void 0 && ext === "gdat") {
-      outGdatPath = path.join(new_fold_uri.fsPath, files[i]);
+    if (!outGdatUri && ext === "gdat") {
+      outGdatUri = vscode3.Uri.joinPath(new_fold_uri, name);
     }
   }
-  if (outGdatPath) {
-    let outGdatUri = vscode3.Uri.file(outGdatPath);
-    vscode3.commands.executeCommand("vscode.open", outGdatUri).then(() => {
-      PlotPanel.create(context.extensionUri);
-    });
+  if (outGdatUri) {
+    await vscode3.commands.executeCommand("vscode.open", outGdatUri);
+    PlotPanel.create(context.extensionUri);
   }
 }
 function checkImage(outpath, timeout) {
   return new Promise((resolve, reject) => {
-    var timer = setTimeout(() => {
-      watcher.close();
-      reject();
+    const timer = setTimeout(() => {
+      watcher.dispose();
+      reject(new Error("Timeout waiting for image"));
     }, timeout);
     if (fs.existsSync(outpath)) {
       clearTimeout(timer);
       resolve();
       return;
     }
-    var dir = path.dirname(outpath);
-    var basename2 = path.basename(outpath);
-    var watcher = fs.watch(dir, (eventType, filename) => {
-      if (eventType === "rename" && filename === basename2) {
-        clearTimeout(timer);
-        watcher.close();
-        resolve();
-      }
+    const watcher = vscode3.workspace.createFileSystemWatcher(new vscode3.RelativePattern(path.dirname(outpath), path.basename(outpath)));
+    watcher.onDidCreate(() => {
+      clearTimeout(timer);
+      watcher.dispose();
+      resolve();
     });
   });
 }
-function checkGdat(outpath, timeout) {
+function checkGdat(outDir, timeout) {
   return new Promise((resolve, reject) => {
-    var timer = setTimeout(() => {
-      watcher.close();
-      reject();
+    const timer = setTimeout(() => {
+      watcher.dispose();
+      reject(new Error("Timeout waiting for GDAT"));
     }, timeout);
-    var watcher = fs.watch(outpath, (eventType, filename) => {
-      if (!filename) return;
-      let ext = filename.split(".").pop();
-      if (eventType === "rename" && ext === "gdat") {
-        clearTimeout(timer);
-        watcher.close();
-        resolve();
-      }
+    const watcher = vscode3.workspace.createFileSystemWatcher(new vscode3.RelativePattern(outDir, "*.gdat"));
+    watcher.onDidCreate(() => {
+      clearTimeout(timer);
+      watcher.dispose();
+      resolve();
     });
   });
 }
