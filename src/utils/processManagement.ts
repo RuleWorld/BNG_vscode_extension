@@ -1,35 +1,38 @@
-// inspired by:
-// https://github.com/microsoft/vscode-extension-samples/tree/main/tree-view-sample
-// https://github.com/weinand/vscode-processes
-// - this uses wmic to get process list on windows, however wmic is now deprecated; here we use powershell for wmi instead
-
-const vscode = require('vscode');
-const cp = require('child_process');
+import * as vscode from 'vscode';
+import * as cp from 'child_process';
 
 const refreshInterval = 500;
-// note: there was at some point an issue with annoying flashing visuals in VSCode UI that seemed to be related to
-// coupling of ProcessManagerProvider & ProcessManager refresh schedules and handling of async getProcessList(),
-// and this appeared to be fixed by decoupling these refresh schedules;
-// however it is now unclear what was going on and they are once more coupled, which seems to working okay
+
+interface TrackedProcessObject {
+    pid: number;
+    name: string;
+    children?: TrackedProcessObject[];
+}
+
+interface UntrackedProcessObject {
+    pid: number;
+    ppid: number;
+    name: string;
+    children: UntrackedProcessObject[];
+}
 
 // tree data provider for tree view
-class ProcessManagerProvider {
-    _processManager;
+export class ProcessManagerProvider implements vscode.TreeDataProvider<TrackedProcessObject> {
+    private _processManager: ProcessManager;
 
     // for refresh
-    _onDidChangeTreeData = new vscode.EventEmitter();
-    onDidChangeTreeData = this._onDidChangeTreeData.event;
+    private _onDidChangeTreeData: vscode.EventEmitter<TrackedProcessObject | undefined | null | void> = new vscode.EventEmitter<TrackedProcessObject | undefined | null | void>();
+    readonly onDidChangeTreeData: vscode.Event<TrackedProcessObject | undefined | null | void> = this._onDidChangeTreeData.event;
 
-    constructor(processManager) {
+    constructor(processManager: ProcessManager) {
         this._processManager = processManager;
         this.refresh();
     }
 
     // return trackedProcessObject[] containing information about open processes at specified level of custom process tree
-    // note: process tree displayed in tree view will include only processes opened through spawnAsync & (some of) their sub-processes
-    getChildren(trackedProcessObject) {
+    getChildren(trackedProcessObject?: TrackedProcessObject): TrackedProcessObject[] {
         if (trackedProcessObject) {
-            return trackedProcessObject.children;
+            return trackedProcessObject.children || [];
         }
         else {
             return this._processManager.toplevelProcesses;
@@ -37,10 +40,9 @@ class ProcessManagerProvider {
     }
 
     // return TreeItem (to be displayed in VSCode UI) containing information about given process
-    getTreeItem(trackedProcessObject) {
+    getTreeItem(trackedProcessObject: TrackedProcessObject): vscode.TreeItem {
         const pid = trackedProcessObject.pid;
-        const name = trackedProcessObject.name.split(/[\\\/]/).pop().replace(".exe", ""); // take last segment of path if there is one, remove extension
-        // todo: include name of bionetgen model? where/how to get this?
+        const name = trackedProcessObject.name.split(/[\\\/]/).pop()?.replace(".exe", "") || "unknown"; // take last segment of path if there is one, remove extension
         let label = `${pid.toString()}: ${name}`;
         return new vscode.TreeItem(label, vscode.TreeItemCollapsibleState.Expanded);
     }
@@ -54,40 +56,20 @@ class ProcessManagerProvider {
     }
 }
 
-class ProcessManager {
+export class ProcessManager {
 
-    // --- representation of information to be displayed in tree view ---
-    // map object which stores key/value pairs corresponding to only open processes directly tracked by spawnAsync,
-    // which act as top-level processes or roots of custom process trees to be displayed in tree view
-    // - key: PID of process
-    // - value: object storing process details (referred to as trackedProcessObject)
-    // -- PID
-    // -- name
-    // -- children: trackedProcessObject[] (note: only includes sub-processes which are to be displayed in tree view)
-    _openProcessesTracked;
-
-    // --- representation of full process tree ---
-    // map object which stores key/value pairs corresponding to all open processes retrieved from external process utility
-    // - key: PID of process
-    // - value: object storing process details (referred to as untrackedProcessObject)
-    // -- PID
-    // -- PPID
-    // -- name
-    // -- children: untrackedProcessObject[] (note: includes all sub-processes)
-    _openProcessesUntracked;
+    private _openProcessesTracked: Map<number, TrackedProcessObject>;
+    private _openProcessesUntracked: Map<number, UntrackedProcessObject>;
 
     constructor() {
         this._openProcessesTracked = new Map();
         this._openProcessesUntracked = new Map();
-        // this.refresh();
     }
 
     // provides roots of custom process trees to be displayed in tree view
-    get toplevelProcesses() {
+    get toplevelProcesses(): TrackedProcessObject[] {
         return Array.from(this._openProcessesTracked.values());
     }
-
-    // --- functions for process cleanup ---
 
     killAllProcesses() {
         for (const trackedProcessObject of this._openProcessesTracked.values()) {
@@ -96,31 +78,30 @@ class ProcessManager {
     }
 
     // kill process selected from tree view
-    killProcess(trackedProcessObject) {
+    killProcess(trackedProcessObject: TrackedProcessObject) {
         if (trackedProcessObject) {
             // need to use the corresponding full process tree
             const untrackedProcessObject = this._openProcessesUntracked.get(trackedProcessObject.pid);
             if (untrackedProcessObject) {
                 this._treeKill(untrackedProcessObject);
             }
-            // this will not do anything if it can't find the corresponding full process tree
-            // (as opposed to just killing the given process and potentially causing orphan issues)
         }
     }
 
     // kill all open sub-processes of the given process, then kill the given process
-    _treeKill(untrackedProcessObject) {
+    private _treeKill(untrackedProcessObject: UntrackedProcessObject) {
         for (const child of untrackedProcessObject.children) {
             this._treeKill(child);
         }
-        process.kill(untrackedProcessObject.pid);
+        try {
+            process.kill(untrackedProcessObject.pid);
+        } catch (e) {
+            // ignore if process already gone
+        }
     }
 
-    // --- functions for tracking top-level processes ---
-    // note: the information maintained by these persists regardless of refresh schedule
-
     // called by spawnAsync when a new process is initiated
-    add (pid, command) {
+    add (pid: number, command: string) {
         this._openProcessesTracked.set(pid, {
             pid: pid,
             name: command
@@ -128,12 +109,9 @@ class ProcessManager {
     }
 
     // called by spawnAsync when a tracked process terminates
-    delete (pid) {
+    delete (pid: number) {
         this._openProcessesTracked.delete(pid);
     }
-
-    // --- functions for tracking all processes ---
-    // note: the information maintained by these is refreshed according to refresh schedule
 
     async refresh() {
         await this._buildFullProcessTree();
@@ -141,14 +119,10 @@ class ProcessManager {
         for (const trackedProcessObject of this._openProcessesTracked.values()) {
             this._reconstruct(trackedProcessObject);
         }
-
-        // setTimeout(() => { this.refresh() }, refreshInterval);
     }
 
     // use information from external process utility to build representation of full process tree
-    async _buildFullProcessTree() {
-        // invoking the process utility seems to be the slowest component of this whole system,
-        // so we get one basic flat list of currently open processes
+    private async _buildFullProcessTree() {
         let processList = await this._getProcessList();
 
         // iterate over the process list and add each to our collection
@@ -168,7 +142,7 @@ class ProcessManager {
     }
 
     // reconstruct custom process tree rooted at given process by filtering full process tree
-    _reconstruct(trackedProcessObject) {
+    private _reconstruct(trackedProcessObject: TrackedProcessObject) {
         // get full process tree rooted at given process
         const untrackedProcessObject = this._openProcessesUntracked.get(trackedProcessObject.pid);
         if (untrackedProcessObject) {
@@ -178,7 +152,7 @@ class ProcessManager {
             trackedProcessObject.children = []; // refresh
             // recreate children and assign to trackedProcessObject
             for (const untrackedChild of filteredChildren) {
-                const trackedChild = {
+                const trackedChild: TrackedProcessObject = {
                     pid: untrackedChild.pid,
                     name: untrackedChild.name
                 };
@@ -193,8 +167,8 @@ class ProcessManager {
     }
     
     // apply custom filter to full process tree rooted at given process and return top layer of children satisfying this filter
-    _getFilteredChildren(untrackedProcessObject) {
-        let filteredChildren = [];
+    private _getFilteredChildren(untrackedProcessObject: UntrackedProcessObject): UntrackedProcessObject[] {
+        let filteredChildren: UntrackedProcessObject[] = [];
         const allChildren = untrackedProcessObject.children;
         for (const child of allChildren) {
             if (this._filter(child)) {
@@ -203,26 +177,24 @@ class ProcessManager {
             // if a child is filtered out, attempt to promote its children to its level
             else {
                 filteredChildren = filteredChildren.concat(this._getFilteredChildren(child));
-                // this seems like it could maybe be done more efficiently
             }
         }
         return filteredChildren;
     }
 
     // specify filter which determines whether a process from full process tree will be included in custom process tree
-    _filter(untrackedProcessObject) {
+    private _filter(untrackedProcessObject: UntrackedProcessObject): boolean {
         // intermediate processes (eg. python, command line) are not included
         const nameMatch = /perl|NFsim|run_network/;
         return nameMatch.test(untrackedProcessObject.name);
     }
 
     // invoke external process utility to get list of open processes, return untrackedProcessObject[]
-    // note: this may be more resource intensive than we might like, considering it's called quite often
-    async _getProcessList() {
+    private async _getProcessList(): Promise<UntrackedProcessObject[]> {
 
-        return new Promise((resolve, reject) => {
-            let processList = [];
-            let util;
+        return new Promise((resolve) => {
+            let processList: UntrackedProcessObject[] = [];
+            let util: cp.ChildProcess;
 
             // windows
             if (process.platform === "win32") {
@@ -238,27 +210,19 @@ class ProcessManager {
             });
 
             // parse stdout to get information about open processes
-            util.stdout.setEncoding('utf8'); // allows data to be passed as string; otherwise data is passed as buffer
-            util.stdout.on('data', (data) => {
-                // assumptions:
-                // - each process corresponds to one line of text
-                // - no chunk of data will start/end in the middle of a line
-                // - text contains process information iff it contains numbers (for PID, PPID)
-
-                // determine whether current chunk contains any process information
+            util.stdout?.setEncoding('utf8');
+            util.stdout?.on('data', (data) => {
                 if (/[0-9]/.test(data)) {
-                    // if it does, trim whitespace & split by newline
                     let lines = data.trim().split(/\n/);
-                    // get only lines corresponding to processes
-                    lines = lines.filter(line => /[0-9]/.test(line));
+                    lines = lines.filter((line: string) => /[0-9]/.test(line));
                     
                     for (const line of lines) {
-                        // split each line by whitespace to get process information
                         const processInfo = line.trim().split(/\s+/);
                         processList.push({
                             pid: parseInt(processInfo[0]),
                             ppid: parseInt(processInfo[1]),
-                            name: processInfo[2]
+                            name: processInfo[2],
+                            children: []
                         });
                     }
                 }
@@ -269,9 +233,4 @@ class ProcessManager {
             });
         });
     }
-}
-
-module.exports = {
-    ProcessManager,
-    ProcessManagerProvider
 }

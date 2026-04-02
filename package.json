@@ -21,7 +21,7 @@
         "Snippets",
         "Themes"
     ],
-    "main": "./src/extension.js",
+    "main": "./dist/extension.js",
     "activationEvents": [
         "onCommand:bng.setup",
         "onCommand:bng.upgrade",
@@ -229,10 +229,14 @@
             "ms-python.python"
         ],
         "scripts": {
+            "vscode:prepublish": "npm run package",
+            "compile": "npm run check-types && node esbuild.js",
+            "watch": "npm run check-types && node esbuild.js --watch",
+            "package": "npm run check-types && node esbuild.js --production",
+            "check-types": "tsc --noEmit",
             "lint": "eslint .",
-            "compile": "tsc -p ./",
-            "pretest": "npm run lint",
-		    "test": "node ./out/test/runTest.js"
+            "pretest": "npm run compile && npm run lint",
+            "test": "node ./out/test/runTest.js"
         },
         "configuration": {
             "title": "BioNetGen",
@@ -254,7 +258,10 @@
                 },
                 "bngl.general.result_folder": {
                     "markdownDescription": "Set default folder for results in case a workspace is not open (use absolute path).",
-                    "type": ["string","null"],
+                    "type": [
+                        "string",
+                        "null"
+                    ],
                     "default": null
                 },
                 "bngl.plotting.legend": {
@@ -275,5 +282,12 @@
                 }
             }
         }
+    },
+    "devDependencies": {
+        "@types/node": "^25.5.0",
+        "@types/vscode": "^1.110.0",
+        "esbuild": "^0.27.5",
+        "glob": "^13.0.6",
+        "typescript": "^6.0.2"
     }
 }
