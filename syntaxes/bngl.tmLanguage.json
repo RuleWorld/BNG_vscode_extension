@@ -396,8 +396,8 @@
 			"patterns": [{
 				"begin": "^\\s*([0-9]+\\s+|[A-Za-z_][A-Za-z0-9_]*\\s*\\:)?\\s*([A-Za-z_][A-Za-z0-9_]*)\\s*(\\=)?\\s*",
 				"beginCaptures": {
-					"1": { "name": "constant.language.line_label.bngl", "patterns": [{"name": "test.colon","match": "\\:"}] },
-					"2": { "name": "name", "patterns": [{ "include": "#names" }] },
+					1: { "name": "constant.language.line_label.bngl", "patterns": [{"name": "punctuation.separator.key-value.bngl","match": "\\:"}] },
+					2: { "name": "variable.other.constant.bngl", "patterns": [{ "include": "#names" }] },
 					"3": { "name": "equal" }
 				},
 				"end": "\\s*(?=\\#|((?<!\\\\)\\n))",
@@ -417,14 +417,17 @@
 				"contentName": "meta.moleculetype.line.bngl",
 				"begin": "^\\s*([0-9]+\\s+|[A-Za-z_][A-Za-z0-9_]*\\s*\\:)?\\s*(?=[A-Za-z])",
 				"beginCaptures": {
-					"1": { "name": "constant.language.line_label.bngl", "patterns": [{"name": "test.colon","match": "\\:"}] }
+					"1": { "name": "constant.language.line_label.bngl", "patterns": [{"name": "punctuation.separator.key-value.bngl","match": "\\:"}] }
 				},
 				"end": "\\s*(?=\\#|((?<!\\\\)\\n))",
-				"patterns": [{
-					"patterns": [{
+				"patterns": [
+					{
+						"include": "#line-continuation"
+					},
+					{
 						"include": "#moltype"
-					}]
-				}]
+					}
+				]
 			}]
 		},
 		"compartment_line": {
@@ -432,9 +435,9 @@
 			"patterns": [{
 				"begin": "^\\s*([0-9]+\\s+|[A-Za-z_][A-Za-z0-9_]*\\s*\\:)?\\s*([A-Za-z][A-Za-z0-9_]*)\\s+([2|3])\\s+",
 				"beginCaptures": {
-					"1": { "name": "constant.language.line_label.bngl", "patterns": [{"name": "test.colon","match": "\\:"}] },
-					"2": { "name": "meta.compartment.name.bngl", "patterns": [{ "include": "#names"}] },
-					"3": { "name": "meta.compartment.dimensionality.bngl", "patterns": [{ "include": "#constants"}] }
+					1: { "name": "constant.language.line_label.bngl", "patterns": [{"name": "punctuation.separator.key-value.bngl","match": "\\:"}] },
+					2: { "name": "entity.name.type.compartment.bngl", "patterns": [{ "include": "#names"}] },
+					3: { "name": "constant.numeric.integer.bngl", "patterns": [{ "include": "#constants"}] }
 				},
 				"end": "(\\s[A-Za-z][A-Za-z0-9_]*)?\\s*(?=\\#|((?<!\\\\)\\n))",
 				"endCaptures": {
@@ -450,8 +453,8 @@
 			"patterns": [{
 				"begin": "^\\s*([0-9]+\\s+|[A-Za-z_][A-Za-z0-9_]*\\s*\\:)?\\s*([A-Za-z][A-Za-z0-9_]*)(\\([^\\n|\\#|\\)]*\\))?\\s*(\\s+|\\=)\\s*",
 				"beginCaptures": {
-					"1": { "name": "constant.language.line_label.bngl", "patterns": [{"name": "test.colon","match": "\\:"}] },
-					"2": { "name": "meta.function.name.bngl", "patterns": [{ "include": "#names"}] },
+					1: { "name": "constant.language.line_label.bngl", "patterns": [{"name": "punctuation.separator.key-value.bngl","match": "\\:"}] },
+					2: { "name": "entity.name.function.bngl", "patterns": [{ "include": "#names"}] },
 					"3": { "name": "meta.function.arguments.bngl", "patterns": [{ "include": "#func_args"}]},
 					"4": { "name": "meta.function.define_sym.bngl", "patterns": [{ "include": "#constants"}] }
 				},
@@ -728,13 +731,18 @@
 			"patterns": [{
 				"begin": "^\\s*([0-9]+\\s+|[A-Za-z_][A-Za-z0-9_]*\\s*\\:)?\\s*(?=[A-Za-z0]|\\@|\\%)([^\\n|\\#|\\<|\\-]+)\\s*(?=\\<|\\-)",
 				"beginCaptures": {
-					"1": { "name": "constant.language.line_label.bngl", "patterns": [{"name": "test.colon","match": "\\:"}] },
+					"1": { "name": "constant.language.line_label.bngl", "patterns": [{"name": "punctuation.separator.key-value.bngl","match": "\\:"}] },
 					"2": { "name": "meta.rule.reactants.bngl", "patterns": [{ "include": "#reactants"}] }
 				},
-				"end": "(?=\\#|\\n)",
-				"patterns": [{
-					"include": "#reaction_rhs"
-				}]
+				"end": "\\s*(?=\\#|((?<!\\\\)\\n))",
+				"patterns": [
+					{
+						"include": "#line-continuation"
+					},
+					{
+						"include": "#reaction_rhs"
+					}
+				]
 			}]
 		},
 		"reactants": {
@@ -916,6 +924,12 @@
 			"patterns": [{
 				"name": "meta.block_tag.name.bngl",
 				"match": "(model|parameters|molecule\\s+types|compartments|seed\\s+species|species|observables|groups|energy\\s+patterns|population\\s+maps|functions|reactions|reaction\\s+rules|population\\s+maps|actions)"
+			}]
+		},
+		"line-continuation": {
+			"patterns": [{
+				"name": "constant.character.escape.bngl",
+				"match": "\\\\"
 			}]
 		},
 		"comments": {

@@ -331,6 +331,8 @@ function activate(context) {
     let curr_workspace_uri;
     if (def_folder) {
       curr_workspace_uri = vscode3.Uri.file(def_folder);
+    } else if (vscode3.workspace.workspaceFolders && vscode3.workspace.workspaceFolders.length > 0) {
+      curr_workspace_uri = vscode3.workspace.workspaceFolders[0].uri;
     } else {
       curr_workspace_uri = vscode3.Uri.file(path.dirname(docUri.fsPath));
     }
@@ -388,6 +390,8 @@ function activate(context) {
     let curr_workspace_uri;
     if (def_folder) {
       curr_workspace_uri = vscode3.Uri.file(def_folder);
+    } else if (vscode3.workspace.workspaceFolders && vscode3.workspace.workspaceFolders.length > 0) {
+      curr_workspace_uri = vscode3.workspace.workspaceFolders[0].uri;
     } else {
       curr_workspace_uri = vscode3.Uri.file(path.dirname(docUri.fsPath));
     }
@@ -590,6 +594,11 @@ var PlotPanel = class _PlotPanel {
         case "image":
           this._save_image(message);
           return;
+      }
+    }, null, this._disposables);
+    this._panel.onDidChangeViewState((e) => {
+      if (this._panel.visible) {
+        this._send_figure_data();
       }
     }, null, this._disposables);
   }

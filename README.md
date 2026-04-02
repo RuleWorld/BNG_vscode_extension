@@ -32,21 +32,14 @@ For other ways to install, check out the [installation guide](docs/install.md).
 
 Tips: 
 
-* Make sure to select a folder when opening up your model, currently that's how BNG extension knows where to save your results. 
-* For correct highlighting, please make sure ```dark-bngl``` theme is selected, you can see how to change themes [here](https://code.visualstudio.com/docs/getstarted/themes#_selecting-the-color-theme)
 * If suggestions disappear for snippets, you can press ```CTRL/CMD + space``` to show suggestions again
 
-## Known Issues
+## Development
 
-General issues
-* Need a `default results` folder to save results in case a folder wasn't selected before opening up a `bngl` file. 
-
-Highlighting issues
-* Using line breaks disrupt syntax highlighting
-
-Plotting issues
-* Built-in plotting button alignment is not automated
-* Sometimes the plot doesn't show up the first time you click the button
+This extension uses TypeScript and esbuild. To develop locally:
+1. `npm install`
+2. `npm run watch` to start the build in watch mode.
+3. Press `F5` to launch the Extension Development Host.
 
 Please submit an issue [here](https://github.com/RuleWorld/BNG_vscode_extension) if you find one or have any feature requests. 
 

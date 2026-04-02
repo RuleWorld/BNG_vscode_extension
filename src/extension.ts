@@ -28,6 +28,8 @@ export function activate(context: vscode.ExtensionContext) {
 		let curr_workspace_uri: vscode.Uri;
 		if (def_folder) {
 			curr_workspace_uri = vscode.Uri.file(def_folder);
+		} else if (vscode.workspace.workspaceFolders && vscode.workspace.workspaceFolders.length > 0) {
+			curr_workspace_uri = vscode.workspace.workspaceFolders[0].uri;
 		} else {
 			curr_workspace_uri = vscode.Uri.file(path.dirname(docUri.fsPath));
 		}
@@ -93,6 +95,8 @@ export function activate(context: vscode.ExtensionContext) {
 		let curr_workspace_uri: vscode.Uri;
 		if (def_folder) {
 			curr_workspace_uri = vscode.Uri.file(def_folder);
+		} else if (vscode.workspace.workspaceFolders && vscode.workspace.workspaceFolders.length > 0) {
+			curr_workspace_uri = vscode.workspace.workspaceFolders[0].uri;
 		} else {
 			curr_workspace_uri = vscode.Uri.file(path.dirname(docUri.fsPath));
 		}
@@ -316,11 +320,19 @@ class PlotPanel {
 					vscode.window.showInformationMessage(message.text);
 					return;
 				case 'ready':
+					// The webview is ready, send data.
 					this._send_figure_data();
 					return;
 				case 'image':
 					this._save_image(message);
 					return;
+			}
+		}, null, this._disposables);
+
+		// Also send data if the panel becomes visible again
+		this._panel.onDidChangeViewState(e => {
+			if (this._panel.visible) {
+				this._send_figure_data();
 			}
 		}, null, this._disposables);
 	}
