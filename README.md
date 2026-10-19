@@ -42,7 +42,9 @@ The extension's **Install** and **Upgrade** actions keep `setuptools<82` pinned 
 
 ## Installation
 
-The extension is available on the [VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=als251.bngl): search for **BioNetGen** in the Extensions tab.
+The extension is available on the [VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=BioNetGen-ext.biontegen-vscode-extension): search for **BioNetGen** in the Extensions tab.
+
+If you previously installed the older **BioNetGen Language** extension (`als251.bngl`), uninstall it first: that listing is no longer updated, and the two extensions conflict if both are installed.
 
 For installation from a VSIX package or running from source, see the [installation guide](docs/install.md).
 

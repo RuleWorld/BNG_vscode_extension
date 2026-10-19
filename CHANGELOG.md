@@ -4,7 +4,7 @@ All notable changes to the "bngl-grammar-vscode" extension will be documented in
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
-## [Unreleased]
+## [0.8.4] - 2026-10-19
 
 ### Fixed
 - Process manager refresh timer is now stopped and disposed on extension teardown; previously a self-rescheduling 500 ms poll kept firing for the life of the extension host, even after `deactivate()`
@@ -15,6 +15,7 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 - `onReferences` is now comment-aware using the parser's string-aware comment stripping, so a `#` inside a quoted string no longer hides a real reference
 
 ### Changed
+- Marketplace identity is now `BioNetGen-ext.biontegen-vscode-extension` (display name **BioNetGen**), so releases update the maintained BioNetGen-ext listing instead of the retired `als251.bngl` listing; README and docs Marketplace links updated to match
 - The plot sidebar variable list is now built with `textContent` instead of `innerHTML` for observable names taken from the (untrusted) data-file header — defense-in-depth, since CSP already blocked inline script execution
 
 ### Removed

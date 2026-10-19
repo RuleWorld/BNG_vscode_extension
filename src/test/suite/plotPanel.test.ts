@@ -111,7 +111,7 @@ suite('PlotPanel', () => {
     suiteSetup(async function () {
         this.timeout(30_000);
 
-        const ext = vscode.extensions.getExtension('als251.bngl');
+        const ext = vscode.extensions.getExtension('BioNetGen-ext.biontegen-vscode-extension');
         if (ext && !ext.isActive) {
             await ext.activate();
         }
@@ -167,7 +167,7 @@ suite('PlotPanel', () => {
         this.timeout(15_000);
 
         PlotPanel.create(
-            vscode.extensions.getExtension('als251.bngl')!.extensionUri,
+            vscode.extensions.getExtension('BioNetGen-ext.biontegen-vscode-extension')!.extensionUri,
             vscode.Uri.file(graphmlPath),
             vscode.ViewColumn.One
         );
@@ -192,7 +192,7 @@ suite('PlotPanel', () => {
         assert.doesNotMatch(html, /Reset View/);
 
         PlotPanel.create(
-            vscode.extensions.getExtension('als251.bngl')!.extensionUri,
+            vscode.extensions.getExtension('BioNetGen-ext.biontegen-vscode-extension')!.extensionUri,
             vscode.Uri.file(graphmlPath),
             vscode.ViewColumn.One
         );
@@ -203,7 +203,7 @@ suite('PlotPanel', () => {
         this.timeout(15_000);
 
         PlotPanel.create(
-            vscode.extensions.getExtension('als251.bngl')!.extensionUri,
+            vscode.extensions.getExtension('BioNetGen-ext.biontegen-vscode-extension')!.extensionUri,
             vscode.Uri.file(gdatPath),
             vscode.ViewColumn.One
         );
@@ -227,7 +227,7 @@ suite('PlotPanel', () => {
         this.timeout(15_000);
 
         PlotPanel.create(
-            vscode.extensions.getExtension('als251.bngl')!.extensionUri,
+            vscode.extensions.getExtension('BioNetGen-ext.biontegen-vscode-extension')!.extensionUri,
             vscode.Uri.file(splitDualRulevizPatternGraphmlPath),
             vscode.ViewColumn.One
         );
@@ -239,7 +239,7 @@ suite('PlotPanel', () => {
         assert.strictEqual(panel.title, 'test_model_ruleviz');
 
         PlotPanel.create(
-            vscode.extensions.getExtension('als251.bngl')!.extensionUri,
+            vscode.extensions.getExtension('BioNetGen-ext.biontegen-vscode-extension')!.extensionUri,
             vscode.Uri.file(splitDualRulevizOperationGraphmlPath),
             vscode.ViewColumn.One
         );
@@ -257,7 +257,7 @@ suite('PlotPanel', () => {
         });
 
         PlotPanel.create(
-            vscode.extensions.getExtension('als251.bngl')!.extensionUri,
+            vscode.extensions.getExtension('BioNetGen-ext.biontegen-vscode-extension')!.extensionUri,
             vscode.Uri.file(graphmlPath),
             modelEditor.viewColumn
         );
@@ -275,7 +275,7 @@ suite('PlotPanel', () => {
         this.timeout(15_000);
 
         PlotPanel.create(
-            vscode.extensions.getExtension('als251.bngl')!.extensionUri,
+            vscode.extensions.getExtension('BioNetGen-ext.biontegen-vscode-extension')!.extensionUri,
             vscode.Uri.file(regulatoryGraphmlPath),
             vscode.ViewColumn.One
         );
@@ -310,7 +310,7 @@ suite('PlotPanel', () => {
         this.timeout(15_000);
 
         PlotPanel.create(
-            vscode.extensions.getExtension('als251.bngl')!.extensionUri,
+            vscode.extensions.getExtension('BioNetGen-ext.biontegen-vscode-extension')!.extensionUri,
             vscode.Uri.file(rulevizOperationGraphmlPath),
             vscode.ViewColumn.One
         );
@@ -342,7 +342,7 @@ suite('PlotPanel', () => {
         this.timeout(15_000);
 
         PlotPanel.create(
-            vscode.extensions.getExtension('als251.bngl')!.extensionUri,
+            vscode.extensions.getExtension('BioNetGen-ext.biontegen-vscode-extension')!.extensionUri,
             vscode.Uri.file(splitRulevizOperationGraphmlPath),
             vscode.ViewColumn.One
         );
@@ -383,7 +383,7 @@ suite('PlotPanel', () => {
         this.timeout(15_000);
 
         PlotPanel.create(
-            vscode.extensions.getExtension('als251.bngl')!.extensionUri,
+            vscode.extensions.getExtension('BioNetGen-ext.biontegen-vscode-extension')!.extensionUri,
             vscode.Uri.file(splitDualRulevizOperationGraphmlPath),
             vscode.ViewColumn.One
         );

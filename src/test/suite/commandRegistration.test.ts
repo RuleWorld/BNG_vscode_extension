@@ -40,7 +40,7 @@ suite('Command Registration', () => {
         await new Promise(resolve => setTimeout(resolve, 2000));
 
         // Also try explicit activation
-        const ext = vscode.extensions.getExtension('als251.bngl');
+        const ext = vscode.extensions.getExtension('BioNetGen-ext.biontegen-vscode-extension');
         if (ext && !ext.isActive) {
             try {
                 await ext.activate();
