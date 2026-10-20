@@ -1,0 +1,17 @@
+# SYNTAX TEST "source.bngl" "parameter block scoping"
+
+begin parameters
+# <-- entity.name.section.parameters.bngl
+  k1  1.0
+# ^^ variable.other.constant.bngl
+#     ^^^ constant.numeric.floating.bngl
+  NA  6.02e23  # Avogadro
+# ^^ variable.other.constant.bngl
+#     ^^^^^^^ constant.numeric.floating.bngl
+#              ^ comment.line.bngl
+  k_on = 2.5
+# ^^^^ variable.other.constant.bngl
+  1  k_labeled 99
+# ^ constant.language.line_label.bngl
+end parameters
+# <-- entity.name.section.parameters.bngl

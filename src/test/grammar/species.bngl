@@ -1,0 +1,16 @@
+# SYNTAX TEST "source.bngl" "seed species and compartment scoping"
+
+begin seed species
+# <-- entity.name.section.species.bngl
+end seed species
+
+begin species
+# <-- entity.name.section.species.bngl
+end species
+
+begin compartments
+# <-- entity.name.section.compartments.bngl
+  EC  3  1.0
+# ^^ entity.name.type.compartment.bngl
+#     ^ constant.numeric.integer.bngl
+end compartments

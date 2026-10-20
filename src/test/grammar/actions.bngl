@@ -1,0 +1,15 @@
+# SYNTAX TEST "source.bngl" "action scoping"
+
+simulate({method=>"ode",t_end=>100})
+# <-- entity.name.function.action.curly.bngl
+#^^^^^^^ meta.action.name.bngl
+
+setParameter("k1",1.0)
+# <-- entity.name.function.action.nocurly.bngl
+#^^^^^^^^^^^ meta.action.name.bngl
+
+generate_network({overwrite=>1})
+#^^^^^^^^^^^^^^^ meta.action.name.bngl
+
+visualize({type=>"contactmap"})
+#^^^^^^^^ meta.action.name.bngl

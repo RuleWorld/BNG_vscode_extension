@@ -1,0 +1,172 @@
+begin model
+#@model_id: kholodenko2000_mapk_cascade
+#@title: MAPK cascade with negative feedback (Kholodenko 2000)
+#@description: Eight-species MAPK cascade (MKKK/MKK/MAPK) with Michaelis-Menten activation/deactivation and negative feedback from MAPK_PP onto MKKK activation. Demonstrates ultrasensitivity and sustained oscillations.
+#@organism: other
+#@created: 2026-03-08
+#@bng_version: >=2.9.3
+#@house_style_version: 0.1
+#@source: from_antimony
+#@reference: doi:10.1046/j.1432-1327.2000.01197.x
+#@note: |
+#  All species already in integer-range concentrations (10-280).
+#  No additional scaling needed for SSA.
+
+begin parameters
+  NA       6.02214076e23  # 1/mol
+  V_ref    1.0            # L
+  f        1.0            # dimensionless
+
+  # Top level (MKKK)
+  V1       2.5            # concentration/min
+  K1       10             # concentration
+  V2       0.25           # concentration/min
+  KK2      8              # concentration
+  Ki       9              # concentration
+  n_fb     1              # dimensionless
+
+  # Middle level (MKK)
+  k3       0.025          # 1/min
+  KK3      15             # concentration
+  k4       0.025          # 1/min
+  KK4      15             # concentration
+  V5       0.75           # concentration/min
+  KK5      15             # concentration
+  V6       0.75           # concentration/min
+  KK6      15             # concentration
+
+  # Bottom level (MAPK)
+  k7       0.025          # 1/min
+  KK7      15             # concentration
+  k8       0.025          # 1/min
+  KK8      15             # concentration
+  V9       0.5            # concentration/min
+  KK9      15             # concentration
+  V10      0.5            # concentration/min
+  KK10     15             # concentration
+end parameters
+
+begin molecule types
+  MKKK()
+  MKKK_P()
+  MKK()
+  MKK_P()
+  MKK_PP()
+  MAPK()
+  MAPK_P()
+  MAPK_PP()
+end molecule types
+
+begin seed species
+  MKKK()     90   # molecules
+  MKKK_P()   10   # molecules
+  MKK()      280  # molecules
+  MKK_P()    10   # molecules
+  MKK_PP()   10   # molecules
+  MAPK()     280  # molecules
+  MAPK_P()   10   # molecules
+  MAPK_PP()  10   # molecules
+end seed species
+
+begin observables
+  Molecules  Obs_MKKK     MKKK()
+  Molecules  Obs_MKKK_P   MKKK_P()
+  Molecules  Obs_MKK      MKK()
+  Molecules  Obs_MKK_P    MKK_P()
+  Molecules  Obs_MKK_PP   MKK_PP()
+  Molecules  Obs_MAPK     MAPK()
+  Molecules  Obs_MAPK_P   MAPK_P()
+  Molecules  Obs_MAPK_PP  MAPK_PP()
+end observables
+
+begin functions
+  # Feedback denominator
+  fb_den() = 1 + (Obs_MAPK_PP / Ki)^n_fb
+
+  # Level 1: MKKK activation/deactivation
+  r1_act()  = V1 * Obs_MKKK / (fb_den() * (K1 + Obs_MKKK))
+  r1_deact() = V2 * Obs_MKKK_P / (KK2 + Obs_MKKK_P)
+
+  # Level 2: MKK phosphorylation steps
+  r2_phos1() = k3 * Obs_MKKK_P * Obs_MKK / (KK3 + Obs_MKK)
+  r2_phos2() = k4 * Obs_MKKK_P * Obs_MKK_P / (KK4 + Obs_MKK_P)
+  r2_dephos2() = V5 * Obs_MKK_PP / (KK5 + Obs_MKK_PP)
+  r2_dephos1() = V6 * Obs_MKK_P / (KK6 + Obs_MKK_P)
+
+  # Level 3: MAPK phosphorylation steps
+  r3_phos1() = k7 * Obs_MKK_PP * Obs_MAPK / (KK7 + Obs_MAPK)
+  r3_phos2() = k8 * Obs_MKK_PP * Obs_MAPK_P / (KK8 + Obs_MAPK_P)
+  r3_dephos2() = V9 * Obs_MAPK_PP / (KK9 + Obs_MAPK_PP)
+  r3_dephos1() = V10 * Obs_MAPK_P / (KK10 + Obs_MAPK_P)
+
+  # Net production/consumption for each species
+  # MKKK: -act + deact
+  prod_MKKK()    = r1_deact()
+  cons_MKKK()    = r1_act()
+
+  # MKKK_P: +act - deact
+  prod_MKKK_P()  = r1_act()
+  cons_MKKK_P()  = r1_deact()
+
+  # MKK: -phos1 + dephos1
+  prod_MKK()     = r2_dephos1()
+  cons_MKK()     = r2_phos1()
+
+  # MKK_P: +phos1 - phos2 + dephos2 - dephos1
+  prod_MKK_P()   = r2_phos1() + r2_dephos2()
+  cons_MKK_P()   = r2_phos2() + r2_dephos1()
+
+  # MKK_PP: +phos2 - dephos2
+  prod_MKK_PP()  = r2_phos2()
+  cons_MKK_PP()  = r2_dephos2()
+
+  # MAPK: -phos1 + dephos1
+  prod_MAPK()    = r3_dephos1()
+  cons_MAPK()    = r3_phos1()
+
+  # MAPK_P: +phos1 - phos2 + dephos2 - dephos1
+  prod_MAPK_P()  = r3_phos1() + r3_dephos2()
+  cons_MAPK_P()  = r3_phos2() + r3_dephos1()
+
+  # MAPK_PP: +phos2 - dephos2
+  prod_MAPK_PP() = r3_phos2()
+  cons_MAPK_PP() = r3_dephos2()
+end functions
+
+begin reaction rules
+  # Level 1
+  0 -> MKKK()    prod_MKKK()
+  MKKK() -> 0    cons_MKKK()
+
+  0 -> MKKK_P()  prod_MKKK_P()
+  MKKK_P() -> 0  cons_MKKK_P()
+
+  # Level 2
+  0 -> MKK()     prod_MKK()
+  MKK() -> 0     cons_MKK()
+
+  0 -> MKK_P()   prod_MKK_P()
+  MKK_P() -> 0   cons_MKK_P()
+
+  0 -> MKK_PP()  prod_MKK_PP()
+  MKK_PP() -> 0  cons_MKK_PP()
+
+  # Level 3
+  0 -> MAPK()    prod_MAPK()
+  MAPK() -> 0    cons_MAPK()
+
+  0 -> MAPK_P()  prod_MAPK_P()
+  MAPK_P() -> 0  cons_MAPK_P()
+
+  0 -> MAPK_PP()  prod_MAPK_PP()
+  MAPK_PP() -> 0  cons_MAPK_PP()
+end reaction rules
+
+end model
+
+begin actions
+  generate_network({overwrite=>1})
+
+  simulate({method=>"ode",suffix=>"ode",t_start=>0,t_end=>200,n_steps=>400})
+  simulate({method=>"ssa",suffix=>"ssa",t_start=>0,t_end=>200,n_steps=>400})
+end actions

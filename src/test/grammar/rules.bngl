@@ -1,0 +1,15 @@
+# SYNTAX TEST "source.bngl" "reaction rule scoping"
+
+begin reaction rules
+# <-- entity.name.section.rules.bngl
+  A() -> B() k1
+# ^          meta.rule.reactant.bngl
+  _R1: 0 -> A() k_syn
+# ^^^ constant.language.line_label.bngl
+#    ^ punctuation.separator.key-value.bngl
+#      ^ meta.species.null_pat.bngl
+#                ^^^^^ meta.rule.unidir_rate.bngl
+  A() + B() <-> C() kf, kr
+#           ^^^ keyword.control.rule.bidir.bngl
+end reaction rules
+# <-- entity.name.section.rules.bngl

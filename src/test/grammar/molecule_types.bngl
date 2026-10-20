@@ -1,0 +1,12 @@
+# SYNTAX TEST "source.bngl" "molecule type block scoping"
+
+begin molecule types
+# <-- entity.name.section.moleculetypes.bngl
+  A(b,s~u~p)
+# ^ meta.moleculetype.name.bngl
+  Rec(l,d~Y~pY)
+# ^^^ meta.moleculetype.name.bngl
+  Simple()
+# ^^^^^^ meta.moleculetype.name.bngl
+end molecule types
+# <-- entity.name.section.moleculetypes.bngl

@@ -1,0 +1,10 @@
+# SYNTAX TEST "source.bngl" "function block scoping"
+
+begin functions
+# <-- entity.name.section.functions.bngl
+  rate_A() = k1 * Obs_A
+# ^^^^^^ entity.name.function.bngl
+  total = Obs_A + Obs_B
+# ^^^^^ entity.name.function.bngl
+end functions
+# <-- entity.name.section.functions.bngl

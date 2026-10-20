@@ -1,0 +1,12 @@
+# SYNTAX TEST "source.bngl" "comment scoping"
+
+# whole line comment
+# <-- comment.line.bngl
+
+begin parameters
+  k1 1.0 # inline comment
+#        ^ comment.line.bngl
+end parameters
+
+"a string value"
+# <-- string.quoted.double.bngl

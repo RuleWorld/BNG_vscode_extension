@@ -4,103 +4,496 @@
 	--input-padding-horizontal: 4px;
 	--input-margin-vertical: 4px;
 	--input-margin-horizontal: 0;
+	--graph-toolbar-gap: 10px;
+	--graph-fit-padding: 40px;
+}
+
+html, body {
+	height: 100%;
+	margin: 0;
+	overflow: hidden;
 }
 
 body {
-	padding: 0 var(--container-paddding);
-	color: var(--vscode-foreground);
+	--viewer-background: var(--vscode-editor-background, #1e1e1e);
+	--viewer-panel-background: var(--vscode-sideBar-background, var(--viewer-background));
+	--viewer-foreground: var(--vscode-foreground, #d4d4d4);
+	--viewer-muted-foreground: var(--vscode-descriptionForeground, var(--viewer-foreground));
+	--viewer-border: var(--vscode-panel-border, rgba(128, 128, 128, 0.35));
+	--viewer-hover-background: var(--vscode-list-hoverBackground, rgba(255, 255, 255, 0.06));
+	--viewer-input-background: var(--vscode-input-background, var(--viewer-panel-background));
+	--viewer-input-foreground: var(--vscode-input-foreground, var(--viewer-foreground));
+	--viewer-input-border: var(--vscode-input-border, var(--viewer-border));
+	--viewer-input-placeholder: var(--vscode-input-placeholderForeground, var(--viewer-muted-foreground));
+	--viewer-button-background: var(--vscode-button-background, #0e639c);
+	--viewer-button-foreground: var(--vscode-button-foreground, #ffffff);
+	--viewer-button-hover: var(--vscode-button-hoverBackground, #1177bb);
+	--viewer-button-secondary-background: var(--vscode-button-secondaryBackground, #3a3d41);
+	--viewer-button-secondary-foreground: var(--vscode-button-secondaryForeground, var(--viewer-foreground));
+	--viewer-button-secondary-hover: var(--vscode-button-secondaryHoverBackground, #45494e);
+	--viewer-link: var(--vscode-textLink-foreground, #3794ff);
+	--viewer-link-active: var(--vscode-textLink-activeForeground, #4daafc);
+	--viewer-focus-border: var(--vscode-focusBorder, #3794ff);
+	--viewer-plot-paper-background: var(--viewer-background);
+	--viewer-plot-background: var(--viewer-background);
+	--viewer-plot-grid: rgba(128, 138, 153, 0.35);
+	--viewer-plot-zeroline: rgba(128, 138, 153, 0.5);
+	--viewer-legend-background: var(--viewer-panel-background);
+	--viewer-network-background-start: var(--viewer-background);
+	--viewer-network-background-end: var(--viewer-panel-background);
+	--graph-toolbar-button-background: var(--viewer-button-secondary-background);
+	--graph-toolbar-button-foreground: var(--viewer-button-secondary-foreground);
+	--graph-toolbar-button-hover: var(--viewer-button-secondary-hover);
+	--graph-toolbar-button-border: var(--viewer-input-border);
+	padding: 0;
+	color: var(--viewer-foreground);
 	font-size: var(--vscode-font-size);
 	font-weight: var(--vscode-font-weight);
 	font-family: var(--vscode-font-family);
-	background-color: var(--vscode-editor-background);
+	background-color: var(--viewer-background);
+	transition: background-color 140ms ease, color 140ms ease;
+}
+
+body[data-view-mode='light'] {
+	color-scheme: light;
+	--viewer-background: #f4f7fb;
+	--viewer-panel-background: #ffffff;
+	--viewer-foreground: #16202a;
+	--viewer-muted-foreground: #5b6773;
+	--viewer-border: #d3dbe5;
+	--viewer-hover-background: #edf3fa;
+	--viewer-input-background: #ffffff;
+	--viewer-input-foreground: #16202a;
+	--viewer-input-border: #c7d0db;
+	--viewer-input-placeholder: #7a8693;
+	--viewer-button-background: #0f6cbd;
+	--viewer-button-foreground: #ffffff;
+	--viewer-button-hover: #1b80d2;
+	--viewer-button-secondary-background: #e6edf4;
+	--viewer-button-secondary-foreground: #223243;
+	--viewer-button-secondary-hover: #d9e4ef;
+	--viewer-link: #0b63a5;
+	--viewer-link-active: #084e83;
+	--viewer-focus-border: #0f6cbd;
+	--viewer-plot-paper-background: #f4f7fb;
+	--viewer-plot-background: #ffffff;
+	--viewer-plot-grid: rgba(119, 133, 148, 0.22);
+	--viewer-plot-zeroline: rgba(119, 133, 148, 0.38);
+	--viewer-legend-background: rgba(255, 255, 255, 0.92);
+	--viewer-network-background-start: #f5f8fc;
+	--viewer-network-background-end: #e7eef7;
+}
+
+body[data-view-mode='dark'] {
+	color-scheme: dark;
+	--viewer-background: #11161c;
+	--viewer-panel-background: #18212b;
+	--viewer-foreground: #e6edf3;
+	--viewer-muted-foreground: #97a6b7;
+	--viewer-border: #324150;
+	--viewer-hover-background: rgba(163, 189, 214, 0.12);
+	--viewer-input-background: #0f1720;
+	--viewer-input-foreground: #e6edf3;
+	--viewer-input-border: #36485c;
+	--viewer-input-placeholder: #8e9fb1;
+	--viewer-button-background: #0f6cbd;
+	--viewer-button-foreground: #ffffff;
+	--viewer-button-hover: #2882cf;
+	--viewer-button-secondary-background: #273241;
+	--viewer-button-secondary-foreground: #e6edf3;
+	--viewer-button-secondary-hover: #334153;
+	--viewer-link: #5ab3ff;
+	--viewer-link-active: #87c7ff;
+	--viewer-focus-border: #63b3ff;
+	--viewer-plot-paper-background: #11161c;
+	--viewer-plot-background: #18212b;
+	--viewer-plot-grid: rgba(124, 148, 171, 0.28);
+	--viewer-plot-zeroline: rgba(144, 168, 193, 0.44);
+	--viewer-legend-background: rgba(17, 22, 28, 0.84);
+	--viewer-network-background-start: #10161d;
+	--viewer-network-background-end: #1a2430;
+}
+
+body.plot-view {
+	padding: 0 var(--container-paddding);
+}
+
+#plot-container {
+	position: absolute;
+	left: 250px;
+	right: 0;
+	top: 0;
+	bottom: 0;
+	overflow: hidden;
+	display: flex;
+	flex-direction: column;
+	background: var(--viewer-background);
+}
+
+#plot_meta_bar {
+	display: flex;
+	align-items: flex-start;
+	justify-content: space-between;
+	gap: 16px;
+	padding: 12px 16px;
+	border-bottom: 1px solid var(--viewer-border);
+	background: var(--viewer-panel-background);
+}
+
+.plot-meta-block {
+	min-width: 0;
+	display: flex;
+	flex-direction: column;
+	gap: 3px;
+}
+
+.plot-meta-caption {
+	font-size: 0.75em;
+	font-weight: 600;
+	letter-spacing: 0.02em;
+	text-transform: uppercase;
+	color: var(--viewer-muted-foreground);
+}
+
+.plot-source-path,
+.plot-source-summary {
+	font-size: 0.82em;
+	line-height: 1.35;
+	color: var(--viewer-muted-foreground);
+	word-break: break-word;
+}
+
+.plot-view-switch {
+	display: flex;
+	gap: 8px;
+	flex-shrink: 0;
+}
+
+.plot-view-switch button {
+	min-width: 76px;
+}
+
+.plot-view-switch button.active {
+	color: var(--viewer-button-foreground);
+	background: var(--viewer-button-background);
+}
+
+#plot_viewport {
+	position: relative;
+	flex: 1;
+	min-height: 0;
+}
+
+#plot,
+#plot_data_panel {
+	position: absolute;
+	inset: 0;
 }
 
 #plot {
 	height: 100%;
 	width: 100%;
+}
+
+#plot[hidden],
+#plot_data_panel[hidden] {
+	display: none !important;
+}
+
+#plot_data_panel {
+	overflow: auto;
+	background: var(--viewer-background);
+}
+
+.plot-data-table-shell {
+	min-width: max-content;
+	padding: 16px 18px 20px;
+	box-sizing: border-box;
+}
+
+.plot-data-table {
+	border-collapse: collapse;
+	background: var(--viewer-panel-background);
+	color: var(--viewer-foreground);
+	border: 1px solid var(--viewer-border);
+}
+
+.plot-data-table th,
+.plot-data-table td {
+	padding: 6px 10px;
+	border: 1px solid var(--viewer-border);
+	text-align: left;
+	white-space: nowrap;
+	font-family: var(--vscode-editor-font-family, var(--vscode-font-family));
+	font-size: 0.9em;
+}
+
+.plot-data-table th {
+	position: sticky;
+	top: 0;
+	z-index: 1;
+	background: var(--viewer-panel-background);
+	color: var(--viewer-foreground);
+}
+
+.plot-data-table tbody tr:nth-child(even) {
+	background: var(--viewer-hover-background);
+}
+
+.plot-data-empty {
+	padding: 24px 18px;
+	color: var(--viewer-muted-foreground);
+}
+
+#sidebar {
 	position: absolute;
 	left: 0;
-	top: 50px;
-	z-index: 0;
+	top: 0;
+	bottom: 0;
+	width: 250px;
+	border-right: 1px solid var(--viewer-border);
+	display: flex;
+	flex-direction: column;
+	background-color: var(--viewer-panel-background);
+}
+
+.sidebar-header {
+	padding: 10px;
+	border-bottom: 1px solid var(--viewer-border);
+}
+
+.sidebar-header h3 {
+	margin: 0 0 10px 0;
+	font-size: 1.1em;
+}
+
+.sidebar-actions {
+	display: flex;
+	gap: 5px;
+	margin-bottom: 10px;
+}
+
+.sidebar-actions button {
+	flex: 1;
+	font-size: 0.8em;
+	padding: 2px 4px;
+}
+
+#var-filter {
+	margin-top: 5px;
+}
+
+#var-list {
+	flex: 1;
+	overflow-y: auto;
+	padding: 5px 0;
+}
+
+.var-item {
+	padding: 4px 10px;
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	cursor: pointer;
+	user-select: none;
+	font-size: 0.9em;
+}
+
+.var-item:hover {
+	background-color: var(--viewer-hover-background);
+}
+
+.var-item input {
+	cursor: pointer;
+	margin: 0;
+	width: auto !important;
+}
+
+.sidebar-controls {
+	padding: 10px;
+	border-top: 1px solid var(--viewer-border);
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+}
+
+.control-group label {
+	font-size: 0.8em;
+	color: var(--viewer-muted-foreground);
+	margin-bottom: 3px;
+	display: block;
+}
+
+.control-buttons {
+	display: flex;
+	gap: 2px;
+}
+
+.control-btn {
+	flex: 1;
+	font-size: 0.75em;
+	padding: 3px 6px;
+	color: var(--viewer-button-secondary-foreground);
+	background: var(--viewer-button-secondary-background);
+}
+
+.control-btn:hover {
+	background: var(--viewer-button-secondary-hover);
+}
+
+.control-btn.active {
+	color: var(--viewer-button-foreground);
+	background: var(--viewer-button-background);
+}
+
+.sidebar-footer {
+	padding: 10px;
+	border-top: 1px solid var(--viewer-border);
+	display: flex;
+	flex-direction: column;
+	gap: 5px;
 }
 
 #network {
+	position: absolute;
+	inset: 0;
+	background:
+		linear-gradient(
+			180deg,
+			var(--viewer-network-background-start) 0%,
+			var(--viewer-network-background-end) 100%
+		);
+}
+
+#graph_shell {
+	display: flex;
+	flex-direction: column;
 	height: 100%;
 	width: 100%;
-	position: absolute;
-	left: 0;
-	top: 50px;
-	z-index: 0;
-	background-color: white;
+	min-height: 0;
 }
 
-#head_div {
-	float: left;
+#graph_toolbar {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	gap: var(--graph-toolbar-gap);
+	padding: 10px 12px;
+	border-bottom: 1px solid var(--viewer-border);
+	background: var(--viewer-panel-background);
 }
 
-/* Dropdown Button */
-.dropbtn {
-	background-color: #3498DB;
-	color: white;
-	padding: 16px;
-	font-size: 12px;
-	border: none;
-	cursor: pointer;
+.graph-toolbar-group {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 8px;
 }
 
-/* Dropdown button on hover & focus */
-.dropbtn:hover, .dropbtn:focus {
-	background-color: #2980B9;
+.graph-toolbar-group label {
+	font-size: 0.82em;
+	color: var(--viewer-muted-foreground);
 }
 
-/* The container <div> - needed to position the dropdown content */
-#top_buttons {
+.graph-select {
+	min-width: 180px;
+	width: auto;
+}
+
+#network_wrapper {
 	position: relative;
-	display: inline-block;
-	width: 100%;
+	flex: 1;
+	min-height: 0;
+	background: var(--viewer-background);
 }
 
-/* Dropdown Content (Hidden by Default) */
-#axis_dropdown {
-	display: none;
+#ruleviz_browser {
+	height: 100%;
+	overflow: auto;
+	padding: 18px 20px 28px;
+	background: var(--ruleviz-browser-background, var(--viewer-background));
+	box-sizing: border-box;
+}
+
+#ruleviz_browser[hidden] {
+	display: none !important;
+}
+
+.ruleviz-browser-table {
+	display: grid;
+	gap: 16px;
+}
+
+.ruleviz-browser-row {
+	display: grid;
+	grid-template-columns: minmax(104px, 148px) minmax(0, 1fr);
+	gap: 16px;
+	align-items: start;
+	padding: 16px;
+	border: 1px solid var(--ruleviz-browser-row-border, var(--viewer-border));
+	border-radius: 16px;
+	background: var(--ruleviz-browser-row-background, var(--viewer-panel-background));
+	box-shadow: 0 12px 30px var(--ruleviz-browser-row-shadow, transparent);
+}
+
+.ruleviz-browser-meta {
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+	min-width: 0;
+	padding-top: 4px;
+}
+
+.ruleviz-browser-rule-label {
+	font-size: 1.06em;
+	font-weight: 600;
+	line-height: 1.25;
+	color: var(--ruleviz-browser-rule-label-foreground, var(--ruleviz-browser-label-foreground, var(--viewer-foreground)));
+	word-break: break-all;
+}
+
+.ruleviz-browser-rule-bngl {
+	grid-column: 1 / -1;
+	margin: 0;
+	padding: 14px 16px;
+	border: 1px solid var(--ruleviz-browser-canvas-border, var(--viewer-border));
+	border-radius: 12px;
+	background: var(--ruleviz-browser-canvas-background, var(--viewer-panel-background));
+	color: var(--ruleviz-browser-label-foreground, var(--viewer-foreground));
+	font-family: var(--vscode-editor-font-family, var(--vscode-font-family));
+	font-size: 0.98em;
+	line-height: 1.5;
+	white-space: pre-wrap;
+	word-break: break-word;
+	overflow-wrap: anywhere;
+}
+
+.ruleviz-browser-graph-cell {
+	min-width: 0;
+}
+
+.ruleviz-browser-graph-shell {
+	position: relative;
+	min-height: 220px;
+	border: 1px solid var(--ruleviz-browser-canvas-border, var(--viewer-border));
+	border-radius: 14px;
+	background: var(--ruleviz-browser-canvas-background, var(--viewer-panel-background));
+	overflow: hidden;
+}
+
+.ruleviz-browser-graph {
 	position: absolute;
-	background-color: #f1f1f1;
-	min-width: 160px;
-	box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
-	z-index: 99 !important;
-}  
-/* Show the dropdown menu (use JS to add this class to the .dropdown-content container when the user clicks on the dropdown button) */
-.show {display:block;}
-
-/*
-#top_buttons {
-	border: none;
-	text-align: center;
-	outline: 1px solid transparent;
-	outline-offset: 2px !important;
-	color: white;
-	background: grey;
-	position: absolute; 
-	top: -50px; 
-	right: 20px;
-	transition: 0.3s; 
-	padding: 15px; 
-	width: 200px; 
-	text-decoration: none; 
-	font-size: 20px;
-	border-radius: 0 0 5px 5px; 
-	z-index: 99 !important;
+	inset: 0;
 }
 
-#top_buttons:hover {
-	cursor: pointer;
-	top: 0;
+.ruleviz-browser-empty {
+	padding: 24px;
+	border: 1px dashed var(--ruleviz-browser-row-border, var(--viewer-border));
+	border-radius: 16px;
+	background: var(--ruleviz-browser-row-background, var(--viewer-panel-background));
+	color: var(--ruleviz-browser-muted-foreground, var(--viewer-muted-foreground));
 }
-
-#top_buttons:focus {
-	outline-color: var(--vscode-focusBorder);
-}
-*/
 
 ol,
 ul {
@@ -113,17 +506,22 @@ form > * {
 	margin-block-end: var(--input-margin-vertical);
 }
 
+body.graph-view > * {
+	margin-block-start: 0;
+	margin-block-end: 0;
+}
+
 *:focus {
-	outline-color: var(--vscode-focusBorder) !important;
+	outline-color: var(--viewer-focus-border) !important;
 }
 
 a {
-	color: var(--vscode-textLink-foreground);
+	color: var(--viewer-link);
 }
 
 a:hover,
 a:active {
-	color: var(--vscode-textLink-activeForeground);
+	color: var(--viewer-link-active);
 }
 
 code {
@@ -131,47 +529,121 @@ code {
 	font-family: var(--vscode-editor-font-family);
 }
 
-button {
-	border: none;
+button,
+select {
+	border: 1px solid transparent;
 	padding: var(--input-padding-vertical) var(--input-padding-horizontal);
 	text-align: center;
 	outline: 1px solid transparent;
 	outline-offset: 2px !important;
-	color: var(--vscode-button-foreground);
-	background: var(--vscode-button-background);
+	font-family: var(--vscode-font-family);
+	font-size: var(--vscode-font-size);
+	transition: background-color 140ms ease, border-color 140ms ease, color 140ms ease;
 }
 
 button:hover {
 	cursor: pointer;
-	background: var(--vscode-button-hoverBackground);
+	background: var(--viewer-button-hover);
 }
 
 button:focus {
-	outline-color: var(--vscode-focusBorder);
+	outline-color: var(--viewer-focus-border);
+}
+
+button {
+	color: var(--viewer-button-foreground);
+	background: var(--viewer-button-background);
+	cursor: pointer;
 }
 
 button.secondary {
-	color: var(--vscode-button-secondaryForeground);
-	background: var(--vscode-button-secondaryBackground);
+	color: var(--viewer-button-secondary-foreground);
+	background: var(--viewer-button-secondary-background);
 }
 
 button.secondary:hover {
-	background: var(--vscode-button-secondaryHoverBackground);
+	background: var(--viewer-button-secondary-hover);
+}
+
+body.graph-view[data-current-view-mode='light'] {
+	--graph-toolbar-button-background: #e6edf4;
+	--graph-toolbar-button-foreground: #223243;
+	--graph-toolbar-button-hover: #d9e4ef;
+	--graph-toolbar-button-border: #c3d4e5;
+}
+
+body.graph-view[data-current-view-mode='dark'] {
+	--graph-toolbar-button-background: #b79e7b;
+	--graph-toolbar-button-foreground: #231a10;
+	--graph-toolbar-button-hover: #c8b08d;
+	--graph-toolbar-button-border: #d7c2a3;
+}
+
+#graph_toolbar button,
+#graph_toolbar button.secondary {
+	color: var(--graph-toolbar-button-foreground);
+	background: var(--graph-toolbar-button-background);
+	border-color: var(--graph-toolbar-button-border);
+	box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.04);
+}
+
+#graph_toolbar button:hover,
+#graph_toolbar button.secondary:hover {
+	background: var(--graph-toolbar-button-hover);
+	border-color: var(--graph-toolbar-button-border);
+}
+
+select {
+	color: var(--viewer-input-foreground);
+	background: var(--viewer-input-background);
+	border-color: var(--viewer-input-border);
+}
+
+select:hover {
+	background: var(--viewer-hover-background);
+}
+
+select:focus {
+	outline-color: var(--viewer-focus-border);
 }
 
 input:not([type='checkbox']),
 textarea {
 	display: block;
 	width: 100%;
-	border: none;
+	border: 1px solid var(--viewer-input-border);
 	font-family: var(--vscode-font-family);
 	padding: var(--input-padding-vertical) var(--input-padding-horizontal);
-	color: var(--vscode-input-foreground);
-	outline-color: var(--vscode-input-border);
-	background-color: var(--vscode-input-background);
+	color: var(--viewer-input-foreground);
+	outline-color: var(--viewer-input-border);
+	background-color: var(--viewer-input-background);
+	transition: background-color 140ms ease, border-color 140ms ease, color 140ms ease;
 }
 
 input::placeholder,
 textarea::placeholder {
-	color: var(--vscode-input-placeholderForeground);
+	color: var(--viewer-input-placeholder);
+}
+
+@media (max-width: 920px) {
+	#sidebar {
+		width: 220px;
+	}
+
+	#plot-container {
+		left: 220px;
+	}
+
+	#plot_meta_bar {
+		flex-direction: column;
+		align-items: stretch;
+	}
+
+	.plot-view-switch {
+		justify-content: flex-start;
+	}
+
+	.ruleviz-browser-row {
+		grid-template-columns: 1fr;
+	}
 }

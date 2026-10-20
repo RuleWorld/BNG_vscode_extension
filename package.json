@@ -1,30 +1,54 @@
 {
-    "publisher": "als251",
+    "publisher": "BioNetGen-ext",
     "repository": {
         "type": "git",
         "url": "https://github.com/RuleWorld/BNG_vscode_extension"
+    },
+    "homepage": "https://github.com/RuleWorld/BNG_vscode_extension#readme",
+    "bugs": {
+        "url": "https://github.com/RuleWorld/BNG_vscode_extension/issues"
     },
     "icon": "assets/flagman.png",
     "galleryBanner": {
         "color": "#C80000",
         "theme": "dark"
     },
-    "name": "bngl",
-    "displayName": "BioNetGen Language",
+    "name": "biontegen-vscode-extension",
+    "displayName": "BioNetGen",
     "description": "BNG language extension for vscode",
-    "version": "0.7.2",
+    "version": "0.8.4",
     "engines": {
-        "vscode": "^1.52.0"
+        "vscode": "^1.82.0"
     },
     "categories": [
         "Programming Languages",
         "Snippets",
         "Themes"
     ],
-    "main": "./src/extension.js",
+    "scripts": {
+        "vscode:prepublish": "npm run package",
+        "build": "node esbuild.js",
+        "compile": "npm run check-types && node esbuild.js",
+        "watch": "node esbuild.js --watch",
+        "package": "npm run check-types && node esbuild.js --production",
+        "check-types": "tsc --noEmit",
+        "test:prepare": "tsc -p . && node esbuild.js",
+        "test": "npm run test:extension",
+        "test:all": "npm test && npm run test:grammar",
+        "test:extension": "npm run test:prepare && node ./out/test/runTest.js",
+        "test:grammar": "npx vscode-tmgrammar-test -g syntaxes/bngl.tmLanguage.json \"src/test/grammar/*.bngl\""
+    },
+    "main": "./dist/extension.js",
+    "extensionDependencies": [
+        "ms-python.python"
+    ],
     "activationEvents": [
+        "onCommand:bng.close_generated_artifacts",
+        "onCommand:bng.results_folder",
+        "onCommand:bng.manage_processes",
         "onCommand:bng.setup",
         "onCommand:bng.upgrade",
+        "onCommand:bng.menu",
         "onLanguage:bngl"
     ],
     "contributes": {
@@ -40,8 +64,7 @@
                     ".net",
                     ".gdat",
                     ".cdat",
-                    ".scan",
-                    ".graphml"
+                    ".scan"
                 ],
                 "configuration": "./bngl-language-configuration.json"
             }
@@ -64,52 +87,79 @@
                 "label": "dark-bngl",
                 "uiTheme": "vs-dark",
                 "path": "./themes/dark-bngl.json"
+            },
+            {
+                "label": "light-bngl",
+                "uiTheme": "vs",
+                "path": "./themes/light-bngl.json"
+            },
+            {
+                "label": "hc-dark-bngl",
+                "uiTheme": "hc-black",
+                "path": "./themes/hc-dark-bngl.json"
+            },
+            {
+                "label": "hc-light-bngl",
+                "uiTheme": "hc-light",
+                "path": "./themes/hc-light-bngl.json"
             }
         ],
         "commands": [
             {
-                "command": "bng.run_bngl",
-                "title": "Run BNG",
+                "command": "bng.menu",
+                "title": "BioNetGen",
                 "icon": {
                     "dark": "./assets/flagman.png",
                     "light": "./assets/flagman.png"
                 }
             },
             {
-                "command": "bng.plot_dat",
-                "title": "CLI Plotting",
-                "icon": {
-                    "dark": "./assets/plot_icon_dark.svg",
-                    "light": "./assets/plot_icon_light.svg"
-                }
+                "command": "bng.run_bngl",
+                "title": "BNG: Run Simulation"
+            },
+            {
+                "command": "bng.run_contactmap",
+                "title": "BNG: Visualize Contact Map"
+            },
+            {
+                "command": "bng.run_regulatory",
+                "title": "BNG: Visualize Regulatory Graph"
+            },
+            {
+                "command": "bng.run_ruleviz",
+                "title": "BNG: Visualize RuleViz"
             },
             {
                 "command": "bng.run_viz",
-                "title": "Make model visualizations",
-                "icon": {
-                    "dark": "./assets/network.svg",
-                    "light": "./assets/network.svg"
-                }
+                "title": "BNG: Visualize All Graphs"
+            },
+            {
+                "command": "bng.results_folder",
+                "title": "BNG: Results Folder..."
             },
             {
                 "command": "bng.webview",
-                "title": "Built-in plotting",
-                "icon": {
-                    "dark": "./assets/for_plotly_dark.svg",
-                    "light": "./assets/for_plotly_light.svg"
-                }
+                "title": "BNG: Open Plot / Viewer"
+            },
+            {
+                "command": "bng.close_generated_artifacts",
+                "title": "BNG: Close Generated Tabs"
             },
             {
                 "command": "bng.setup",
-                "title": "BNG setup"
+                "title": "BNG: Install/Check PyBioNetGen"
             },
             {
                 "command": "bng.upgrade",
-                "title": "BNG upgrade"
+                "title": "BNG: Upgrade"
             },
             {
                 "command": "bng.process_cleanup",
-                "title": "BNG process cleanup"
+                "title": "BNG: Kill All Processes"
+            },
+            {
+                "command": "bng.manage_processes",
+                "title": "BNG: Manage Active Jobs"
             },
             {
                 "command": "bng.kill_process",
@@ -128,58 +178,9 @@
         "menus": {
             "editor/title": [
                 {
-                    "when": "resourceLangId == bngl && resourceExtname == .bngl",
+                    "when": "resourceLangId == bngl || resourceExtname == .gdat || resourceExtname == .cdat || resourceExtname == .scan || resourceExtname == .graphml || activeWebviewPanelId == plot",
                     "group": "navigation",
-                    "title": "Run BNG",
-                    "command": "bng.run_bngl"
-                },
-                {
-                    "when": "resourceLangId == bngl && resourceExtname == .bngl",
-                    "group": "navigation",
-                    "title": "Run visualization",
-                    "command": "bng.run_viz"
-                },
-                {
-                    "when": "resourceLangId == bngl && resourceExtname == .gdat",
-                    "group": "navigation",
-                    "title": "Plot gdat",
-                    "command": "bng.plot_dat"
-                },
-                {
-                    "when": "resourceLangId == bngl && resourceExtname == .gdat",
-                    "group": "navigation",
-                    "title": "Plotly",
-                    "command": "bng.webview"
-                },
-                {
-                    "when": "resourceLangId == bngl && resourceExtname == .cdat",
-                    "group": "navigation",
-                    "title": "Plot cdat",
-                    "command": "bng.plot_dat"
-                },
-                {
-                    "when": "resourceLangId == bngl && resourceExtname == .cdat",
-                    "group": "navigation",
-                    "title": "Plotly",
-                    "command": "bng.webview"
-                },
-                {
-                    "when": "resourceLangId == bngl && resourceExtname == .scan",
-                    "group": "navigation",
-                    "title": "Plot scan",
-                    "command": "bng.plot_dat"
-                },
-                {
-                    "when": "resourceLangId == bngl && resourceExtname == .scan",
-                    "group": "navigation",
-                    "title": "Plotly",
-                    "command": "bng.webview"
-                },
-                {
-                    "when": "resourceLangId == bngl && resourceExtname == .graphml",
-                    "group": "navigation",
-                    "title": "GraphML View",
-                    "command": "bng.webview"
+                    "command": "bng.menu"
                 }
             ],
             "view/item/context": [
@@ -194,8 +195,16 @@
                     "when": "false"
                 },
                 {
+                    "command": "bng.manage_processes",
+                    "when": "bng.hasActiveProcesses"
+                },
+                {
                     "command": "bng.process_cleanup",
-                    "when": "bng.processManagerActive"
+                    "when": "bng.hasActiveProcesses"
+                },
+                {
+                    "command": "bng.results_folder",
+                    "when": "resourceLangId == bngl && resourceExtname == .bngl"
                 }
             ]
         },
@@ -207,16 +216,10 @@
                 "when": "resourceLangId == bngl && resourceExtname == .bngl"
             },
             {
-                "command": "bng.run_viz",
+                "command": "bng.run_contactmap",
                 "key": "ctrl+shift+f2",
                 "mac": "cmd+shift+f2",
                 "when": "resourceLangId == bngl && resourceExtname == .bngl"
-            },
-            {
-                "command": "bng.plot_dat",
-                "key": "ctrl+shift+f2",
-                "mac": "cmd+shift+f2",
-                "when": "resourceExtname == .gdat || resourceExtname == .cdat || resourceExtname == .scan"
             },
             {
                 "command": "bng.webview",
@@ -225,15 +228,6 @@
                 "when": "resourceExtname == .gdat || resourceExtname == .cdat || resourceExtname == .scan"
             }
         ],
-        "extensionDependencies": [
-            "ms-python.python"
-        ],
-        "scripts": {
-            "lint": "eslint .",
-            "compile": "tsc -p ./",
-            "pretest": "npm run lint",
-		    "test": "node ./out/test/runTest.js"
-        },
         "configuration": {
             "title": "BioNetGen",
             "properties": {
@@ -253,9 +247,33 @@
                     "default": true
                 },
                 "bngl.general.result_folder": {
-                    "markdownDescription": "Set default folder for results in case a workspace is not open (use absolute path).",
-                    "type": ["string","null"],
-                    "default": null
+                    "markdownDescription": "Base folder for generated results. When unset, results are written beside the active model in `results_<model>/<timestamp>/`. Relative paths resolve from the workspace folder, or from the model folder when no workspace is open.",
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "default": null,
+                    "scope": "resource"
+                },
+                "bngl.general.results_retention": {
+                    "markdownDescription": "Cleanup policy for timestamped subfolders under `results_<model>/`. Cleanup is folder-based, applies before future generated runs, and skips active BioNetGen jobs.",
+                    "type": "string",
+                    "enum": [
+                        "keep_all",
+                        "purge_existing",
+                        "delete_older_than_1w",
+                        "delete_older_than_1d",
+                        "delete_older_than_1h"
+                    ],
+                    "enumDescriptions": [
+                        "Keep all timestamped run folders until you remove them manually.",
+                        "Delete all pre-existing timestamped run folders before future runs.",
+                        "Delete timestamped run folders older than 1 week before future runs.",
+                        "Delete timestamped run folders older than 1 day before future runs.",
+                        "Delete timestamped run folders older than 1 hour before future runs."
+                    ],
+                    "default": "keep_all",
+                    "scope": "resource"
                 },
                 "bngl.plotting.legend": {
                     "markdownDescription": "To plot the legend or not with built-in plotting",
@@ -267,13 +285,24 @@
                     "type": "number",
                     "default": 50,
                     "minimum": 1
-                },
-                "bngl.plotting.menus": {
-                    "markdownDescription": "Enable or disable plotly menus",
-                    "type": "boolean",
-                    "default": true
                 }
             }
         }
+    },
+    "devDependencies": {
+        "@types/mocha": "^10.0.10",
+        "@types/node": "^25.5.0",
+        "@types/vscode": "1.82.0",
+        "@vscode/test-electron": "^3.1.0",
+        "esbuild": "^0.27.5",
+        "glob": "^13.0.6",
+        "mocha": "^11.7.5",
+        "typescript": "^6.0.2",
+        "vscode-tmgrammar-test": "^0.1.3"
+    },
+    "dependencies": {
+        "vscode-languageclient": "^9.0.1",
+        "vscode-languageserver": "^9.0.1",
+        "vscode-languageserver-textdocument": "^1.0.12"
     }
 }

@@ -20,5 +20,11 @@
         { "open": "(", "close": ")" },
         { "open": "\"", "close": "\"" },
         { "open": "'", "close": "'" }
-    ]
+    ],
+    "folding": {
+        "markers": {
+            "start": "^\\s*begin\\s+",
+            "end": "^\\s*end\\s+"
+        }
+    }
 }

@@ -1,0 +1,69 @@
+begin model
+#@title: Genetic toggle switch (Gardner et al., 2000)
+#@description: |
+#  Two mutually repressive gene products with Hill-type repression and
+#  first-order degradation, forming a bistable genetic toggle switch.
+#  Mutual inhibition via cooperative Hill functions (n_2=2.5, n_1=1.0)
+#  creates two stable steady states: R1-dominant (~156 molecules, R2
+#  suppressed) and R2-dominant. With default parameterization
+#  (alpha_1 >> alpha_2), trajectories from the origin converge to the
+#  R1-dominant state.
+#@keyword: gene regulation, bistable, mutual inhibition, Hill kinetics, synthetic biology, Escherichia coli
+#@source: from_antimony
+#@reference: |
+#  Gardner TS, Cantor CR, Collins JJ (2000). Construction of a genetic toggle
+#  switch in Escherichia coli. Nature 403:339-342. doi:10.1038/35002131
+
+begin parameters
+  NA       6.02214076e23  # molecules/mol
+  V_ref    1.0            # L/cell
+  f        1.0            # dimensionless
+
+  alpha_1  156.25         # molecules/s
+  alpha_2  15.6           # molecules/s
+  n_2      2.5            # dimensionless
+  n_1      1.0            # dimensionless
+  k_deg1   1.0            # /s
+  k_deg2   1.0            # /s
+end parameters
+
+begin molecule types
+  R1()
+  R2()
+end molecule types
+
+begin seed species
+  R1()  0  # molecules
+  R2()  0  # molecules
+end seed species
+
+begin observables
+  Molecules  Obs_R1  R1()
+  Molecules  Obs_R2  R2()
+end observables
+
+begin functions
+  # Hill-repressed synthesis propensities
+  syn_R1() = alpha_1 / (1 + Obs_R2^n_2)
+  syn_R2() = alpha_2 / (1 + Obs_R1^n_1)
+end functions
+
+begin reaction rules
+  # Synthesis with Hill repression
+  0 -> R1()  syn_R1()
+  0 -> R2()  syn_R2()
+
+  # First-order degradation
+  R1() -> 0  k_deg1
+  R2() -> 0  k_deg2
+end reaction rules
+
+end model
+
+begin actions
+  generate_network({overwrite=>1})  # 2 species, 4 reactions
+
+  simulate({method=>"ode",suffix=>"ode",t_start=>0,t_end=>8,n_steps=>400})
+  simulate({method=>"ssa",suffix=>"ssa",t_start=>0,t_end=>8,n_steps=>400})
+  simulate({method=>"nf",suffix=>"nfr",t_start=>0,t_end=>8,n_steps=>400,complex=>1})
+end actions

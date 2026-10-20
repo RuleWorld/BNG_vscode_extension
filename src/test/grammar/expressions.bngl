@@ -1,0 +1,24 @@
+# SYNTAX TEST "source.bngl" "expression and built-in function scoping"
+
+begin parameters
+  k1  sin(3.14)
+#     ^^^ keyword.control.bngl
+  k2  exp(1.0) + ln(2.0)
+#     ^^^ keyword.control.bngl
+#                ^^ keyword.control.bngl
+  k3  sqrt(abs(k1))
+#     ^^^^ keyword.control.bngl
+#          ^^^ keyword.control.bngl
+  k4  if(k1, k2, k3)
+#     ^^ keyword.control.bngl
+  k5  min(k1, k2)
+#     ^^^ keyword.control.bngl
+  k6  max(k1, k2)
+#     ^^^ keyword.control.bngl
+  k7  pi * 2
+#     ^^ keyword.control.bngl
+  k8  time
+#     ^^^^ keyword.control.bngl
+  k9  1.5e-3
+#     ^^^^^^ constant.numeric.floating.bngl
+end parameters

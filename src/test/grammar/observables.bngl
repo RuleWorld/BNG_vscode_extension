@@ -1,0 +1,10 @@
+# SYNTAX TEST "source.bngl" "observable block scoping"
+
+begin observables
+# <-- entity.name.section.observables.bngl
+  Molecules Obs_A A()
+# ^^^^^^^^^ variable.language.observable.type.bngl
+  Species Tot_B B(s~p)
+# ^^^^^^^ variable.language.observable.type.bngl
+end observables
+# <-- entity.name.section.observables.bngl

@@ -1,2 +1,8 @@
 node_modules
+.venv/
 *.vsix
+dev/
+dist/
+out/
+.vscode-test/
+.DS_Store
