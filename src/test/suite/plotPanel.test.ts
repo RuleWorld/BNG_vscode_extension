@@ -3,6 +3,7 @@ import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
 import * as vscode from 'vscode';
+import { isSamePath } from '../../utils/pathKey';
 import { PlotPanel, resolveSafeOutputUri } from '../../plotting/PlotPanel';
 
 const SAMPLE_GRAPHML = `<?xml version="1.0" encoding="UTF-8" standalone="no"?>
@@ -265,10 +266,11 @@ suite('PlotPanel', () => {
 
         const panelWrapper = PlotPanel.getPanelForFile(graphmlPath) as any;
         assert.ok(panelWrapper, 'expected a PlotPanel instance for the explicit GraphML file');
-        assert.strictEqual(vscode.window.activeTextEditor?.document.fileName, modelPath);
+        // document.fileName uses Uri.fsPath, which lowercases the Windows drive letter
+        assert.ok(isSamePath(vscode.window.activeTextEditor?.document.fileName ?? '', modelPath), 'expected the BNGL model editor to stay active');
 
         const openTextEditors = vscode.window.visibleTextEditors.map((editor) => editor.document.fileName);
-        assert.ok(openTextEditors.includes(modelPath), 'expected the BNGL model editor to remain open');
+        assert.ok(openTextEditors.some((fileName) => isSamePath(fileName, modelPath)), 'expected the BNGL model editor to remain open');
         assert.ok(!openTextEditors.includes(graphmlPath), 'expected the raw GraphML text editor not to be opened');
     });
 
