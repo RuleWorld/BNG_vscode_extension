@@ -353,6 +353,14 @@ export class PlotPanel {
     private readonly _extensionUri: vscode.Uri;
     private _disposables: vscode.Disposable[] = [];
     private _disposed = false;
+    private _webviewReady = false;
+    private _refreshTimer: ReturnType<typeof setTimeout> | undefined;
+    private _refreshInFlight: Promise<void> | undefined;
+    private _refreshQueued = false;
+
+    // Delay before re-reading a data file after a change event, so a burst of writes
+    // (BNG appends one row at a time) produces a single refresh.
+    public static refreshDebounceMs = 300;
 
     public static disposeAll(): number {
         const panels = Array.from(PlotPanel.currentPanels.values());
@@ -381,6 +389,7 @@ export class PlotPanel {
         this._extensionUri = extensionUri;
 
         this._setup();
+        this._watchDataFile();
 
         this._panel.onDidDispose(() => this.dispose(), null, this._disposables);
         this._panel.webview.onDidReceiveMessage(message => {
@@ -389,6 +398,7 @@ export class PlotPanel {
                     vscode.window.showInformationMessage(message.text);
                     return;
                 case 'ready':
+                    this._webviewReady = true;
                     this._send_figure_data();
                     return;
                 case 'image':
@@ -589,7 +599,73 @@ export class PlotPanel {
             </html>`;
     }
 
-    private async _send_figure_data() {
+    // A plot can be opened while BNG is still writing its data file (for example when the
+    // terminal runner auto-opens outputs as soon as they appear). Watch the file and resend
+    // the data whenever it changes so the panel ends up showing the complete trajectory.
+    private _watchDataFile() {
+        if (path.extname(this._fpath).toLowerCase() === '.graphml') {
+            return;
+        }
+
+        const pattern = new vscode.RelativePattern(
+            vscode.Uri.file(path.dirname(this._fpath)),
+            path.basename(this._fpath)
+        );
+        const watcher = vscode.workspace.createFileSystemWatcher(pattern);
+        const onFileEvent = () => this._scheduleRefresh();
+        watcher.onDidChange(onFileEvent, null, this._disposables);
+        watcher.onDidCreate(onFileEvent, null, this._disposables);
+        this._disposables.push(watcher);
+        this._disposables.push({ dispose: () => this._clearRefreshTimer() });
+    }
+
+    private _clearRefreshTimer() {
+        if (this._refreshTimer !== undefined) {
+            clearTimeout(this._refreshTimer);
+            this._refreshTimer = undefined;
+        }
+    }
+
+    private _scheduleRefresh() {
+        if (this._disposed) {
+            return;
+        }
+        this._clearRefreshTimer();
+        this._refreshTimer = setTimeout(() => {
+            this._refreshTimer = undefined;
+            void this._refresh();
+        }, PlotPanel.refreshDebounceMs);
+    }
+
+    private async _refresh(): Promise<void> {
+        // Before the webview is ready, its 'ready' message will trigger a full send.
+        if (this._disposed || !this._webviewReady) {
+            return;
+        }
+        // Serialize refreshes; if one is running, run one more after it finishes.
+        if (this._refreshInFlight) {
+            this._refreshQueued = true;
+            return;
+        }
+        this._refreshInFlight = (async () => {
+            try {
+                do {
+                    this._refreshQueued = false;
+                    await this._send_figure_data(true);
+                } while (this._refreshQueued && !this._disposed);
+            } catch {
+                // the file may have been removed or be briefly unreadable; the next change retries
+            } finally {
+                this._refreshInFlight = undefined;
+            }
+        })();
+        return this._refreshInFlight;
+    }
+
+    private async _send_figure_data(isUpdate = false) {
+        if (this._disposed) {
+            return;
+        }
         const ext = path.extname(this._fpath).substring(1);
         const fileUri = vscode.Uri.file(this._fpath);
         const rawBytes = await vscode.workspace.fs.readFile(fileUri);
@@ -653,9 +729,13 @@ export class PlotPanel {
             });
         } else {
             const data = parseDat(text);
+            if (this._disposed) {
+                return;
+            }
             this._panel.webview.postMessage({
                 command: 'plot',
                 context: 'data',
+                update: isUpdate,
                 names: data[0],
                 data: data[1],
                 legend: config.get('plotting.legend'),
@@ -750,6 +830,7 @@ export class PlotPanel {
         }
 
         this._disposed = true;
+        this._clearRefreshTimer();
         PlotPanel.currentPanels.delete(this._panelKey);
         this._panel.dispose();
         while (this._disposables.length) {

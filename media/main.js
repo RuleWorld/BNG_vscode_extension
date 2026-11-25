@@ -532,6 +532,11 @@
         });
     }
 
+    function sameStringArrays(a, b) {
+        return Array.isArray(a) && Array.isArray(b) && a.length === b.length
+            && a.every((value, index) => value === b[index]);
+    }
+
     function pluralize(count, singular, plural = `${singular}s`) {
         return `${count} ${count === 1 ? singular : plural}`;
     }
@@ -4815,6 +4820,29 @@
         const message = event.data; // The json data that the extension sent
         switch (message.command) {
             case 'plot':
+                // The extension resends the data when the file grows (e.g. a plot opened while
+                // BNG is still writing). If the columns are unchanged, update the traces in place
+                // so series visibility, axis types and zoom are kept.
+                if (message.update && plotReady && sameStringArrays(message.names, currentPlotTableNames)
+                    && current_plot_data.length === Math.max(message.names.length - 1, 0)) {
+                    currentPlotTableColumns = Array.isArray(message.data)
+                        ? message.data.map((column) => Array.isArray(column) ? column.slice() : [])
+                        : [];
+                    updatePlotSourceSummary(currentPlotTableNames, currentPlotTableColumns);
+                    plotDataTableRendered = false;
+                    if (currentPlotView === 'data') {
+                        renderPlotDataTable();
+                    }
+                    current_plot_data.forEach((trace, idx) => {
+                        trace.x = message.data[0] || [];
+                        trace.y = message.data[idx + 1] || [];
+                    });
+                    // bump datarevision so Plotly redraws; user zoom/axis settings live in the layout
+                    const liveLayout = plotElement.layout || {};
+                    liveLayout.datarevision = (liveLayout.datarevision || 0) + 1;
+                    Plotly.react('plot', current_plot_data, liveLayout);
+                    break;
+                }
                 current_plot_data = [];
                 currentPlotTableNames = Array.isArray(message.names) ? message.names.slice() : [];
                 currentPlotTableColumns = Array.isArray(message.data)
