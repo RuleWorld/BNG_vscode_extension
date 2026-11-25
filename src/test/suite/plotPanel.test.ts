@@ -161,8 +161,13 @@ suite('PlotPanel', () => {
         PlotPanel.currentPanels.clear();
 
         await vscode.commands.executeCommand('workbench.action.closeAllEditors');
-        // Windows can briefly hold handles (file watchers) after panels close
-        fs.rmSync(tmpDir, { recursive: true, force: true, maxRetries: 10, retryDelay: 100 });
+        // Windows can hold handles (file watchers) for a while after panels close. A leftover temp
+        // folder is harmless, so cleanup must never fail the suite.
+        try {
+            fs.rmSync(tmpDir, { recursive: true, force: true, maxRetries: 20, retryDelay: 250 });
+        } catch (err) {
+            console.warn(`Could not remove test folder ${tmpDir}: ${err}`);
+        }
     });
 
     test('uses graph-specific titles and exposes layout/save controls for GraphML', async function () {
