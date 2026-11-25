@@ -86,6 +86,7 @@ suite('Process list parsing', () => {
         assert.match(WINDOWS_PROCESS_LIST_SCRIPT, /ConvertTo-Csv -NoTypeInformation/);
         assert.doesNotMatch(WINDOWS_PROCESS_LIST_SCRIPT, /Get-WmiObject/);
         assert.ok(spec.args.includes('-NoProfile'));
+        assert.ok(!spec.args.some((arg) => /^-ExecutionPolicy$/i.test(arg)), 'must not pass -ExecutionPolicy');
     });
 
     test('POSIX command suppresses the ps header', () => {

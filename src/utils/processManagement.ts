@@ -329,7 +329,8 @@ export function getProcessListCommand(platform: NodeJS.Platform): { command: str
     if (platform === 'win32') {
         return {
             command: 'powershell.exe',
-            args: ['-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass', '-Command', WINDOWS_PROCESS_LIST_SCRIPT]
+            // no -ExecutionPolicy: it governs script files, not -Command strings, and security tools flag it
+            args: ['-NoProfile', '-NonInteractive', '-Command', WINDOWS_PROCESS_LIST_SCRIPT]
         };
     }
     return { command: 'ps', args: ['ax', '-o', 'pid=,ppid=,command='] };
