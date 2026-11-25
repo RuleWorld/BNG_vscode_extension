@@ -100,6 +100,7 @@ const SAMPLE_GDAT = [
 
 suite('PlotPanel', () => {
     let tmpDir: string;
+    const leftoverTmpDirs: string[] = [];
     let modelPath: string;
     let graphmlPath: string;
     let gdatPath: string;
@@ -161,12 +162,24 @@ suite('PlotPanel', () => {
         PlotPanel.currentPanels.clear();
 
         await vscode.commands.executeCommand('workbench.action.closeAllEditors');
-        // Windows can hold handles (file watchers) for a while after panels close. A leftover temp
-        // folder is harmless, so cleanup must never fail the suite.
+        // Windows can hold file-watcher handles for a while after panels close. Try once here and
+        // defer anything still locked to suiteTeardown, so cleanup never blocks or fails a test.
         try {
-            fs.rmSync(tmpDir, { recursive: true, force: true, maxRetries: 20, retryDelay: 250 });
-        } catch (err) {
-            console.warn(`Could not remove test folder ${tmpDir}: ${err}`);
+            fs.rmSync(tmpDir, { recursive: true, force: true });
+        } catch {
+            leftoverTmpDirs.push(tmpDir);
+        }
+    });
+
+    suiteTeardown(async function () {
+        this.timeout(60_000);
+        for (const dir of leftoverTmpDirs.splice(0)) {
+            try {
+                await fs.promises.rm(dir, { recursive: true, force: true, maxRetries: 20, retryDelay: 500 });
+            } catch (err) {
+                // a leftover temp folder is harmless; never fail the suite over it
+                console.warn(`Could not remove test folder ${dir}: ${err}`);
+            }
         }
     });
 
