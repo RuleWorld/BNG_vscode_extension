@@ -2,7 +2,13 @@ import * as vscode from 'vscode';
 import * as cp from 'child_process';
 import { isSamePath } from './pathKey';
 
-const refreshInterval = 500;
+// The tree view re-lists processes every BASE ms while a job runs. Listing is cheap on POSIX
+// (`ps`) but starts PowerShell + Get-CimInstance on Windows, so once the tree has stayed the
+// same for UNCHANGED_REFRESHES_BEFORE_BACKOFF refreshes the interval doubles, up to MAX.
+// Any change in the tree, or a tracked process starting or ending, resets it to BASE.
+export const BASE_REFRESH_INTERVAL_MS = 500;
+export const MAX_REFRESH_INTERVAL_MS = 4000;
+export const UNCHANGED_REFRESHES_BEFORE_BACKOFF = 4;
 
 export type TrackedProcessKind = 'simulation' | 'visualization' | 'setup' | 'other';
 
@@ -39,10 +45,17 @@ export class ProcessManagerProvider implements vscode.TreeDataProvider<TrackedPr
 
     // self-rescheduling refresh timer; cleared on dispose so it stops with the extension host
     private _refreshTimer: ReturnType<typeof setTimeout> | undefined;
+    private _refreshInterval = BASE_REFRESH_INTERVAL_MS;
+    private _unchangedRefreshes = 0;
+    private _refreshInFlight = false;
+    // bumped whenever a tracked process is added or removed, so a refresh in flight sees it
+    private _trackedGeneration = 0;
+    private _trackedChangeSubscription: vscode.Disposable;
     private _disposed = false;
 
     constructor(processManager: ProcessManager) {
         this._processManager = processManager;
+        this._trackedChangeSubscription = processManager.onDidChangeTrackedProcesses(() => this._onTrackedProcessesChanged());
         this.refresh();
     }
 
@@ -70,18 +83,59 @@ export class ProcessManagerProvider implements vscode.TreeDataProvider<TrackedPr
         return item;
     }
 
+    get refreshInterval(): number {
+        return this._refreshInterval;
+    }
+
     refresh() {
         if (this._disposed) {
             return;
         }
         this._refreshTimer = setTimeout(async () => {
+            this._refreshTimer = undefined;
             if (this._processManager.hasTrackedProcesses) {
-                await this._processManager.refresh();
+                this._refreshInFlight = true;
+                const generation = this._trackedGeneration;
+                const treeChanged = await this._processManager.refresh();
+                this._refreshInFlight = false;
+                this._recordRefresh(treeChanged || generation !== this._trackedGeneration);
+                if (this._disposed) {
+                    return;
+                }
                 this._onDidChangeTreeData.fire();
+            } else {
+                // no listing happens while idle, so there is nothing to back off from
+                this._recordRefresh(true);
             }
             // an in-flight callback can resolve after dispose(); the guard in refresh() stops the re-arm
             this.refresh();
-        }, refreshInterval);
+        }, this._refreshInterval);
+    }
+
+    private _recordRefresh(changed: boolean) {
+        if (changed) {
+            this._unchangedRefreshes = 0;
+            this._refreshInterval = BASE_REFRESH_INTERVAL_MS;
+            return;
+        }
+        this._unchangedRefreshes++;
+        if (this._unchangedRefreshes >= UNCHANGED_REFRESHES_BEFORE_BACKOFF) {
+            this._refreshInterval = Math.min(this._refreshInterval * 2, MAX_REFRESH_INTERVAL_MS);
+        }
+    }
+
+    // a job started or ended: show it now and go back to the fast interval
+    private _onTrackedProcessesChanged() {
+        if (this._disposed) {
+            return;
+        }
+        this._trackedGeneration++;
+        this._recordRefresh(true);
+        this._onDidChangeTreeData.fire();
+        if (!this._refreshInFlight && this._refreshTimer) {
+            clearTimeout(this._refreshTimer);
+            this.refresh();
+        }
     }
 
     dispose() {
@@ -90,6 +144,7 @@ export class ProcessManagerProvider implements vscode.TreeDataProvider<TrackedPr
             clearTimeout(this._refreshTimer);
             this._refreshTimer = undefined;
         }
+        this._trackedChangeSubscription.dispose();
         this._onDidChangeTreeData.dispose();
     }
 }
@@ -200,12 +255,21 @@ export class ProcessManager {
         }
     }
 
-    async refresh() {
+    // returns true if the tracked process trees differ from the previous refresh
+    async refresh(): Promise<boolean> {
+        const before = this._treeSignature();
         await this._buildFullProcessTree();
         // using information from full process tree, reconstruct custom process trees rooted at top-level tracked processes
         for (const trackedProcessObject of this._openProcessesTracked.values()) {
             this._reconstruct(trackedProcessObject);
         }
+        return this._treeSignature() !== before;
+    }
+
+    private _treeSignature(): string {
+        const sign = (node: TrackedProcessObject): string =>
+            `${node.pid}:${node.name}(${(node.children ?? []).map(sign).join(',')})`;
+        return this.toplevelProcesses.map(sign).join(';');
     }
 
     // use information from external process utility to build representation of full process tree
@@ -333,7 +397,9 @@ export function getProcessListCommand(platform: NodeJS.Platform): { command: str
             args: ['-NoProfile', '-NonInteractive', '-Command', WINDOWS_PROCESS_LIST_SCRIPT]
         };
     }
-    return { command: 'ps', args: ['ax', '-o', 'pid=,ppid=,command='] };
+    // comm is the executable alone (the full path on macOS, the possibly truncated process name on
+    // Linux), so names with spaces survive and arguments such as model file names are never seen
+    return { command: 'ps', args: ['ax', '-o', 'pid=,ppid=,comm='] };
 }
 
 // Split one CSV record into fields, honouring double-quoted fields and "" escapes.
@@ -401,15 +467,14 @@ export function parseWindowsProcessCsv(stdout: string): ProcessListEntry[] {
     return entries;
 }
 
-// Parse `ps ax -o pid=,ppid=,command=` output: two numeric columns, then the command line.
-// The name is the command's first token (the executable), matching what the tree view and the
-// perl/NFsim/run_network filter expect; arguments such as model file names are not matched.
+// Parse `ps ax -o pid=,ppid=,comm=` output: two numeric columns, then the executable. The whole
+// rest of the line is the name, because a macOS executable path can contain spaces.
 export function parsePosixProcessList(stdout: string): ProcessListEntry[] {
     const entries: ProcessListEntry[] = [];
     for (const line of stdout.split(/\r?\n/)) {
         const match = /^\s*(\d+)\s+(\d+)\s+(.*)$/.exec(line);
         if (match) {
-            const entry = toEntry(match[1], match[2], match[3].trim().split(/\s+/)[0]);
+            const entry = toEntry(match[1], match[2], match[3]);
             if (entry) {
                 entries.push(entry);
             }

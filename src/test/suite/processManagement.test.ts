@@ -1,6 +1,19 @@
 import * as assert from 'assert';
 import * as cp from 'child_process';
-import { ProcessManager, ProcessManagerProvider, getProcessListCommand, parsePosixProcessList, parseWindowsProcessCsv, WINDOWS_PROCESS_LIST_SCRIPT } from '../../utils/processManagement';
+import * as path from 'path';
+import {
+    BASE_REFRESH_INTERVAL_MS,
+    MAX_REFRESH_INTERVAL_MS,
+    ProcessManager,
+    ProcessManagerProvider,
+    UNCHANGED_REFRESHES_BEFORE_BACKOFF,
+    getProcessListCommand,
+    parsePosixProcessList,
+    parseWindowsProcessCsv,
+    WINDOWS_PROCESS_LIST_SCRIPT
+} from '../../utils/processManagement';
+
+type ProcessListStub = { _getProcessList: () => Promise<unknown[]> };
 
 suite('Process Manager', () => {
     test('tracks simulation metadata and finds active runs by model path', () => {
@@ -72,6 +85,67 @@ suite('Process Manager Provider', () => {
         // dispose is idempotent
         assert.doesNotThrow(() => provider.dispose());
     });
+
+    test('refresh interval backs off while the tree is unchanged and resets when it changes', () => {
+        const processManager = new ProcessManager();
+        const provider = new ProcessManagerProvider(processManager);
+        const recordRefresh = (changed: boolean) =>
+            (provider as unknown as { _recordRefresh: (changed: boolean) => void })._recordRefresh(changed);
+        try {
+            assert.strictEqual(provider.refreshInterval, BASE_REFRESH_INTERVAL_MS);
+
+            for (let i = 1; i < UNCHANGED_REFRESHES_BEFORE_BACKOFF; i++) {
+                recordRefresh(false);
+            }
+            assert.strictEqual(provider.refreshInterval, BASE_REFRESH_INTERVAL_MS, 'no back-off before the threshold');
+
+            recordRefresh(false);
+            assert.strictEqual(provider.refreshInterval, 2 * BASE_REFRESH_INTERVAL_MS);
+            for (let i = 0; i < 10; i++) {
+                recordRefresh(false);
+            }
+            assert.strictEqual(provider.refreshInterval, MAX_REFRESH_INTERVAL_MS, 'interval is capped');
+
+            recordRefresh(true);
+            assert.strictEqual(provider.refreshInterval, BASE_REFRESH_INTERVAL_MS, 'a changed tree resets the interval');
+        } finally {
+            provider.dispose();
+        }
+    });
+
+    test('a tracked process starting resets the interval, re-arms the timer, and updates the view', () => {
+        const processManager = new ProcessManager();
+        const provider = new ProcessManagerProvider(processManager);
+        const recordRefresh = (changed: boolean) =>
+            (provider as unknown as { _recordRefresh: (changed: boolean) => void })._recordRefresh(changed);
+        try {
+            for (let i = 0; i < UNCHANGED_REFRESHES_BEFORE_BACKOFF + 3; i++) {
+                recordRefresh(false);
+            }
+            assert.ok(provider.refreshInterval > BASE_REFRESH_INTERVAL_MS);
+
+            let treeEvents = 0;
+            provider.onDidChangeTreeData(() => treeEvents++);
+            const timerBefore = refreshTimerOf(provider);
+
+            processManager.add(404, '/usr/bin/python3', { kind: 'simulation' });
+
+            assert.strictEqual(provider.refreshInterval, BASE_REFRESH_INTERVAL_MS);
+            assert.strictEqual(treeEvents, 1, 'the new job should appear without waiting for the next refresh');
+            assert.ok(refreshTimerOf(provider), 'expected a pending refresh timer');
+            assert.notStrictEqual(refreshTimerOf(provider), timerBefore, 'the slow timer should be replaced');
+        } finally {
+            provider.dispose();
+        }
+    });
+
+    test('dispose stops listening for tracked process changes', () => {
+        const processManager = new ProcessManager();
+        const provider = new ProcessManagerProvider(processManager);
+        provider.dispose();
+        assert.doesNotThrow(() => processManager.add(405, '/usr/bin/python3'));
+        assert.strictEqual(refreshTimerOf(provider), undefined, 'a tracked change after dispose should not re-arm');
+    });
 });
 
 suite('Process list parsing', () => {
@@ -89,8 +163,8 @@ suite('Process list parsing', () => {
         assert.ok(!spec.args.some((arg) => /^-ExecutionPolicy$/i.test(arg)), 'must not pass -ExecutionPolicy');
     });
 
-    test('POSIX command suppresses the ps header', () => {
-        assert.deepStrictEqual(getProcessListCommand('darwin'), { command: 'ps', args: ['ax', '-o', 'pid=,ppid=,command='] });
+    test('POSIX command lists executable names (comm) and suppresses the ps header', () => {
+        assert.deepStrictEqual(getProcessListCommand('darwin'), { command: 'ps', args: ['ax', '-o', 'pid=,ppid=,comm='] });
         assert.deepStrictEqual(getProcessListCommand('linux'), getProcessListCommand('darwin'));
     });
 
@@ -134,16 +208,48 @@ suite('Process list parsing', () => {
         assert.deepStrictEqual(parseWindowsProcessCsv('Get-CimInstance : Access denied'), []);
     });
 
-    test('parses POSIX ps output and keeps the executable as the name', () => {
+    test('parses POSIX ps output and keeps the whole executable name, spaces included', () => {
         const stdout = '    1     0 /sbin/launchd\n'
-            + '  500     1 /usr/bin/python3 -m bionetgen run -i perl_model.bngl\n'
-            + '  501   500 /usr/bin/perl /opt/BioNetGen/BNG2.pl model.bngl\n'
+            + '  500     1 /usr/bin/python3\n'
+            + '  501   500 /usr/bin/perl\n'
+            + '  502   501 /Users/x/My Tools/NFsim  \n'
+            + '  503   500 run_network\n'
             + 'garbage line\n';
         assert.deepStrictEqual(parsePosixProcessList(stdout), [
             { pid: 1, ppid: 0, name: '/sbin/launchd' },
             { pid: 500, ppid: 1, name: '/usr/bin/python3' },
-            { pid: 501, ppid: 500, name: '/usr/bin/perl' }
+            { pid: 501, ppid: 500, name: '/usr/bin/perl' },
+            { pid: 502, ppid: 501, name: '/Users/x/My Tools/NFsim' },
+            { pid: 503, ppid: 500, name: 'run_network' }
         ]);
+    });
+
+    test('refresh shows a POSIX job whose executables live in a folder with spaces', async () => {
+        const processManager = new ProcessManager();
+        processManager.add(500, '/usr/bin/python3', { kind: 'simulation' });
+        // comm carries no arguments, so the python process running perl_model.bngl stays filtered out
+        const stdout = '  500     1 /usr/bin/python3\n'
+            + '  501   500 /bin/sh\n'
+            + '  502   501 /usr/bin/perl\n'
+            + '  503   502 /Users/x/My Tools/NFsim\n'
+            + '  504   500 /Users/x/My Tools/python3\n';
+        (processManager as unknown as ProcessListStub)._getProcessList = async () =>
+            parsePosixProcessList(stdout).map((entry) => ({ ...entry, children: [] }));
+
+        assert.strictEqual(await processManager.refresh(), true, 'first refresh adds children');
+        const root = processManager.getTrackedProcesses()[0];
+        assert.deepStrictEqual(root.children?.map((c) => c.name), ['/usr/bin/perl']);
+        const nfsim = root.children?.[0].children?.[0];
+        assert.strictEqual(nfsim?.name, '/Users/x/My Tools/NFsim');
+
+        const provider = new ProcessManagerProvider(new ProcessManager());
+        try {
+            assert.strictEqual(provider.getTreeItem(nfsim!).label, '503: NFsim');
+        } finally {
+            provider.dispose();
+        }
+
+        assert.strictEqual(await processManager.refresh(), false, 'an identical listing is reported as unchanged');
     });
 
     test('killProcess kills the whole tree built from the parsed list, children first', async () => {
@@ -151,7 +257,7 @@ suite('Process list parsing', () => {
         processManager.add(5120, 'python.exe', { kind: 'simulation' });
         const csv = '"ProcessId","ParentProcessId","Name"\r\n"5120","4400","python.exe"\r\n'
             + '"6200","5120","perl.exe"\r\n"6300","6200","NFsim.exe"\r\n"9999","1","unrelated.exe"\r\n';
-        (processManager as unknown as { _getProcessList: () => Promise<unknown[]> })._getProcessList = async () =>
+        (processManager as unknown as ProcessListStub)._getProcessList = async () =>
             parseWindowsProcessCsv(csv).map((entry) => ({ ...entry, children: [] }));
 
         const killed: number[] = [];
@@ -170,7 +276,7 @@ suite('Process list parsing', () => {
         processManager.add(5120, 'python.exe', { kind: 'simulation' });
         const csv = '"ProcessId","ParentProcessId","Name"\r\n"5120","4400","python.exe"\r\n'
             + '"6100","5120","cmd.exe"\r\n"6200","6100","perl.exe"\r\n"6300","6200","NFsim.exe"\r\n';
-        (processManager as unknown as { _getProcessList: () => Promise<unknown[]> })._getProcessList = async () =>
+        (processManager as unknown as ProcessListStub)._getProcessList = async () =>
             parseWindowsProcessCsv(csv).map((entry) => ({ ...entry, children: [] }));
 
         await processManager.refresh();
@@ -251,6 +357,13 @@ suite('Process Manager (live processes)', function () {
         assert.ok(byPid.size > 0, 'process listing returned nothing');
         assert.strictEqual(byPid.get(child!.pid!)?.ppid, process.pid, 'child should be listed under the test host');
         assert.strictEqual(byPid.get(grandchildPid!)?.ppid, child!.pid, 'grandchild should be listed under the child');
+
+        // the name is the executable alone: the full path on macOS (the VS Code test build lives in
+        // "Visual Studio Code.app"), the possibly truncated name on Linux, the image name on Windows
+        const childName = byPid.get(child!.pid!)?.name ?? '';
+        const baseName = childName.split(/[\\/]/).pop() ?? '';
+        assert.ok(baseName.length > 0, 'child should have a name');
+        assert.ok(path.basename(process.execPath).startsWith(baseName), `unexpected child name ${JSON.stringify(childName)}`);
     });
 
     test('killProcess terminates the whole live process tree', async () => {
