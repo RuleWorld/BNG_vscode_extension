@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
+import { isPathInsideOrEqual, normalizePathKey } from '../utils/pathKey';
 import { parseDat } from '../parseDat';
 import { parseBnglDocument } from '../server/parser';
 import { getGraphmlVisualizationKind, getStandaloneGraphPaletteKind, shouldUseStandaloneRulevizLayout } from '../resultsFolders';
@@ -57,10 +58,10 @@ function getCanonicalGraphmlBaseName(filePath: string): string {
 function getPlotPanelKey(filePath: string): string {
     const canonicalRulevizBaseName = getCanonicalRulevizBrowserBaseName(filePath);
     if (!canonicalRulevizBaseName) {
-        return filePath;
+        return normalizePathKey(filePath);
     }
 
-    return path.join(path.dirname(filePath), `${canonicalRulevizBaseName}.graphml`);
+    return normalizePathKey(path.join(path.dirname(filePath), `${canonicalRulevizBaseName}.graphml`));
 }
 
 function getPanelTitle(fpath: string): string {
@@ -361,14 +362,16 @@ export class PlotPanel {
     }
 
     public static disposeForFolder(folderPath: string) {
-        const normalizedFolderPath = path.resolve(folderPath);
-
         for (const panel of Array.from(PlotPanel.currentPanels.values())) {
-            const panelFolderPath = path.resolve(path.dirname(panel._fpath));
-            if (panelFolderPath === normalizedFolderPath || panelFolderPath.startsWith(`${normalizedFolderPath}${path.sep}`)) {
+            if (isPathInsideOrEqual(path.dirname(panel._fpath), folderPath)) {
                 panel.dispose();
             }
         }
+    }
+
+    // look up the open panel for a file, whatever spelling of its path the caller has
+    public static getPanelForFile(filePath: string): PlotPanel | undefined {
+        return PlotPanel.currentPanels.get(getPlotPanelKey(filePath));
     }
 
     private constructor(

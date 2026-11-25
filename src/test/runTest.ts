@@ -19,14 +19,19 @@ async function ensureExtensionInstalled(cliPath: string, cliArgs: string[], exte
         return;
     }
 
-    const installResult = cp.spawnSync(cliPath, [...cliArgs, '--install-extension', PYTHON_EXTENSION_ID], {
-        encoding: 'utf-8',
-        env,
-    });
+    const args = [...cliArgs, '--install-extension', PYTHON_EXTENSION_ID];
+    // On Windows the CLI is bin\code.cmd; since CVE-2024-27980 Node refuses to spawn .cmd/.bat
+    // files without a shell, so run it through cmd.exe with each argument quoted.
+    const isWindows = process.platform === 'win32';
+    const quote = (arg: string) => `"${arg.replace(/"/g, '""')}"`;
+    const installResult = isWindows
+        ? cp.spawnSync(quote(cliPath), args.map(quote), { encoding: 'utf-8', env, shell: true, windowsHide: true })
+        : cp.spawnSync(cliPath, args, { encoding: 'utf-8', env });
 
     if (installResult.status !== 0) {
         throw new Error([
             `Failed to install ${PYTHON_EXTENSION_ID} for extension tests.`,
+            installResult.error ? String(installResult.error) : undefined,
             installResult.stdout,
             installResult.stderr,
         ].filter(Boolean).join('\n'));

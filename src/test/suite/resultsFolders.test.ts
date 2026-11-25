@@ -3,6 +3,7 @@ import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
 import * as vscode from 'vscode';
+import { normalizePathKey } from '../../utils/pathKey';
 import {
     getStandaloneGraphPaletteKind,
     getGraphmlVisualizationKind,
@@ -212,7 +213,8 @@ suite('Results Folders', () => {
         try {
             const modelUri = vscode.Uri.file(modelPath);
             const runUri = getResultsRunFolderUri(fakeConfig, modelUri, '2026_05_19__01_02_03');
-            assert.strictEqual(runUri.fsPath, path.join(customBase, 'results_nfkb_test', '2026_05_19__01_02_03'));
+            // Uri.fsPath lowercases the Windows drive letter, so compare path keys, not raw strings
+            assert.strictEqual(normalizePathKey(runUri.fsPath), normalizePathKey(path.join(customBase, 'results_nfkb_test', '2026_05_19__01_02_03')));
         } finally {
             fs.rmSync(tmpDir, { recursive: true, force: true });
         }

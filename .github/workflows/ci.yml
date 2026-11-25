@@ -34,8 +34,13 @@ jobs:
         run: npm run test:grammar
 
   extension-tests:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
     needs: static-checks
+    strategy:
+      fail-fast: false
+      matrix:
+        # windows-latest exercises the PowerShell process enumeration and tree kill (#31)
+        os: [ubuntu-latest, windows-latest]
 
     steps:
       - uses: actions/checkout@v4
@@ -48,5 +53,10 @@ jobs:
 
       - run: npm ci
 
-      - name: VS Code extension tests
+      - name: VS Code extension tests (Linux)
+        if: runner.os == 'Linux'
         run: xvfb-run -a npm test
+
+      - name: VS Code extension tests
+        if: runner.os != 'Linux'
+        run: npm test
