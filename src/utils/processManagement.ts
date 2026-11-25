@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import * as cp from 'child_process';
-import * as path from 'path';
+import { isSamePath } from './pathKey';
 
 const refreshInterval = 500;
 
@@ -133,10 +133,9 @@ export class ProcessManager {
     }
 
     findTrackedProcessByModel(modelPath: string, kind?: TrackedProcessKind): TrackedProcessObject | undefined {
-        const resolvedModelPath = path.resolve(modelPath);
         return this.getTrackedProcesses(kind).find((trackedProcessObject) => {
             return typeof trackedProcessObject.modelPath === 'string'
-                && path.resolve(trackedProcessObject.modelPath) === resolvedModelPath;
+                && isSamePath(trackedProcessObject.modelPath, modelPath);
         });
     }
 
