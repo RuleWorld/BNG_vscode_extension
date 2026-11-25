@@ -419,6 +419,114 @@ suite('PlotPanel', () => {
         assert.strictEqual(browserMessage.views.pattern.rows[2].displayLabel, 'namedRule');
         assert.strictEqual(browserMessage.views.pattern.rows[2].bnglText, 'namedRule: B() -> C() k2');
     });
+
+    function capturePlotMessages(panelWrapper: any): { messages: any[]; restore: () => void } {
+        const webview = (panelWrapper._panel as vscode.WebviewPanel).webview;
+        const messages: any[] = [];
+        const originalPostMessage = webview.postMessage.bind(webview);
+        webview.postMessage = ((message: any) => {
+            messages.push(message);
+            return Promise.resolve(true);
+        }) as typeof webview.postMessage;
+        return {
+            messages,
+            restore: () => {
+                if (!panelWrapper._disposed) {
+                    webview.postMessage = originalPostMessage;
+                }
+            }
+        };
+    }
+
+    async function waitFor(predicate: () => boolean, timeoutMs: number): Promise<boolean> {
+        const deadline = Date.now() + timeoutMs;
+        while (Date.now() < deadline) {
+            if (predicate()) {
+                return true;
+            }
+            await new Promise((resolve) => setTimeout(resolve, 50));
+        }
+        return predicate();
+    }
+
+    test('resends the full data when the data file grows after the plot opens', async function () {
+        this.timeout(20_000);
+
+        // simulate BNG still writing: only the header and first row exist when the panel opens
+        fs.writeFileSync(gdatPath, '# time A B\n0 1 2\n', 'utf8');
+
+        PlotPanel.create(
+            vscode.extensions.getExtension('BioNetGen-ext.biontegen-vscode-extension')!.extensionUri,
+            vscode.Uri.file(gdatPath),
+            vscode.ViewColumn.One
+        );
+        const panelWrapper = PlotPanel.currentPanels.get(gdatPath) as any;
+        assert.ok(panelWrapper, 'expected a PlotPanel instance for the GDAT file');
+
+        const { messages, restore } = capturePlotMessages(panelWrapper);
+        try {
+            panelWrapper._webviewReady = true;
+            await panelWrapper._send_figure_data();
+            const initial = messages.find((message) => message.command === 'plot');
+            assert.ok(initial, 'expected an initial plot payload');
+            assert.strictEqual(initial.update, false);
+            assert.deepStrictEqual(initial.data[0], ['0']);
+
+            // give the file watcher time to start before writing
+            await new Promise((resolve) => setTimeout(resolve, 500));
+            fs.appendFileSync(gdatPath, '1 3 4\n', 'utf8');
+            fs.appendFileSync(gdatPath, '2 5 6\n', 'utf8');
+
+            const isComplete = (message: any) => message.command === 'plot'
+                && message.update === true
+                && Array.isArray(message.data[0])
+                && message.data[0].length === 3;
+            const sawUpdate = await waitFor(() => messages.some(isComplete), 10_000);
+            assert.ok(sawUpdate, `expected an update with all 3 rows, got ${JSON.stringify(messages)}`);
+
+            const update = messages.filter(isComplete).pop();
+            assert.deepStrictEqual(update.names, ['time', 'A', 'B']);
+            assert.deepStrictEqual(update.data, [['0', '1', '2'], ['1', '3', '5'], ['2', '4', '6']]);
+        } finally {
+            restore();
+        }
+    });
+
+    test('coalesces bursts of file changes into one refresh and stops after dispose', async function () {
+        this.timeout(15_000);
+
+        PlotPanel.create(
+            vscode.extensions.getExtension('BioNetGen-ext.biontegen-vscode-extension')!.extensionUri,
+            vscode.Uri.file(gdatPath),
+            vscode.ViewColumn.One
+        );
+        const panelWrapper = PlotPanel.currentPanels.get(gdatPath) as any;
+        assert.ok(panelWrapper, 'expected a PlotPanel instance for the GDAT file');
+
+        const originalDebounce = PlotPanel.refreshDebounceMs;
+        PlotPanel.refreshDebounceMs = 100;
+        const { messages, restore } = capturePlotMessages(panelWrapper);
+        try {
+            panelWrapper._webviewReady = true;
+            panelWrapper._scheduleRefresh();
+            panelWrapper._scheduleRefresh();
+            panelWrapper._scheduleRefresh();
+            await new Promise((resolve) => setTimeout(resolve, 400));
+            const updates = () => messages.filter((message) => message.command === 'plot' && message.update === true);
+            assert.ok(updates().length >= 1, 'expected a refresh after the debounce interval');
+            assert.ok(updates().length <= 2, `expected the burst to be coalesced, got ${updates().length} refreshes`);
+            assert.strictEqual(updates()[0].data[0].length, 2);
+
+            const countBeforeDispose = updates().length;
+            panelWrapper._scheduleRefresh();
+            panelWrapper.dispose();
+            await new Promise((resolve) => setTimeout(resolve, 400));
+            assert.strictEqual(updates().length, countBeforeDispose, 'expected no refresh after dispose');
+        } finally {
+            PlotPanel.refreshDebounceMs = originalDebounce;
+            restore();
+        }
+    });
 });
 
 suite('resolveSafeOutputUri', () => {
