@@ -3,6 +3,7 @@ import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
 import * as vscode from 'vscode';
+import { isSamePath } from '../../utils/pathKey';
 import { PlotPanel, resolveSafeOutputUri } from '../../plotting/PlotPanel';
 
 const SAMPLE_GRAPHML = `<?xml version="1.0" encoding="UTF-8" standalone="no"?>
@@ -99,6 +100,7 @@ const SAMPLE_GDAT = [
 
 suite('PlotPanel', () => {
     let tmpDir: string;
+    const leftoverTmpDirs: string[] = [];
     let modelPath: string;
     let graphmlPath: string;
     let gdatPath: string;
@@ -160,7 +162,25 @@ suite('PlotPanel', () => {
         PlotPanel.currentPanels.clear();
 
         await vscode.commands.executeCommand('workbench.action.closeAllEditors');
-        fs.rmSync(tmpDir, { recursive: true, force: true });
+        // Windows can hold file-watcher handles for a while after panels close. Try once here and
+        // defer anything still locked to suiteTeardown, so cleanup never blocks or fails a test.
+        try {
+            fs.rmSync(tmpDir, { recursive: true, force: true });
+        } catch {
+            leftoverTmpDirs.push(tmpDir);
+        }
+    });
+
+    suiteTeardown(async function () {
+        this.timeout(60_000);
+        for (const dir of leftoverTmpDirs.splice(0)) {
+            try {
+                await fs.promises.rm(dir, { recursive: true, force: true, maxRetries: 20, retryDelay: 500 });
+            } catch (err) {
+                // a leftover temp folder is harmless; never fail the suite over it
+                console.warn(`Could not remove test folder ${dir}: ${err}`);
+            }
+        }
     });
 
     test('uses graph-specific titles and exposes layout/save controls for GraphML', async function () {
@@ -172,7 +192,7 @@ suite('PlotPanel', () => {
             vscode.ViewColumn.One
         );
 
-        const panelWrapper = PlotPanel.currentPanels.get(graphmlPath) as any;
+        const panelWrapper = PlotPanel.getPanelForFile(graphmlPath) as any;
         assert.ok(panelWrapper, 'expected a PlotPanel instance for the explicit GraphML file');
 
         const panel = panelWrapper._panel as vscode.WebviewPanel;
@@ -208,7 +228,7 @@ suite('PlotPanel', () => {
             vscode.ViewColumn.One
         );
 
-        const panelWrapper = PlotPanel.currentPanels.get(gdatPath) as any;
+        const panelWrapper = PlotPanel.getPanelForFile(gdatPath) as any;
         assert.ok(panelWrapper, 'expected a PlotPanel instance for the GDAT file');
 
         const panel = panelWrapper._panel as vscode.WebviewPanel;
@@ -262,12 +282,13 @@ suite('PlotPanel', () => {
             modelEditor.viewColumn
         );
 
-        const panelWrapper = PlotPanel.currentPanels.get(graphmlPath) as any;
+        const panelWrapper = PlotPanel.getPanelForFile(graphmlPath) as any;
         assert.ok(panelWrapper, 'expected a PlotPanel instance for the explicit GraphML file');
-        assert.strictEqual(vscode.window.activeTextEditor?.document.fileName, modelPath);
+        // document.fileName uses Uri.fsPath, which lowercases the Windows drive letter
+        assert.ok(isSamePath(vscode.window.activeTextEditor?.document.fileName ?? '', modelPath), 'expected the BNGL model editor to stay active');
 
         const openTextEditors = vscode.window.visibleTextEditors.map((editor) => editor.document.fileName);
-        assert.ok(openTextEditors.includes(modelPath), 'expected the BNGL model editor to remain open');
+        assert.ok(openTextEditors.some((fileName) => isSamePath(fileName, modelPath)), 'expected the BNGL model editor to remain open');
         assert.ok(!openTextEditors.includes(graphmlPath), 'expected the raw GraphML text editor not to be opened');
     });
 
@@ -280,7 +301,7 @@ suite('PlotPanel', () => {
             vscode.ViewColumn.One
         );
 
-        const panelWrapper = PlotPanel.currentPanels.get(regulatoryGraphmlPath) as any;
+        const panelWrapper = PlotPanel.getPanelForFile(regulatoryGraphmlPath) as any;
         assert.ok(panelWrapper, 'expected a PlotPanel instance for the regulatory GraphML file');
 
         const panel = panelWrapper._panel as vscode.WebviewPanel;
@@ -315,7 +336,7 @@ suite('PlotPanel', () => {
             vscode.ViewColumn.One
         );
 
-        const panelWrapper = PlotPanel.currentPanels.get(rulevizOperationGraphmlPath) as any;
+        const panelWrapper = PlotPanel.getPanelForFile(rulevizOperationGraphmlPath) as any;
         assert.ok(panelWrapper, 'expected a PlotPanel instance for the RuleViz GraphML file');
 
         const panel = panelWrapper._panel as vscode.WebviewPanel;

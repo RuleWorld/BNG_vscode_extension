@@ -4,6 +4,7 @@ import { spawnAsync } from '../utils/spawnAsync';
 import { getPythonCommand } from '../utils/getPythonPath';
 import { CommandSpec, appendCommandArgs, createCommandSpec, formatCommandSpec } from '../utils/commandSpec';
 import { ProcessManager } from '../utils/processManagement';
+import { isSamePath, normalizePathKey } from '../utils/pathKey';
 import { startLogStreaming } from '../utils/logStreaming';
 import { PlotPanel } from '../plotting/PlotPanel';
 import { parseBnglDocument } from '../server/parser';
@@ -394,9 +395,6 @@ function describeRunFolder(runFolderUri: vscode.Uri): string {
     return `${getRunFolderLabel(runFolderUri)} (${runFolderUri.fsPath})`;
 }
 
-function isSamePath(leftPath: string, rightPath: string): boolean {
-    return path.resolve(leftPath) === path.resolve(rightPath);
-}
 
 async function confirmSimulationRerun(ctx: CommandContext, docUri: vscode.Uri): Promise<boolean> {
     const activeRun = ctx.processManager.findTrackedProcessByModel(docUri.fsPath, 'simulation');
@@ -493,7 +491,6 @@ function getResultsRetentionPolicyDescription(policy: ResultsRetentionPolicy): s
 }
 
 function getActiveResultsRunFolderPaths(processManager: ProcessManager, resultsRootPath: string): Set<string> {
-    const normalizedResultsRootPath = path.resolve(resultsRootPath);
 
     return new Set(
         processManager
@@ -504,11 +501,12 @@ function getActiveResultsRunFolderPaths(processManager: ProcessManager, resultsR
                 }
 
                 const trackedResultsFolderPath = path.resolve(trackedProcessObject.resultsFolder);
-                if (path.resolve(path.dirname(trackedResultsFolderPath)) !== normalizedResultsRootPath) {
+                if (!isSamePath(path.dirname(trackedResultsFolderPath), resultsRootPath)) {
                     return [];
                 }
 
-                return [trackedResultsFolderPath];
+                // keyed with normalizePathKey so Windows drive-letter/case spellings still match
+                return [normalizePathKey(trackedResultsFolderPath)];
             })
     );
 }
@@ -542,8 +540,7 @@ async function pruneStaleResultsRunFolders(
         }
 
         const runFolderUri = vscode.Uri.joinPath(resultsRootUri, name);
-        const normalizedRunFolderPath = path.resolve(runFolderUri.fsPath);
-        if (activeRunFolderPaths.has(normalizedRunFolderPath)) {
+        if (activeRunFolderPaths.has(normalizePathKey(runFolderUri.fsPath))) {
             ctx.channel.appendLine(`Skipping cleanup for active results folder: ${runFolderUri.fsPath}`);
             continue;
         }

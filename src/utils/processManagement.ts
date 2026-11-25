@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import * as cp from 'child_process';
-import * as path from 'path';
+import { isSamePath } from './pathKey';
 
 const refreshInterval = 500;
 
@@ -133,10 +133,9 @@ export class ProcessManager {
     }
 
     findTrackedProcessByModel(modelPath: string, kind?: TrackedProcessKind): TrackedProcessObject | undefined {
-        const resolvedModelPath = path.resolve(modelPath);
         return this.getTrackedProcesses(kind).find((trackedProcessObject) => {
             return typeof trackedProcessObject.modelPath === 'string'
-                && path.resolve(trackedProcessObject.modelPath) === resolvedModelPath;
+                && isSamePath(trackedProcessObject.modelPath, modelPath);
         });
     }
 
@@ -279,24 +278,18 @@ export class ProcessManager {
 
     // invoke external process utility to get list of open processes, return untrackedProcessObject[]
     private async _getProcessList(): Promise<UntrackedProcessObject[]> {
+        const { command, args } = getProcessListCommand(process.platform);
+        const parse = process.platform === 'win32' ? parseWindowsProcessCsv : parsePosixProcessList;
 
         return new Promise((resolve) => {
-            let processList: UntrackedProcessObject[] = [];
             let util: cp.ChildProcess;
-
-            // windows
-            if (process.platform === "win32") {
-                // NOTE: This enumeration is fragile and unverified on Windows: '|' and the comma-joined
-                // property list are passed as discrete argv under {shell}, and Select-Object's
-                // width-formatted table output can wrap/truncate columns, which the whitespace split in
-                // the 'close' handler below assumes it never does. Prefer machine-readable output (e.g.
-                // Get-CimInstance | ConvertTo-Csv) once it can be validated on a real Windows host.
-                // Tracked upstream: RuleWorld/BNG_vscode_extension#31
-                util = cp.spawn('Get-WmiObject', ['Win32_Process', '|', 'Select-Object', 'ProcessID, ParentProcessId, Name'], {'shell':'powershell.exe'});
-            }
-            // mac & linux
-            else {
-                util = cp.spawn('ps', ['ax', '-o', 'pid,ppid,command']);
+            try {
+                // no shell: the PowerShell pipeline travels as a single -Command argument;
+                // windowsHide keeps the 500 ms refresh from flashing a console window
+                util = cp.spawn(command, args, { windowsHide: true });
+            } catch {
+                resolve([]);
+                return;
             }
 
             util.on('error', () => {
@@ -311,22 +304,116 @@ export class ProcessManager {
             });
 
             util.on('close', () => {
-                if (/[0-9]/.test(stdout)) {
-                    let lines = stdout.trim().split(/\n/);
-                    lines = lines.filter((line: string) => /[0-9]/.test(line));
-
-                    for (const line of lines) {
-                        const processInfo = line.trim().split(/\s+/);
-                        processList.push({
-                            pid: parseInt(processInfo[0]),
-                            ppid: parseInt(processInfo[1]),
-                            name: processInfo[2],
-                            children: []
-                        });
-                    }
-                }
-                resolve(processList);
+                resolve(parse(stdout).map((entry) => ({ ...entry, children: [] })));
             });
         });
     }
+}
+
+export interface ProcessListEntry {
+    pid: number;
+    ppid: number;
+    name: string;
+}
+
+// Machine-readable process listing for Windows. ConvertTo-Csv avoids Format-Table's
+// width-dependent wrapping/truncation; Get-CimInstance replaces the deprecated Get-WmiObject.
+// Output is forced to UTF-8 so non-ASCII process names decode correctly.
+export const WINDOWS_PROCESS_LIST_SCRIPT =
+    '[Console]::OutputEncoding = [System.Text.Encoding]::UTF8; '
+    + 'Get-CimInstance -ClassName Win32_Process '
+    + '| Select-Object ProcessId, ParentProcessId, Name '
+    + '| ConvertTo-Csv -NoTypeInformation';
+
+export function getProcessListCommand(platform: NodeJS.Platform): { command: string; args: string[] } {
+    if (platform === 'win32') {
+        return {
+            command: 'powershell.exe',
+            // no -ExecutionPolicy: it governs script files, not -Command strings, and security tools flag it
+            args: ['-NoProfile', '-NonInteractive', '-Command', WINDOWS_PROCESS_LIST_SCRIPT]
+        };
+    }
+    return { command: 'ps', args: ['ax', '-o', 'pid=,ppid=,command='] };
+}
+
+// Split one CSV record into fields, honouring double-quoted fields and "" escapes.
+function parseCsvLine(line: string): string[] {
+    const fields: string[] = [];
+    let field = '';
+    let inQuotes = false;
+    for (let i = 0; i < line.length; i++) {
+        const ch = line[i];
+        if (inQuotes) {
+            if (ch === '"') {
+                if (line[i + 1] === '"') {
+                    field += '"';
+                    i++;
+                } else {
+                    inQuotes = false;
+                }
+            } else {
+                field += ch;
+            }
+        } else if (ch === '"') {
+            inQuotes = true;
+        } else if (ch === ',') {
+            fields.push(field);
+            field = '';
+        } else {
+            field += ch;
+        }
+    }
+    fields.push(field);
+    return fields;
+}
+
+function toEntry(pidText: string | undefined, ppidText: string | undefined, name: string | undefined): ProcessListEntry | undefined {
+    if (pidText === undefined || ppidText === undefined || !/^\d+$/.test(pidText.trim()) || !/^\d+$/.test(ppidText.trim())) {
+        return undefined;
+    }
+    return { pid: parseInt(pidText, 10), ppid: parseInt(ppidText, 10), name: (name ?? '').trim() };
+}
+
+// Parse `ConvertTo-Csv` output of ProcessId, ParentProcessId, Name. Columns are located by
+// header name, so column order and extra columns don't matter.
+export function parseWindowsProcessCsv(stdout: string): ProcessListEntry[] {
+    const lines = stdout.replace(/^\uFEFF/, '').split(/\r?\n/).filter((line) => line.trim() !== '');
+    const headerIndex = lines.findIndex((line) => /ProcessId/i.test(line));
+    if (headerIndex < 0) {
+        return [];
+    }
+    const header = parseCsvLine(lines[headerIndex]).map((h) => h.trim().toLowerCase());
+    const pidCol = header.indexOf('processid');
+    const ppidCol = header.indexOf('parentprocessid');
+    const nameCol = header.indexOf('name');
+    if (pidCol < 0 || ppidCol < 0) {
+        return [];
+    }
+
+    const entries: ProcessListEntry[] = [];
+    for (const line of lines.slice(headerIndex + 1)) {
+        const fields = parseCsvLine(line);
+        const entry = toEntry(fields[pidCol], fields[ppidCol], nameCol >= 0 ? fields[nameCol] : '');
+        if (entry) {
+            entries.push(entry);
+        }
+    }
+    return entries;
+}
+
+// Parse `ps ax -o pid=,ppid=,command=` output: two numeric columns, then the command line.
+// The name is the command's first token (the executable), matching what the tree view and the
+// perl/NFsim/run_network filter expect; arguments such as model file names are not matched.
+export function parsePosixProcessList(stdout: string): ProcessListEntry[] {
+    const entries: ProcessListEntry[] = [];
+    for (const line of stdout.split(/\r?\n/)) {
+        const match = /^\s*(\d+)\s+(\d+)\s+(.*)$/.exec(line);
+        if (match) {
+            const entry = toEntry(match[1], match[2], match[3].trim().split(/\s+/)[0]);
+            if (entry) {
+                entries.push(entry);
+            }
+        }
+    }
+    return entries;
 }
