@@ -1,4 +1,5 @@
 import * as assert from 'assert';
+import * as cp from 'child_process';
 import { ProcessManager, ProcessManagerProvider, getProcessListCommand, parsePosixProcessList, parseWindowsProcessCsv, WINDOWS_PROCESS_LIST_SCRIPT } from '../../utils/processManagement';
 
 suite('Process Manager', () => {
@@ -175,5 +176,89 @@ suite('Process list parsing', () => {
         const root = processManager.getTrackedProcesses()[0];
         assert.deepStrictEqual(root.children?.map((c) => c.name), ['perl.exe']);
         assert.deepStrictEqual(root.children?.[0].children?.map((c) => c.name), ['NFsim.exe']);
+    });
+});
+
+// Runs the real platform process listing (PowerShell/CIM on Windows, ps elsewhere) against live
+// processes, so the Windows CI runner validates #31 end to end rather than only the fixtures.
+suite('Process Manager (live processes)', function () {
+    this.timeout(60_000);
+
+    // the extension host's execPath is Electron; ELECTRON_RUN_AS_NODE makes it behave as node
+    const nodeEnv = { ...process.env, ELECTRON_RUN_AS_NODE: '1' };
+    const grandchildScript = 'setInterval(() => {}, 1000);';
+    const childScript = [
+        "const cp = require('child_process');",
+        `const g = cp.spawn(process.execPath, ['-e', ${JSON.stringify(grandchildScript)}], { stdio: 'ignore', windowsHide: true });`,
+        "process.stdout.write(String(g.pid) + '\\n');",
+        'setInterval(() => {}, 1000);'
+    ].join('\n');
+
+    const isAlive = (pid: number) => {
+        try {
+            process.kill(pid, 0);
+            return true;
+        } catch (e) {
+            return (e as NodeJS.ErrnoException).code === 'EPERM';
+        }
+    };
+
+    const waitFor = async (predicate: () => boolean, timeoutMs: number) => {
+        const deadline = Date.now() + timeoutMs;
+        while (Date.now() < deadline) {
+            if (predicate()) {
+                return true;
+            }
+            await new Promise((r) => setTimeout(r, 100));
+        }
+        return predicate();
+    };
+
+    let child: cp.ChildProcess | undefined;
+    let grandchildPid: number | undefined;
+
+    setup(async () => {
+        child = cp.spawn(process.execPath, ['-e', childScript], { env: nodeEnv, stdio: ['ignore', 'pipe', 'ignore'], windowsHide: true });
+        grandchildPid = await new Promise<number>((resolve, reject) => {
+            let out = '';
+            child!.stdout!.setEncoding('utf8');
+            child!.stdout!.on('data', (d) => {
+                out += d;
+                const m = /(\d+)\n/.exec(out);
+                if (m) {
+                    resolve(parseInt(m[1], 10));
+                }
+            });
+            child!.on('error', reject);
+            child!.on('exit', () => reject(new Error('child exited before reporting grandchild pid')));
+        });
+    });
+
+    teardown(() => {
+        for (const pid of [grandchildPid, child?.pid]) {
+            if (pid && isAlive(pid)) {
+                try { process.kill(pid); } catch { /* already gone */ }
+            }
+        }
+    });
+
+    test('process listing reports live child and grandchild with correct parents', async () => {
+        const processManager = new ProcessManager();
+        const list = await (processManager as unknown as { _getProcessList: () => Promise<{ pid: number; ppid: number; name: string }[]> })._getProcessList();
+        const byPid = new Map(list.map((p) => [p.pid, p]));
+
+        assert.ok(byPid.size > 0, 'process listing returned nothing');
+        assert.strictEqual(byPid.get(child!.pid!)?.ppid, process.pid, 'child should be listed under the test host');
+        assert.strictEqual(byPid.get(grandchildPid!)?.ppid, child!.pid, 'grandchild should be listed under the child');
+    });
+
+    test('killProcess terminates the whole live process tree', async () => {
+        const processManager = new ProcessManager();
+        processManager.add(child!.pid!, process.execPath, { kind: 'simulation' });
+
+        await processManager.killProcess(processManager.getTrackedProcesses()[0]);
+
+        assert.ok(await waitFor(() => !isAlive(grandchildPid!), 10_000), 'grandchild survived killProcess');
+        assert.ok(await waitFor(() => !isAlive(child!.pid!), 10_000), 'child survived killProcess');
     });
 });
